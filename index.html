@@ -1,0 +1,3062 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>コツコツ✏️サクサク🌸 v6</title>
+  <style>
+    :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--accent:#4f8ef7;--checked:#3ecf8e;--text:#e8eaf6;--text-muted:#6b7280;--border:#2d3148;--block-bg:rgba(34,38,58,.48);--block-hover:rgba(45,49,72,.65);}
+    [data-theme="light"]{--bg:#f0f4f8;--surface:#ffffff;--surface2:#e8edf3;--accent:#3b6fd4;--checked:#1fa870;--text:#1a202c;--text-muted:#718096;--border:#cbd5e0;--block-bg:rgba(232,237,243,.52);--block-hover:rgba(203,213,224,.7);}
+    [data-theme="forest"]{--bg:#0d1f13;--surface:#132b1a;--surface2:#1c3d25;--accent:#4ade80;--checked:#86efac;--text:#dcfce7;--text-muted:#6b8f72;--border:#2d5a38;--block-bg:rgba(28,61,37,.48);--block-hover:rgba(45,90,56,.65);}
+    [data-theme="ocean"]{--bg:#071e3d;--surface:#0d2b54;--surface2:#153a6e;--accent:#38bdf8;--checked:#67e8f9;--text:#e0f2fe;--text-muted:#5b8ab0;--border:#1e4776;--block-bg:rgba(21,58,110,.48);--block-hover:rgba(30,71,118,.65);}
+    [data-theme="sunset"]{--bg:#1a0a1e;--surface:#261330;--surface2:#341b42;--accent:#f472b6;--checked:#fb923c;--text:#fde8f7;--text-muted:#8b5a7a;--border:#4a2460;--block-bg:rgba(52,27,66,.48);--block-hover:rgba(74,36,96,.65);}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;transition:background .3s,color .3s;}
+    header{width:100%;background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;position:sticky;top:0;z-index:100;transition:background .3s,border-color .3s;}
+    .header-title{display:block;position:relative;font-size:.95rem;font-weight:700;letter-spacing:.05em;color:var(--accent);white-space:nowrap;text-align:center;padding:8px 0 4px;}
+    #ver-badge{font-size:.65rem;font-weight:500;color:var(--text-muted);margin-left:6px;}
+    .header-controls{height:40px;display:flex;align-items:center;justify-content:space-between;}
+    .header-right{display:flex;align-items:center;gap:8px;}
+    .date-nav{display:flex;align-items:center;gap:6px;}
+    .nav-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);width:28px;height:28px;border-radius:7px;cursor:pointer;font-size:.95rem;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+    .nav-btn:hover{background:var(--border);}
+    #today-btn{width:auto!important;padding:0 10px;font-size:.7rem;font-weight:700;color:var(--accent)!important;border-color:var(--accent)!important;}
+    #date-label{font-size:.85rem;font-weight:700;min-width:110px;text-align:center;}
+    .theme-picker{display:flex;align-items:center;gap:4px;}
+    .theme-dot{width:18px;height:18px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .15s,border-color .15s;flex-shrink:0;}
+    .theme-dot:hover{transform:scale(1.2);}
+    .theme-dot.active{border-color:var(--text);transform:scale(1.15);}
+    .theme-dot[data-theme="dark"]{background:radial-gradient(circle at 35% 35%,#4f8ef7,#0f1117);}
+    .theme-dot[data-theme="light"]{background:radial-gradient(circle at 35% 35%,#3b6fd4,#f0f4f8);}
+    .theme-dot[data-theme="forest"]{background:radial-gradient(circle at 35% 35%,#4ade80,#0d1f13);}
+    .theme-dot[data-theme="ocean"]{background:radial-gradient(circle at 35% 35%,#38bdf8,#071e3d);}
+    .theme-dot[data-theme="sunset"]{background:radial-gradient(circle at 35% 35%,#f472b6,#1a0a1e);}
+    
+    .quote-bar{padding:4px 0 5px;border-top:1px solid var(--border);text-align:center;font-size:.65rem;color:var(--text-muted);font-style:italic;letter-spacing:.02em;min-height:20px;}
+    
+    .countdown-bar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:7px 0;border-top:1px solid var(--border);gap:8px;}
+    .countdown-center{display:flex;align-items:baseline;justify-content:center;gap:5px;}
+    .countdown-label{font-size:.7rem;color:var(--text-muted);white-space:nowrap;}
+    .countdown-days{font-size:1.4rem;font-weight:800;color:var(--accent);line-height:1;}
+    .countdown-unit{font-size:.7rem;color:var(--text-muted);}
+    .countdown-passed{font-size:.7rem;color:#f87171;font-weight:700;}
+    .countdown-right{display:flex;align-items:center;justify-content:flex-end;gap:6px;}
+    .countdown-input{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:.7rem;padding:4px 8px;border-radius:6px;cursor:pointer;outline:none;width:130px;transition:background .3s,border-color .3s,color .3s;}
+    .countdown-input:focus{border-color:var(--accent);}
+    .countdown-clear{background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:.75rem;padding:2px 4px;transition:color .15s;}
+    .countdown-clear:hover{color:#f87171;}
+    
+    .level-bar{display:flex;align-items:center;gap:8px;padding:5px 0 6px;border-top:1px solid var(--border);}
+    .level-badge{background:var(--accent);color:var(--bg);font-size:.62rem;font-weight:800;padding:2px 7px;border-radius:99px;white-space:nowrap;flex-shrink:0;}
+    .level-title-text{font-size:.68rem;font-weight:700;color:var(--text);white-space:nowrap;flex-shrink:0;}
+    .level-xp-wrap{flex:1;display:flex;flex-direction:column;gap:2px;}
+    .level-xp-bg{background:var(--surface2);border-radius:99px;height:4px;overflow:hidden;}
+    .level-xp-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--checked));border-radius:99px;transition:width .5s;}
+    .level-xp-info{font-size:.54rem;color:var(--text-muted);text-align:right;}
+    .level-icon{font-size:1rem;flex-shrink:0;}
+    
+    
+    .story-main-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;transition:background .3s,border-color .3s;}
+    .story-top-row{display:flex;align-items:center;gap:12px;}
+    .story-main-char{font-size:2rem;flex-shrink:0;line-height:1;}
+    .story-main-body{flex:1;min-width:0;}
+    .story-main-title{font-size:.82rem;font-weight:800;color:var(--text);margin:0 0 1px;}
+    .story-main-msg{font-size:.65rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .story-lv-chip{background:rgba(0,120,255,.12);color:var(--accent);font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap;flex-shrink:0;}
+    .story-divider{height:1px;background:var(--border);margin:10px 0 8px;}
+    .story-bar-track{background:var(--surface2);border-radius:99px;height:5px;overflow:hidden;}
+    .story-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--checked),#7ee8a2);transition:width .5s ease;}
+    .story-bar-row{display:flex;justify-content:space-between;font-size:.58rem;color:var(--text-muted);margin:3px 0 6px;}
+    .story-dots-row{display:flex;gap:4px;margin-bottom:7px;}
+    .story-dot{flex:1;height:6px;border-radius:99px;background:var(--surface2);}
+    .story-dot.done{background:var(--checked);}
+    .story-dot.active{background:#f59e0b;}
+    .story-quote-box{background:var(--surface2);border-left:2px solid var(--border);border-radius:0 4px 4px 0;padding:6px 10px;font-size:.65rem;color:var(--text-muted);font-style:italic;line-height:1.5;}
+    
+    .story-char-wrap{position:relative;flex-shrink:0;}
+    .story-loop-counter{position:absolute;bottom:-3px;right:-6px;font-size:.5rem;font-weight:700;background:#534ab7;color:#fff;border-radius:99px;padding:1px 5px;line-height:1.4;pointer-events:none;}
+    .story-loop-badge{font-size:.58rem;font-weight:700;padding:1px 7px;border-radius:99px;white-space:nowrap;flex-shrink:0;}
+    .story-loop-badge.loop2{background:#faeeda;color:#854f0b;}
+    .story-loop-badge.loop3{background:#eeedfe;color:#3c3489;}
+    .story-loop-badge.loop4{background:#fcebeb;color:#791f1f;}
+    .story-next-loop-btn{background:var(--checked);color:#fff;border:none;border-radius:99px;padding:6px 18px;font-size:.72rem;font-weight:700;cursor:pointer;transition:opacity .2s;}
+    .story-countdown-row{font-size:.62rem;color:var(--text-muted);margin-top:5px;}
+    #story-countdown{font-weight:800;color:var(--accent);font-size:.75rem;}
+    .story-next-loop-btn:hover{opacity:.85;}
+    
+    .challenge-fab{width:38px;height:38px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;font-size:1.15rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.18);transition:transform .15s,box-shadow .15s;}
+    .challenge-fab:hover{transform:scale(1.1);box-shadow:0 4px 12px rgba(0,0,0,.25);}
+    .challenge-fab.has-badge::after{content:'';position:absolute;top:0;right:0;width:10px;height:10px;background:#f59e0b;border-radius:50%;border:2px solid var(--bg);}
+    
+    .challenge-popup{display:none;margin-top:8px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;animation:slideDown .2s ease;}
+    .challenge-popup.open{display:block;}
+    @keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+    .challenge-popup-header{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:.72rem;font-weight:700;color:var(--text-muted);}
+    .challenge-popup-close{background:none;border:none;cursor:pointer;font-size:.85rem;color:var(--text-muted);padding:2px 4px;border-radius:4px;}
+    .challenge-popup-close:hover{background:var(--border);}
+    .challenge-popup-body{padding:10px 14px;}
+    .challenge-popup-body .challenge-card{border:none;padding:0;background:transparent;}
+
+    .sound-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);width:28px;height:28px;border-radius:7px;cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s;flex-shrink:0;}
+    .sound-btn:hover{background:var(--border);}
+    .sound-btn.muted{opacity:.45;}
+    
+    .badge-open-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);height:28px;padding:0 8px;border-radius:7px;cursor:pointer;font-size:.68rem;font-weight:700;display:flex;align-items:center;gap:3px;transition:background .15s,color .15s;white-space:nowrap;}
+    .badge-open-btn:hover{background:var(--border);color:var(--text);}
+    .badge-open-btn .badge-count{background:var(--accent);color:var(--bg);font-size:.6rem;padding:1px 5px;border-radius:99px;font-weight:800;}
+    
+    .badge-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10000;align-items:flex-end;justify-content:center;}
+    .badge-overlay.show{display:flex;}
+    .badge-panel{background:var(--surface);border-radius:16px 16px 0 0;width:100%;max-width:700px;max-height:80vh;overflow-y:auto;padding:20px;animation:slideUp .3s ease;}
+    @keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+    .badge-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+    .badge-panel-title{font-size:1rem;font-weight:800;color:var(--text);}
+    .badge-panel-close{background:transparent;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;padding:4px;}
+    .badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;}
+    .badge-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 10px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;transition:border-color .2s,background .2s;}
+    .badge-item.earned{border-color:var(--checked);background:rgba(62,207,142,.08);}
+    .badge-item.locked{opacity:.42;filter:grayscale(.8);}
+    .badge-icon{font-size:1.8rem;line-height:1;}
+    .badge-name{font-size:.68rem;font-weight:700;color:var(--text);}
+    .badge-desc{font-size:.58rem;color:var(--text-muted);line-height:1.4;}
+    .badge-date{font-size:.54rem;color:var(--checked);margin-top:2px;}
+    
+    .popup-center{display:none;position:fixed;top:50%;left:50%;transform:translateX(-50%) translateY(-50%);color:#fff;text-align:center;line-height:1.8;z-index:9999;animation:bannerPop .5s cubic-bezier(.34,1.56,.64,1) both;}
+    .milestone-popup{background:linear-gradient(135deg,#1a0a1e,#261330);border:2px solid #f472b6;font-size:1rem;font-weight:800;padding:22px 32px;border-radius:20px;box-shadow:0 8px 40px rgba(244,114,182,.4);}
+    .milestone-popup .ms-hours{font-size:2rem;color:#f472b6;display:block;line-height:1.2;}
+    .milestone-popup .ms-title{font-size:.85rem;color:#e9d5ff;margin-top:4px;display:block;}
+    .levelup-popup{background:linear-gradient(135deg,#071e3d,#153a6e);border:2px solid #38bdf8;padding:20px 28px;border-radius:18px;}
+    .levelup-popup .lu-lv{font-size:2.2rem;font-weight:800;color:#38bdf8;}
+    .levelup-popup .lu-title{font-size:.9rem;color:#bae6fd;}
+    
+    .badge-popup{display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--surface);border:1.5px solid var(--checked);color:var(--text);padding:12px 20px;border-radius:14px;z-index:9997;text-align:center;animation:badgePop .4s ease;box-shadow:0 4px 20px rgba(0,0,0,.3);white-space:nowrap;}
+    @keyframes badgePop{from{transform:translateX(-50%) translateY(20px);opacity:0;}to{transform:translateX(-50%) translateY(0);opacity:1;}}
+    .badge-popup .bp-icon{font-size:1.6rem;display:block;}
+    .badge-popup .bp-name{font-size:.8rem;font-weight:700;color:var(--checked);}
+    .badge-popup .bp-msg{font-size:.65rem;color:var(--text-muted);}
+    
+    .combo-float{position:fixed;pointer-events:none;z-index:9995;font-weight:800;text-shadow:0 2px 8px rgba(0,0,0,.4);animation:comboFly .9s ease-out forwards;}
+    @keyframes comboFly{0%{opacity:1;transform:translateY(0) scale(1);}60%{opacity:1;transform:translateY(-40px) scale(1.2);}100%{opacity:0;transform:translateY(-80px) scale(.8);}}
+    
+    @keyframes luckyGlow{0%,100%{box-shadow:0 0 4px 2px rgba(251,191,36,.4);border-color:rgba(251,191,36,.5);}50%{box-shadow:0 0 10px 4px rgba(251,191,36,.7);border-color:rgba(251,191,36,.8);}}
+    .block.lucky:not(.checked){animation:none;box-shadow:0 0 7px 3px rgba(251,191,36,.6);border-color:rgba(251,191,36,.8);background:rgba(251,191,36,.12);}
+    .block.lucky.checked::after{content:'⭐';animation:petalWiggle 1.8s ease-in-out infinite;}
+    @keyframes nowBlink{0%,100%{box-shadow:0 0 5px 2px rgba(79,142,247,.45);border-color:rgba(79,142,247,.6);}50%{box-shadow:0 0 12px 5px rgba(79,142,247,.85);border-color:rgba(79,142,247,1);}}
+    .block.now-time:not(.checked):not(.lucky){animation:nowBlink 1.2s ease-in-out infinite;border-color:rgba(79,142,247,.6);}
+    
+    .easter-toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#1a0a1e,#341b42);border:1.5px solid #f472b6;color:#fde8f7;font-size:.82rem;font-weight:700;padding:12px 22px;border-radius:12px;z-index:9996;opacity:0;transition:opacity .3s;pointer-events:none;text-align:center;box-shadow:0 4px 20px rgba(244,114,182,.3);}
+    .easter-toast.show{opacity:1;}
+    
+    .challenge-wrap{width:100%;max-width:700px;padding:0 14px;margin:12px auto 0;}
+    .challenge-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;transition:background .3s,border-color .3s;}
+    .challenge-card.achieved{border-color:var(--checked);background:rgba(62,207,142,.07);}
+    .challenge-icon{font-size:1.4rem;flex-shrink:0;}
+    .challenge-body{flex:1;min-width:0;}
+    .challenge-label{font-size:.58rem;color:var(--text-muted);font-weight:700;letter-spacing:.05em;}
+    .challenge-title{font-size:.82rem;font-weight:800;color:var(--text);margin:1px 0;}
+    .challenge-desc{font-size:.62rem;color:var(--text-muted);}
+    .challenge-prog{margin-top:5px;}
+    .challenge-prog-bg{background:var(--surface2);border-radius:99px;height:4px;overflow:hidden;}
+    .challenge-prog-fill{height:100%;background:linear-gradient(90deg,#f59e0b,#fde68a);border-radius:99px;transition:width .4s;}
+    .challenge-prog-txt{font-size:.58rem;color:var(--text-muted);margin-top:2px;text-align:right;}
+    .challenge-status{font-size:1.1rem;flex-shrink:0;}
+    
+    .heatmap-section{margin-top:18px;padding-top:14px;border-top:1px solid var(--border);}
+    .heatmap-title{font-size:.72rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+    .heatmap-scroll{overflow-x:auto;padding-bottom:4px;}
+    .heatmap-grid{display:flex;gap:2px;align-items:flex-start;}
+    .heatmap-month-col{display:flex;flex-direction:column;gap:2px;}
+    .heatmap-month-label{font-size:.52rem;color:var(--text-muted);height:10px;line-height:10px;text-align:center;white-space:nowrap;}
+    .heatmap-week{display:flex;flex-direction:column;gap:2px;}
+    .heatmap-cell{width:11px;height:11px;border-radius:2px;background:var(--surface2);transition:background .2s;cursor:pointer;flex-shrink:0;}
+    .heatmap-cell:hover{opacity:.8;}
+    .hm-h1{background:rgba(62,207,142,.18);}
+    .hm-h2{background:rgba(62,207,142,.38);}
+    .hm-h3{background:rgba(62,207,142,.58);}
+    .hm-h4{background:rgba(62,207,142,.78);}
+    .hm-h5{background:rgba(62,207,142,.95);}
+    .heatmap-legend{display:flex;align-items:center;gap:5px;font-size:.58rem;color:var(--text-muted);margin-top:6px;justify-content:flex-end;}
+    .hm-leg{width:11px;height:11px;border-radius:2px;}
+    
+    .forecast-section{margin-top:14px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;}
+    .forecast-title{font-size:.7rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;}
+    .forecast-body{display:flex;flex-direction:column;gap:3px;}
+    .forecast-num{font-size:1.55rem;font-weight:800;color:var(--checked);line-height:1.15;}
+    .forecast-sub{font-size:.62rem;color:var(--text-muted);}
+    .forecast-pace{font-size:.65rem;color:var(--text-muted);margin-top:1px;}
+    
+    .weekly-report-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-size:.65rem;font-weight:700;padding:4px 10px;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:background .15s,color .15s;margin-left:auto;}
+    .weekly-report-btn:hover{background:var(--border);color:var(--text);}
+    
+    .all-time-wrap{width:100%;max-width:700px;padding:0 14px 24px;margin:0 auto;}
+    #all-time-card{margin:0;border-top:1px solid var(--border);padding:14px 6px 10px;background:transparent;border-radius:0;border-left:none;border-right:none;border-bottom:none;display:flex;align-items:center;gap:14px;transition:background .3s,border-color .3s;}
+    .atc-icon{font-size:1.6rem;line-height:1;flex-shrink:0;}
+    .atc-body{flex:1;display:flex;flex-direction:column;gap:3px;}
+    .atc-label{font-size:.62rem;color:var(--text-muted);font-weight:700;letter-spacing:.04em;}
+    .atc-value{font-size:1.55rem;font-weight:800;color:var(--checked);line-height:1.15;}
+    .atc-min{font-size:0.5em;}
+    .atc-sub{font-size:.65rem;color:var(--text-muted);margin-top:1px;}
+    .atc-elapsed{display:flex;flex-direction:column;align-items:center;gap:1px;flex-shrink:0;padding:0 6px;border-left:1px solid var(--border);border-right:1px solid var(--border);}
+    .atc-elapsed-val{font-size:1.1rem;font-weight:800;color:var(--text-muted);}
+    .atc-streak-val{font-size:1.1rem;font-weight:800;color:#fb923c;white-space:nowrap;}
+    .atc-streak-zero{color:var(--text-muted);}
+    .atc-elapsed-lbl{font-size:.6rem;color:var(--text-muted);}
+    .atc-days{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0;}
+    .atc-days-val{font-size:1.1rem;font-weight:800;color:var(--accent);}
+    .atc-days-total{font-size:.85rem;font-weight:700;color:var(--text-muted);}
+    .atc-days-lbl{font-size:.6rem;color:var(--text-muted);}
+    .settings-section{border-top:1px solid var(--border);margin-top:4px;}
+    .settings-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+    .settings-label{font-size:.72rem;font-weight:600;color:var(--text-muted);min-width:90px;white-space:nowrap;}
+    .backup-bar{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 0 6px;border-top:1px solid var(--border);flex-wrap:wrap;}
+    .backup-steps{display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0 14px;font-size:.65rem;color:var(--text-muted);line-height:1.8;text-align:center;}
+    .backup-steps span{padding:0 6px;}
+    .backup-steps span:first-child{font-weight:700;color:var(--accent);}
+    .backup-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-size:.68rem;font-weight:700;padding:4px 12px;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:background .15s,color .15s,border-color .15s;white-space:nowrap;}
+    .backup-btn:hover{background:var(--border);color:var(--text);}
+    .backup-btn.export-btn{border-color:var(--checked);color:var(--checked);}
+    .backup-btn.export-btn:hover{background:var(--checked);color:#fff;}
+    .backup-btn.import-btn{border-color:var(--accent);color:var(--accent);}
+    .backup-btn.import-btn:hover{background:var(--accent);color:#fff;}
+    .backup-btn.clear-btn{border-color:#f87171;color:#f87171;}
+    .backup-btn.clear-btn:hover{background:#f87171;color:#fff;}
+    .clear-section{border-top:1px solid var(--border);margin-top:10px;padding-top:10px;padding-bottom:6px;display:flex;justify-content:center;}
+    .backup-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--checked);color:#fff;font-size:.82rem;font-weight:700;padding:10px 22px;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.35);z-index:9999;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;}
+    .backup-toast.error{background:#f87171;}
+    .backup-toast.show{opacity:1;}
+    .tabs{display:flex;border-top:1px solid var(--border);}
+    .tab-btn{flex:1;padding:9px 0;background:transparent;border:none;color:var(--text-muted);font-size:.8rem;font-weight:700;cursor:pointer;border-bottom:3px solid transparent;transition:color .15s,border-color .15s;}
+    .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+    .stat-row{width:100%;max-width:700px;margin:14px auto 0;padding:0 14px;display:flex;gap:8px;position:relative;z-index:1;}
+    .stat-card{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 14px;display:flex;flex-direction:column;gap:3px;transition:background .3s,border-color .3s;}
+    .stat-label{font-size:.65rem;color:var(--text-muted);}
+    .stat-value{font-size:1.25rem;font-weight:800;color:var(--checked);}
+    .prog-bg{background:var(--surface2);border-radius:99px;height:5px;overflow:hidden;margin-top:5px;transition:background .3s;}
+    .prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--checked));border-radius:99px;transition:width .3s;}
+    .prog-info{font-size:.6rem;color:var(--text-muted);margin-top:3px;}
+    .goal-row{display:flex;align-items:center;gap:5px;margin-top:6px;}
+    .goal-lbl{font-size:.6rem;color:var(--text-muted);}
+    .goal-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);padding:3px 8px;border-radius:5px;cursor:pointer;font-size:.65rem;font-weight:700;transition:background .15s,color .15s,border-color .15s;}
+    .goal-btn:hover{background:var(--border);}
+    .goal-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+    .view{display:none;width:100%;max-width:700px;padding:0 14px 32px;}
+    .view.active{display:block;}
+    #view-daily{position:relative;}
+    #sakura-tree-bg{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0;overflow:hidden;}
+    #sakura-tree-bg svg{position:absolute;top:0;left:50%;transform:translateX(-50%);width:110%;max-width:760px;}
+    .diary-wrap{position:relative;z-index:1;margin:12px 0 4px;display:flex;align-items:center;gap:8px;}
+    .diary-date-label{font-size:.6rem;color:var(--text-muted);white-space:nowrap;flex-shrink:0;}
+    .diary-input{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.8rem;padding:7px 12px;outline:none;transition:border-color .2s,background .3s;font-family:inherit;}
+    .diary-input::placeholder{color:var(--text-muted);opacity:.7;}
+    .diary-input:focus{border-color:var(--accent);}
+    .diary-input.has-note{border-color:var(--checked);background:var(--surface2);}
+    .grid-wrap{position:relative;z-index:1;overflow-x:auto;margin-top:10px;}
+    .tree-branches{opacity:.22;}
+    .blossom-group{opacity:0;transform-origin:center center;transition:opacity 1.4s ease, transform 1.2s ease;transform:scale(.6);}
+    .blossom-group.bloom{opacity:1;transform:scale(1);}
+    #sakura-tree-bg.full-bloom .blossom-group{filter:drop-shadow(0 0 8px rgba(255,150,180,.55));}
+    table{width:100%;border-collapse:collapse;}
+    thead th{font-size:.65rem;color:var(--text-muted);font-weight:700;padding:5px 2px;text-align:center;}
+    thead th.hour-col{width:36px;}
+    thead th.all-col{width:30px;}
+    thead th.min-col{min-width:30px;text-align:right;padding-right:0;font-size:.58rem;}
+    tbody tr{transition:background .1s;}
+    tbody tr:hover{background:rgba(128,128,128,.04);}
+    tbody tr.sep td{border-top:2px solid var(--bg);}
+    tbody tr.min-guide td{font-size:.52rem;font-weight:700;color:var(--text-muted);text-align:right;padding:2px 2px 2px 0;border-top:1px dashed var(--border);border-bottom:1px dashed var(--border);background:var(--surface2);line-height:1;pointer-events:none;user-select:none;}
+    tbody tr.min-guide td:first-child,tbody tr.min-guide td:nth-child(2){text-align:center;}
+    .hour-cell{text-align:center;font-size:.72rem;font-weight:700;color:var(--text-muted);padding:3px 4px;user-select:none;}
+    .hour-btn-cell{padding:0 4px 0 6px;white-space:nowrap;}
+    .hour-btn{background:var(--block-bg);border:1px solid rgba(255,255,255,.10);color:var(--text-muted);height:24px;padding:0 6px;border-radius:4px;cursor:pointer;font-size:.6rem;font-weight:700;transition:background .15s,color .15s,border-color .15s;display:inline-flex;align-items:center;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);}
+    .hour-btn:hover{background:var(--block-hover);}
+    .hour-btn.full{background:rgba(255,183,197,.65);border-color:rgba(255,133,161,.6);color:#5a1a2a;}
+    .block-cell{padding:0;text-align:center;}
+    .block{width:100%;height:24px;min-width:28px;margin:0;border-radius:0;background:var(--block-bg);border:1px solid rgba(255,255,255,.10);border-right:none;cursor:pointer;transition:background .2s,border-color .2s,transform .1s;display:flex;align-items:center;justify-content:center;overflow:hidden;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);}
+    .block.first{border-radius:4px 0 0 4px;}
+    .block.last{border-radius:0 4px 4px 0;border-right:1px solid rgba(255,255,255,.10);}
+    .block:hover{background:var(--block-hover);}
+    .block.checked{background:linear-gradient(135deg,rgba(255,214,228,.60) 0%,rgba(255,133,161,.65) 100%);border-color:rgba(255,105,180,.55);}
+    .block.checked.last{border-right:1px solid rgba(255,105,180,.55);}
+    .block.checked:not(.lucky)::after{content:'🌸';font-size:11px;line-height:1;animation:petalWiggle 2.5s ease-in-out infinite;}
+    @keyframes petalWiggle{0%,100%{transform:rotate(-8deg) scale(1);}50%{transform:rotate(8deg) scale(1.15);}}
+    .sub-nav{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 10px;}
+    .week-section-label{display:flex;align-items:center;gap:10px;margin:14px 0 -2px;padding:7px 6px 7px;border-bottom:1px solid var(--border);}
+    .wsl-name{font-size:.72rem;font-weight:700;color:var(--text-muted);white-space:nowrap;min-width:2.5em;}
+    .week-section-label.curr .wsl-name{color:var(--accent);}
+    .wsl-total{font-size:1.15rem;font-weight:800;color:var(--checked);flex:1;}
+    .week-section-label.curr .wsl-total{color:var(--accent);}
+    .wsl-pct{font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:99px;white-space:nowrap;}
+    .wsl-pct.up{background:rgba(62,207,142,.15);color:var(--checked);}
+    .wsl-pct.down{background:rgba(248,113,113,.15);color:#f87171;}
+    .wsl-pct.even{background:var(--surface2);color:var(--text-muted);}
+    .sub-nav-label{font-size:.85rem;font-weight:700;min-width:170px;text-align:center;}
+    .bar-chart{display:flex;align-items:flex-end;gap:6px;height:200px;margin-top:14px;padding-bottom:44px;position:relative;}
+    .bar-chart::before{content:'';position:absolute;inset:0;bottom:44px;background:repeating-linear-gradient(to bottom,transparent,transparent calc(25% - 1px),rgba(128,128,128,.07) calc(25% - 1px),rgba(128,128,128,.07) 25%);pointer-events:none;}
+    .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;cursor:pointer;position:relative;}
+    .bar-time{font-size:.58rem;color:var(--text-muted);margin-bottom:3px;white-space:nowrap;}
+    .bar-fill-wrap{width:100%;display:flex;flex-direction:column;justify-content:flex-end;height:calc(100% - 44px);}
+    .bar-fill{width:100%;background:var(--surface2);border-radius:4px 4px 0 0;transition:height .4s;min-height:2px;}
+    .bar-col:hover .bar-fill{background:var(--accent);}
+    .bar-fill.has-data{background:linear-gradient(to top,var(--accent),var(--checked));}
+    .bar-day{position:absolute;bottom:-28px;font-size:.7rem;font-weight:700;text-align:center;width:100%;}
+    .bar-day.today{color:var(--bg);background:var(--accent);border-radius:99px;padding:1px 6px;width:auto;left:50%;transform:translateX(-50%);white-space:nowrap;}
+    .bar-day.sat{color:#60a5fa;}
+    .bar-day.sun{color:#f87171;}
+    .bar-date{position:absolute;bottom:-44px;font-size:.58rem;color:var(--text-muted);text-align:center;width:100%;}
+    .bar-bottom{margin-bottom:18px;}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:8px;}
+    .cal-header{text-align:center;font-size:.65rem;font-weight:700;color:var(--text-muted);padding:4px 0;}
+    .cal-header.sat{color:#60a5fa;}.cal-header.sun{color:#f87171;}
+    .cal-day-num.sat{color:#60a5fa;}.cal-day-num.sun{color:#f87171;}
+    .cal-day.today-day .cal-day-num{color:var(--accent)!important;}
+    .cal-day{aspect-ratio:1/1;border-radius:8px;background:var(--surface2);border:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:4px 3px 3px;cursor:pointer;transition:transform .1s,border-color .15s;position:relative;overflow:hidden;}
+    .cal-day:hover{transform:scale(1.05);border-color:var(--accent);}
+    .cal-day.empty{background:transparent;border-color:transparent;cursor:default;}
+    .cal-day.empty:hover{transform:none;}
+    .cal-day.today-day{border-color:var(--accent)!important;}
+    .cal-day-num{font-size:.7rem;font-weight:700;color:var(--text-muted);position:relative;z-index:1;}
+    .cal-day.today-day .cal-day-num{color:var(--accent);}
+    .cal-day-time{font-size:.32rem;color:rgba(128,128,128,.75);position:relative;z-index:1;margin-top:2px;display:flex;flex-direction:row;align-items:center;gap:1px;line-height:1.25;flex-wrap:nowrap;}
+    .cdt-h{font-weight:700;color:var(--checked);}
+    .cdt-h small{font-size:.7em;font-weight:400;}
+    .cdt-m{font-weight:600;color:var(--text-muted);}
+    .cdt-m small{font-size:.7em;font-weight:400;}
+    .heat-3 .cdt-h,.heat-4 .cdt-h,.heat-5 .cdt-h{color:rgba(0,0,0,.75);}
+    .heat-3 .cdt-m,.heat-4 .cdt-m,.heat-5 .cdt-m{color:rgba(0,0,0,.55);}
+    .cal-day-bg{position:absolute;inset:0;opacity:0;background:var(--checked);transition:opacity .2s;}
+    .heat-1 .cal-day-bg{opacity:.12;}.heat-2 .cal-day-bg{opacity:.27;}.heat-3 .cal-day-bg{opacity:.44;}.heat-4 .cal-day-bg{opacity:.62;}.heat-5 .cal-day-bg{opacity:.82;}
+    .heat-1 .cal-day-time,.heat-2 .cal-day-time,.heat-3 .cal-day-time,.heat-4 .cal-day-time,.heat-5 .cal-day-time{color:rgba(0,0,0,.7);}
+    .legend{display:flex;align-items:center;gap:6px;font-size:.62rem;color:var(--text-muted);margin-top:10px;justify-content:flex-end;}
+    .legend-box{width:14px;height:14px;border-radius:3px;background:var(--checked);}
+    @keyframes petalFall{0%{opacity:1;transform:translateY(0) rotate(0deg) translateX(0);}30%{opacity:1;}100%{opacity:0;transform:translateY(108vh) rotate(var(--spin)) translateX(var(--drift));}}
+    .falling-petal{position:fixed;top:-24px;pointer-events:none;z-index:9999;font-size:var(--sz,16px);animation:petalFall var(--dur,3s) ease-in forwards;will-change:transform,opacity;}
+    #fw-canvas{position:fixed;inset:0;pointer-events:none;z-index:9990;width:100%;height:100%;}
+    .fw-banner{font-size:1.1rem;font-weight:800;letter-spacing:.08em;padding:18px 32px;border-radius:20px;z-index:9998;box-shadow:0 6px 32px rgba(0,0,0,.45);line-height:1.7;white-space:nowrap;}
+    #fw-banner-weekly{background:linear-gradient(135deg,#f59e0b,#fde68a,#f59e0b);}
+    #fw-banner-monthly{background:linear-gradient(135deg,#8b5cf6,#ec4899,#f59e0b);}
+    #bloom-banner{font-size:1.1rem;font-weight:800;letter-spacing:.08em;padding:18px 32px;border-radius:20px;z-index:9998;box-shadow:0 6px 32px rgba(255,105,180,.55);line-height:1.7;white-space:nowrap;background:linear-gradient(135deg,#ff69b4,#ffb7c5);}
+    @keyframes bannerPop{from{transform:translateX(-50%) translateY(-50%) scale(.5);opacity:0;}to{transform:translateX(-50%) translateY(-50%) scale(1);opacity:1;}}
+    .bar-stack{width:100%;border-radius:4px 4px 0 0;overflow:hidden;display:flex;flex-direction:column-reverse;transition:height .4s;background:var(--surface2);min-height:0;}
+    .bar-seg{width:100%;}
+    .bar-seg.morning{background:#38bdf8;}
+    .bar-seg.afternoon{background:#fbbf24;}
+    .bar-seg.evening{background:#a78bfa;}
+    .bar-col:hover .bar-seg{filter:brightness(1.18);}
+    .time-part-legend{display:flex;align-items:center;justify-content:center;gap:12px;margin:6px 0 2px;font-size:.63rem;color:var(--text-muted);flex-wrap:wrap;}
+    .tpl-item{display:flex;align-items:center;gap:4px;}
+    .tpl-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+    .tpl-dot.morning{background:#38bdf8;}
+    .tpl-dot.afternoon{background:#fbbf24;}
+    .tpl-dot.evening{background:#a78bfa;}
+    .cal-parts{display:flex;flex-direction:column;gap:1px;width:85%;margin-top:3px;position:relative;z-index:1;}
+    .cal-part{height:3px;border-radius:2px;max-width:100%;min-width:0;transition:width .3s;}
+    .cal-part.morning{background:#38bdf8;}
+    .cal-part.afternoon{background:#fbbf24;}
+    .cal-part.evening{background:#a78bfa;}
+    .heat-3 .cal-part,.heat-4 .cal-part,.heat-5 .cal-part{opacity:.85;}
+    .goal-input-custom{background:var(--surface2);border:1.5px solid var(--accent);color:var(--text);width:52px;padding:3px 5px;border-radius:5px;font-size:.68rem;font-weight:700;outline:none;text-align:center;-moz-appearance:textfield;}
+    .goal-input-custom::-webkit-outer-spin-button,.goal-input-custom::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+    .goal-input-custom::placeholder{color:var(--text-muted);font-size:.6rem;}
+    .sw-wrap{width:100%;max-width:700px;margin:0 auto;padding:6px 14px 4px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:var(--header-h,0px);z-index:99;}
+    .sw-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 16px;display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;transition:background .3s,border-color .3s;}
+    .sw-icon{font-size:1.2rem;flex-shrink:0;}
+    .sw-body{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0;}
+    .sw-label{font-size:.62rem;color:var(--text-muted);font-weight:700;letter-spacing:.04em;}
+    .sw-display{font-size:1.9rem;font-weight:800;color:var(--text);letter-spacing:.04em;font-variant-numeric:tabular-nums;line-height:1.1;transition:color .4s;}
+    .sw-display.running{color:var(--checked);}
+    .sw-hint{font-size:.6rem;color:var(--text-muted);margin-top:1px;}
+    .sw-time-row{display:flex;align-items:center;gap:10px;}
+    .sw-next-wrap{display:flex;flex-direction:column;gap:1px;border-left:1px solid var(--border);padding-left:10px;}
+    .sw-next-lbl{font-size:.55rem;color:var(--text-muted);white-space:nowrap;}
+    .sw-next-time{font-size:1.05rem;font-weight:800;color:var(--text-muted);font-variant-numeric:tabular-nums;line-height:1.1;transition:color .4s;}
+    .sw-next-time.soon{color:#fb7185;}
+    .sw-btns{display:flex;flex-direction:column;gap:4px;flex-shrink:0;}
+    .sw-btns-main{display:flex;gap:6px;}
+    .sw-btn{padding:7px 16px;border-radius:8px;border:none;font-size:.78rem;font-weight:700;cursor:pointer;transition:filter .15s,opacity .15s,background .15s;white-space:nowrap;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;}
+    .sw-btn:disabled{opacity:.35;cursor:default;}
+    .sw-btn.start{background:var(--checked);color:#fff;}
+    .sw-btn.start:not(:disabled):hover{filter:brightness(1.12);}
+    .sw-btn.stop{background:#f87171;color:#fff;}
+    .sw-btn.stop:not(:disabled):hover{filter:brightness(1.1);}
+    .sw-btn.reset{background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-size:.72rem;padding:3px 8px;width:100%;}
+    .sw-btn.reset:not(:disabled):hover{background:var(--border);color:var(--text);}
+    @media (max-width:520px){
+      .stat-row{gap:4px;padding:0 8px;margin-top:10px;}
+      .stat-card{padding:7px 7px;gap:2px;}
+      .stat-label{font-size:.58rem;}.stat-value{font-size:.95rem;}
+      .prog-info{font-size:.52rem;}
+      .goal-row{gap:3px;margin-top:4px;flex-wrap:wrap;}
+      .goal-lbl{display:none;}
+      .goal-btn{padding:2px 5px;font-size:.58rem;}
+      .countdown-input{width:110px;font-size:.65rem;}
+      .theme-dot{width:14px;height:14px;}
+      .header-title{font-size:.85rem;}
+      .header-controls{height:36px;}
+      #date-label{min-width:120px;font-size:.75rem;}
+      .sw-wrap{padding:0 8px;}
+      .sw-display{font-size:1.45rem;}
+      .sw-btn{padding:5px 10px;font-size:.68rem;}
+      .sw-hint{font-size:.56rem;}
+      .sw-label{font-size:.58rem;}
+      .sw-next-time{font-size:.85rem;}
+      .sw-next-lbl{font-size:.5rem;}
+      .sw-btns{width:100%;flex-shrink:1;}
+      .sw-btns-main{width:100%;}
+      .sw-btns-main .sw-btn{flex:1;}
+      .badge-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));}
+      .level-title-text{display:none;}
+    }
+
+    
+    .cust-gear-btn{background:var(--accent);border:none;color:#fff;height:28px;padding:0 10px;border-radius:7px;cursor:pointer;font-size:.75rem;font-weight:700;letter-spacing:.05em;display:flex;align-items:center;justify-content:center;transition:background .15s,opacity .15s;flex-shrink:0;}
+    .cust-gear-btn:hover{opacity:.85;}
+    .cust-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10001;align-items:flex-end;justify-content:center;}
+    .cust-overlay.show{display:flex;}
+    .cust-panel{background:var(--surface);border-radius:16px 16px 0 0;width:100%;max-width:700px;max-height:85vh;overflow-y:auto;padding:20px;animation:slideUp .3s ease;}
+    .cust-panel-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .cust-panel-title{font-size:1rem;font-weight:800;color:var(--text);}
+    .cust-panel-close{background:transparent;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;padding:4px;}
+    .cust-sec{margin-bottom:18px;}
+    .cust-sec-title{font-size:.68rem;font-weight:700;color:var(--text-muted);letter-spacing:.06em;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border);}
+    .cust-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+    .cust-lbl{font-size:.75rem;color:var(--text);min-width:80px;flex-shrink:0;}
+    .cust-input{flex:1;background:var(--surface2);border:1.5px solid var(--border);color:var(--text);font-size:.82rem;padding:6px 10px;border-radius:8px;outline:none;transition:border-color .2s;font-family:inherit;}
+    .cust-input:focus{border-color:var(--accent);}
+    .cust-emoji-grid{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px;}
+    .cust-e-btn{background:var(--surface2);border:2px solid var(--border);border-radius:8px;width:36px;height:36px;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .15s,transform .1s;line-height:1;}
+    .cust-e-btn:hover{transform:scale(1.12);}
+    .cust-e-btn.active{border-color:var(--accent);background:rgba(79,142,247,.12);}
+    .cust-tog-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;}
+    .tog-sw{position:relative;display:inline-block;width:42px;height:24px;flex-shrink:0;}
+    .tog-sw input{opacity:0;width:0;height:0;}
+    .tog-slider{position:absolute;inset:0;background:var(--surface2);border-radius:99px;cursor:pointer;transition:background .2s;border:1px solid var(--border);}
+    .tog-sw input:checked+.tog-slider{background:var(--accent);border-color:var(--accent);}
+    .tog-slider::before{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.25);}
+    .tog-sw input:checked+.tog-slider::before{transform:translateX(18px);}
+    .cust-quotes-list{display:flex;flex-direction:column;gap:4px;max-height:150px;overflow-y:auto;margin-bottom:6px;}
+    .cust-q-item{display:flex;align-items:flex-start;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;}
+    .cust-q-text{flex:1;font-size:.68rem;color:var(--text);line-height:1.5;}
+    .cust-q-del{background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:.8rem;padding:0 4px;flex-shrink:0;transition:color .15s;}
+    .cust-q-del:hover{color:#f87171;}
+    .cust-add-row{display:flex;gap:6px;}
+    .cust-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-size:.7rem;font-weight:700;padding:5px 12px;border-radius:7px;cursor:pointer;white-space:nowrap;transition:background .15s,color .15s;}
+    .cust-btn:hover{background:var(--border);color:var(--text);}
+    .cust-btn.ok{border-color:var(--accent);color:var(--accent);}
+    .cust-btn.ok:hover{background:var(--accent);color:#fff;}
+    .cust-btn.danger{border-color:#f87171;color:#f87171;}
+    .cust-btn.danger:hover{background:#f87171;color:#fff;}
+    select.cust-input{appearance:auto;-webkit-appearance:auto;}
+    .cust-lvl-row{display:flex;align-items:center;gap:5px;padding:3px 0;}
+    .cust-lvl-icon{width:38px;flex-shrink:0;background:var(--surface2);border:1.5px solid var(--border);color:var(--text);font-size:.85rem;padding:4px 4px;border-radius:6px;outline:none;text-align:center;font-family:inherit;}
+    .cust-lvl-lbl{font-size:.6rem;color:var(--accent);font-weight:700;min-width:36px;flex-shrink:0;}
+    .cust-lvl-name{flex:1;background:var(--surface2);border:1.5px solid var(--border);color:var(--text);font-size:.75rem;padding:4px 8px;border-radius:6px;outline:none;font-family:inherit;}
+    .cust-lvl-name:focus,.cust-lvl-icon:focus{border-color:var(--accent);}
+    .cust-badge-row{display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 7px;}
+    .cust-badge-icon-lbl{font-size:1rem;flex-shrink:0;width:22px;text-align:center;}
+    .cust-badge-ninp{flex:1;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:.7rem;padding:2px 4px;outline:none;font-family:inherit;min-width:0;}
+    .cust-badge-ninp:focus{border-bottom-color:var(--accent);}
+    .cust-badge-dinp{flex:1.5;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text-muted);font-size:.65rem;padding:2px 4px;outline:none;font-family:inherit;min-width:0;}
+    .cust-badge-dinp:focus{border-bottom-color:var(--accent);}
+    .cust-cb-row{display:flex;align-items:center;gap:5px;background:rgba(79,142,247,.05);border:1px solid var(--border);border-radius:6px;padding:5px 8px;}
+    select.cust-input{appearance:auto;-webkit-appearance:auto;}
+    .cust-lvl-row{display:flex;align-items:center;gap:5px;padding:4px 0;}
+    .cust-lvl-icon{width:38px;flex-shrink:0;background:var(--surface2);border:1.5px solid var(--border);color:var(--text);font-size:.85rem;padding:4px 4px;border-radius:6px;outline:none;text-align:center;font-family:inherit;}
+    .cust-lvl-lbl{font-size:.6rem;color:var(--accent);font-weight:700;min-width:36px;flex-shrink:0;}
+    .cust-lvl-name{flex:1;background:var(--surface2);border:1.5px solid var(--border);color:var(--text);font-size:.75rem;padding:4px 8px;border-radius:6px;outline:none;font-family:inherit;}
+    .cust-lvl-name:focus,.cust-lvl-icon:focus{border-color:var(--accent);}
+    .cust-badge-row{display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:4px 7px;}
+    .cust-badge-icon-lbl{font-size:1rem;flex-shrink:0;width:22px;text-align:center;}
+    .cust-badge-ninp{flex:1;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:.7rem;padding:2px 4px;outline:none;font-family:inherit;min-width:0;}
+    .cust-badge-ninp:focus{border-bottom-color:var(--accent);}
+    .cust-badge-dinp{flex:1.5;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text-muted);font-size:.65rem;padding:2px 4px;outline:none;font-family:inherit;min-width:0;}
+    .cust-badge-dinp:focus{border-bottom-color:var(--accent);}
+    .cust-cb-row{display:flex;align-items:center;gap:5px;background:rgba(79,142,247,.05);border:1px solid var(--border);border-radius:6px;padding:5px 8px;}
+  
+  .lu-unlock{font-size:.73rem;margin-top:8px;background:rgba(250,204,21,.15);border:1px solid rgba(250,204,21,.4);border-radius:8px;padding:5px 12px;color:#facc15;letter-spacing:.02em;}
+  .lu-story{font-size:1.4rem;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .lu-story-msg{font-size:.75rem;color:var(--text-muted);font-style:italic;}
+  .story-tier-row{display:grid;grid-template-columns:32px 1fr;gap:4px;align-items:center;margin-bottom:3px;}
+  .story-tier-char{font-size:18px;text-align:center;}
+  .cust-story-q-row{display:flex;gap:5px;align-items:center;margin-bottom:3px;}
+  
+  @keyframes comboFlash{0%,100%{filter:brightness(1) saturate(1)}50%{filter:brightness(2) saturate(2.5) hue-rotate(15deg)}}
+  .block.checked.combo-glow{animation:comboFlash .55s ease !important;}
+  
+  @keyframes godGlow{0%{box-shadow:inset 0 0 0 rgba(255,215,0,0)}35%{box-shadow:inset 0 0 60px rgba(255,215,0,.3)}100%{box-shadow:inset 0 0 0 rgba(255,215,0,0)}}
+  .grid-wrap.god-mode{animation:godGlow 2s ease forwards;}
+  
+  @keyframes bigBangKF{0%{opacity:0;transform:scale(.1)}20%{opacity:1;transform:scale(1.15)}80%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.05)}}
+  #big-bang-overlay{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(255,215,0,.55) 0%,rgba(255,100,0,.35) 45%,transparent 70%);animation:bigBangKF 3s ease forwards;}
+  #big-bang-overlay .bb-text{font-size:min(11vw,72px);text-align:center;line-height:1.4;}
+  </style>
+
+<!-- PWA stable settings for iPad / iPhone / Android -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4f8ef7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="コツサク">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+</head>
+<body>
+
+<canvas id="fw-canvas"></canvas>
+<div id="fw-banner-weekly" class="fw-banner popup-center">🎆 今週の目標達成！ 🎆<br>おめでとうございます！</div>
+<div id="fw-banner-monthly" class="fw-banner popup-center">🎇 今月の目標達成！ 🎇<br>おめでとうございます！</div>
+<div id="bloom-banner" class="popup-center">🌸満開🌸<br>🌸目標達成🌸</div>
+<div id="milestone-popup" class="milestone-popup popup-center"></div>
+<div id="levelup-popup" class="levelup-popup popup-center"></div>
+<div id="badge-popup" class="badge-popup"></div>
+<div id="easter-toast" class="easter-toast"></div>
+<div id="backup-toast" class="backup-toast"></div>
+<div id="badge-overlay" class="badge-overlay" onclick="if(event.target===this)closeBadgePanel()">
+  <div class="badge-panel">
+    <div class="badge-panel-header">
+      <span class="badge-panel-title">🏅 バッジコレクション</span>
+      <button class="badge-panel-close" onclick="closeBadgePanel()">✕</button>
+    </div>
+    <div class="badge-grid" id="badge-grid"></div>
+  </div>
+</div>
+
+<div id="cust-overlay" class="cust-overlay" onclick="if(event.target===this)closeCustPanel()">
+  <div class="cust-panel">
+    <div class="cust-panel-hd">
+      <span class="cust-panel-title">🛠 設定</span><span id="ver-badge">(v21)</span>
+      <button class="cust-panel-close" onclick="closeCustPanel()">✕</button>
+    </div>
+    <div class="cust-sec">
+      <div class="cust-sec-title">🏷 アプリ名</div>
+      <div class="cust-row">
+        <label class="cust-lbl">タイトル</label>
+        <input type="text" id="cust-app-name" class="cust-input" maxlength="30" placeholder="コツコツ✏️サクサク🌸">
+      </div>
+    </div>
+    <div class="cust-sec">
+      <div class="cust-sec-title">🌸 試験日・目標日</div>
+      <div class="cust-row">
+        <label class="cust-lbl">試験日</label>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="date" class="countdown-input" id="cust-cd-input" style="width:150px;font-size:.75rem;">
+          <button class="countdown-clear" id="cust-cd-clear" title="クリア">✕</button>
+        </div>
+      </div>
+      <div style="font-size:.6rem;color:var(--text-muted);margin-top:4px;">「開花するまであと何日」カウントダウンに連動します</div>
+    </div>
+    <div class="cust-sec">
+      <div class="cust-sec-title">🎯 学習目標</div>
+      <div class="cust-row">
+        <label class="cust-lbl">今日</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="goal-btn" data-type="daily" data-h="2">2h</button>
+          <button class="goal-btn" data-type="daily" data-h="4">4h</button>
+          <button class="goal-btn" data-type="daily" data-custom="true" id="cust-daily-custom-btn">✏</button>
+        </div>
+      </div>
+      <div class="cust-row" style="margin-top:6px;">
+        <label class="cust-lbl">今週</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="goal-btn" data-type="weekly" data-h="10">10h</button>
+          <button class="goal-btn" data-type="weekly" data-h="20">20h</button>
+          <button class="goal-btn" data-type="weekly" data-custom="true" id="cust-weekly-custom-btn">✏</button>
+        </div>
+      </div>
+      <div class="cust-row" style="margin-top:6px;">
+        <label class="cust-lbl">今月</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="goal-btn" data-type="monthly" data-h="30">30h</button>
+          <button class="goal-btn" data-type="monthly" data-h="60">60h</button>
+          <button class="goal-btn" data-type="monthly" data-custom="true" id="cust-monthly-custom-btn">✏</button>
+        </div>
+      </div>
+    </div>
+    <div class="cust-sec">
+      <div class="cust-sec-title">🎨 背景テーマ</div>
+      <div class="cust-row" style="gap:10px;">
+        <div class="theme-picker" title="テーマを選択" style="gap:10px;">
+          <div class="theme-dot" data-theme="dark" title="ダーク"></div>
+          <div class="theme-dot" data-theme="light" title="ライト"></div>
+          <div class="theme-dot" data-theme="forest" title="フォレスト"></div>
+          <div class="theme-dot" data-theme="ocean" title="オーシャン"></div>
+          <div class="theme-dot" data-theme="sunset" title="サンセット"></div>
+        </div>
+      </div>
+      <div style="font-size:.6rem;color:var(--text-muted);margin-top:4px;">🔒 ロック中のテーマはレベルアップで解放されます</div>
+    </div>
+    <div class="cust-sec">
+      <div class="cust-sec-title">🔊 サウンド</div>
+      <div class="cust-row">
+        <label class="cust-lbl">音声のオン・オフ</label>
+        <button class="sound-btn" id="sound-btn" title="サウンドON/OFF">🔊</button>
+      </div>
+    </div>
+    <div class="cust-sec">
+      <div class="cust-sec-title">📖 ストーリー</div>
+      <div class="cust-row">
+        <label class="cust-lbl">テーマ</label>
+        <select id="cust-story-sel" class="cust-input" onchange="onStorySelChange(this.value)">
+          <option value="">なし</option>
+          <optgroup label="🎮 フィクション">
+            <option value="gorilla">🦍 ゴリラ成長記</option>
+            <option value="samurai">⚔️ 受験剣士の道</option>
+            <option value="space">🚀 宇宙探検家の旅</option>
+          </optgroup>
+          <optgroup label="📝 会計・FP系">
+            <option value="boki3">📗 日商簿記3級合格への道</option>
+            <option value="boki2">📒 日商簿記2級合格への道</option>
+            <option value="fp2">💰 FP2級合格への道</option>
+            <option value="zeirishi">🧮 税理士試験 1科目完全攻略</option>
+            <option value="kaikeishi">🔍 公認会計士試験への挑戦</option>
+          </optgroup>
+          <optgroup label="⚖️ 法律・ビジネス系">
+            <option value="takken">🏠 宅建合格への道</option>
+            <option value="sharoshi">⚖️ 社労士合格への道</option>
+            <option value="shindanshi">💼 中小企業診断士合格への道</option>
+            <option value="koumuin">🏛️ 公務員試験合格への道</option>
+          </optgroup>
+        </select>
+      </div>
+      <div id="cust-story-edit" style="display:none;margin-top:6px;">
+        <div style="font-size:.6rem;color:var(--text-muted);margin-bottom:6px;">文章を編集（空欄でデフォルトに戻る）</div>
+        <div style="font-size:.65rem;font-weight:700;color:var(--text-muted);margin-bottom:3px;">▸ 開始メッセージ</div>
+        <input type="text" id="cust-story-start" class="cust-input" maxlength="60" style="margin-bottom:8px;" placeholder="タイマー開始時のメッセージ">
+        <div style="font-size:.65rem;font-weight:700;color:var(--text-muted);margin-bottom:3px;">▸ コンボ台詞（10連続時）</div>
+        <input type="text" id="cust-story-combo" class="cust-input" maxlength="40" style="margin-bottom:8px;" placeholder="コンボ時の台詞">
+        <div style="font-size:.65rem;font-weight:700;color:var(--text-muted);margin-bottom:4px;">▸ 成長段階メッセージ（Lv別）</div>
+        <div id="cust-story-tiers"></div>
+        <div style="font-size:.65rem;font-weight:700;color:var(--text-muted);margin:6px 0 4px;">▸ 名言（1行1個）</div>
+        <div id="cust-story-quotes"></div>
+      </div>
+    <div class="cust-sec">
+      <div class="cust-sec-title">✅ チェック絵文字（ブロック達成時）</div>
+      <div class="cust-row">
+        <label class="cust-lbl">絵文字</label>
+        <input type="text" id="cust-check-inp" class="cust-input" maxlength="4" placeholder="🌸" style="width:64px;flex:none;">
+        <span style="font-size:.62rem;color:var(--text-muted)">← 直接入力も可</span>
+      </div>
+      <div class="cust-emoji-grid" id="cust-check-grid"></div>
+    </div>
+    <div class="cust-sec">
+      <div class="cust-sec-title">⚡ コンボ絵文字</div>
+      <div class="cust-row">
+        <label class="cust-lbl">絵文字</label>
+        <input type="text" id="cust-combo-inp" class="cust-input" maxlength="4" placeholder="✨" style="width:64px;flex:none;">
+        <span style="font-size:.62rem;color:var(--text-muted)">← コンボ時に表示</span>
+      </div>
+      <div class="cust-emoji-grid" id="cust-combo-grid"></div>
+    </div>
+    <div class="cust-sec">
+      <div class="cust-sec-title">🌳 背景ビジュアル</div>
+      <div class="cust-tog-row">
+        <span style="font-size:.75rem;color:var(--text)">桜の木のアニメーション</span>
+        <label class="tog-sw"><input type="checkbox" id="cust-tree-tog" checked><span class="tog-slider"></span></label>
+      </div>
+    </div>
+    <div class="cust-sec">
+      <div class="cust-sec-title">💬 モチベーション名言</div>
+      <div class="cust-tog-row" style="margin-bottom:8px;">
+        <span style="font-size:.75rem;color:var(--text)">カスタム名言のみ使用</span>
+        <label class="tog-sw"><input type="checkbox" id="cust-qonly"><span class="tog-slider"></span></label>
+      </div>
+      <div class="cust-quotes-list" id="cust-q-list"></div>
+      <div class="cust-add-row">
+        <input type="text" id="cust-q-inp" class="cust-input" maxlength="80" placeholder="新しい名言を入力…">
+        <button class="cust-btn ok" id="cust-q-add">＋追加</button>
+      </div>
+    </div>
+    <div class="cust-sec">
+      <div class="cust-sec-title">🔤 コンボテキスト</div>
+      <div class="cust-row">
+        <label class="cust-lbl">コンボ文字</label>
+        <input type="text" id="cust-combo-text" class="cust-input" maxlength="20" placeholder="コンボ！">
+      </div>
+      <div class="cust-row">
+        <label class="cust-lbl">10連続の後</label>
+        <input type="text" id="cust-combo-high" class="cust-input" maxlength="20" placeholder="すごい！">
+      </div>
+      <div style="font-size:.6rem;color:var(--text-muted);margin-top:-2px;">「コンボ！」→「ゴリラ連打！」のように自由に変更できます</div>
+    </div>
+    <div class="cust-sec">
+      <div class="cust-sec-title">📊 レベル名称・アイコン</div>
+      <div id="cust-level-list" style="display:flex;flex-direction:column;max-height:240px;overflow-y:auto;padding-right:2px;"></div>
+    </div>
+    <div class="cust-sec">
+      <div class="cust-sec-title">🏅 バッジの設定</div>
+      <div style="font-size:.62rem;color:var(--text-muted);margin-bottom:6px;">名前・説明を編集できます（空欄でデフォルトに戻る）</div>
+      <div id="cust-badge-edit-list" style="display:flex;flex-direction:column;gap:3px;max-height:210px;overflow-y:auto;margin-bottom:10px;"></div>
+      <div style="font-size:.68rem;font-weight:700;color:var(--text-muted);margin-bottom:6px;padding-top:8px;border-top:1px solid var(--border);">＋ カスタムバッジを追加</div>
+      <div class="cust-row" style="gap:5px;">
+        <input type="text" id="cust-nb-icon" class="cust-input" maxlength="4" placeholder="🏆" style="width:46px;flex:none;">
+        <input type="text" id="cust-nb-name" class="cust-input" maxlength="20" placeholder="バッジ名（必須）">
+      </div>
+      <div class="cust-row">
+        <input type="text" id="cust-nb-desc" class="cust-input" maxlength="40" placeholder="説明（任意）">
+      </div>
+      <div class="cust-row">
+        <label class="cust-lbl" style="font-size:.68rem;">達成条件</label>
+        <select id="cust-nb-trigger" class="cust-input" style="flex:1;">
+          <option value="manual">手動で達成</option>
+          <option value="1">1時間突破時</option>
+          <option value="10">10時間突破時</option>
+          <option value="50">50時間突破時</option>
+          <option value="100">100時間突破時</option>
+          <option value="200">200時間突破時</option>
+          <option value="500">500時間突破時</option>
+          <option value="1000">1000時間突破時</option>
+        </select>
+        <button class="cust-btn ok" id="cust-nb-add" style="flex-shrink:0;">＋追加</button>
+      </div>
+    </div>
+    </div>
+    <div class="cust-sec">
+      <div class="cust-sec-title">💾 データ管理</div>
+      <div class="cust-row" style="gap:8px;flex-wrap:wrap;">
+        <button class="backup-btn export-btn" id="export-btn" style="flex:1;min-width:120px;">⬇ バックアップを保存</button>
+        <button class="backup-btn import-btn" id="import-btn" style="flex:1;min-width:120px;">⬆ バックアップから復元</button>
+      </div>
+      <div style="font-size:.6rem;color:var(--text-muted);margin:4px 0 8px;line-height:1.6;">
+        🔁 端末を替えるとき：旧端末で「保存」→ 新端末で「復元」
+      </div>
+      <div style="display:flex;justify-content:center;margin-top:4px;">
+        <button class="backup-btn clear-btn" id="clear-all-btn" style="width:100%;">🗑 すべてのデータをクリア</button>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:center;gap:10px;padding-top:10px;border-top:1px solid var(--border);">
+      <button class="cust-btn ok" id="cust-save-btn" onclick="saveCustAndClose()" style="min-width:130px;font-size:.8rem;">💾 保存して閉じる</button>
+      <button class="cust-btn danger" id="cust-reset-btn">↺ リセット</button>
+    </div>
+  </div>
+</div>
+
+<div id="big-bang-overlay"><div class="bb-text">🏆💥<br>伝説の学者<br>Lv.10 達成！</div></div>
+<input type="file" id="import-file-input" accept=".json" style="display:none">
+
+<header>
+  <div class="header-title">コツコツ✏️サクサク🌸</div>
+  <div class="quote-bar" id="quote-bar"></div>
+  <div class="header-controls">
+    <button class="badge-open-btn" id="badge-open-btn" onclick="openBadgePanel()" title="バッジコレクション">🏅 <span class="badge-count" id="badge-count">0</span></button>
+    <button class="cust-gear-btn" id="cust-gear-btn" onclick="openCustPanel()" title="設定">設定</button>
+    <div class="date-nav">
+      <button class="nav-btn" id="prev-btn">&#8249;</button>
+      <span id="date-label"></span>
+      <button class="nav-btn" id="next-btn">&#8250;</button>
+      <button class="nav-btn" id="today-btn">今日</button>
+    </div>
+  </div>
+  <div class="countdown-bar">
+    <div></div>
+    <div class="countdown-center">
+      <span class="countdown-label" id="cd-label">🌸 開花するまで</span>
+      <span class="countdown-days" id="cd-days">--</span>
+      <span class="countdown-unit" id="cd-unit">日</span>
+    </div>
+    <div class="countdown-right">
+      <input type="date" class="countdown-input" id="cd-input" title="試験日を入力">
+      <button class="countdown-clear" id="cd-clear" title="クリア">✕</button>
+    </div>
+  </div>
+  <div class="level-bar" id="level-bar">
+    <span class="level-icon" id="level-icon">📖</span>
+    <span class="level-badge" id="level-badge">Lv.1</span>
+    <span class="level-title-text" id="level-title-text">見習い受験生</span>
+    <div class="level-xp-wrap">
+      <div class="level-xp-bg"><div class="level-xp-fill" id="level-xp-fill" style="width:0%"></div></div>
+      <div class="level-xp-info" id="level-xp-info"></div>
+    </div>
+  </div>
+  
+
+  <div class="tabs">
+    <button class="tab-btn active" data-view="daily">📅 日</button>
+    <button class="tab-btn" data-view="weekly">📊 週</button>
+    <button class="tab-btn" data-view="monthly">📆 月</button>
+  </div>
+</header>
+<div class="sw-wrap">
+    <div class="sw-card">
+      <div class="sw-icon">⏱</div>
+      <div class="sw-body">
+        <div class="sw-label">ストップウォッチ</div>
+        <div class="sw-time-row">
+          <div id="sw-display" class="sw-display">00:00</div>
+          <div class="sw-next-wrap">
+            <div class="sw-next-lbl">🌸まであと</div>
+            <div id="sw-next-time" class="sw-next-time">--:--</div>
+          </div>
+        </div>
+        <div class="sw-hint" id="sw-hint">10分ごとに 🌸</div>
+      </div>
+      <div class="sw-btns">
+        <div class="sw-btns-main">
+          <button class="sw-btn start" id="sw-start-btn">▶ スタート</button>
+          <button class="sw-btn stop" id="sw-stop-btn" disabled>■ ストップ</button>
+        </div>
+        <button class="sw-btn reset" id="sw-reset-btn" title="リセット">↺ リセット</button>
+      </div>
+    </div>
+  </div>
+
+<div class="stat-row">
+  <div class="stat-card">
+    <span class="stat-label">今日の学習</span>
+    <span class="stat-value" id="stat-daily">0 h 0 m</span>
+    <div class="prog-bg"><div class="prog-fill" id="daily-prog" style="width:0%"></div></div>
+    <div class="prog-info" id="daily-prog-info">目標 2h まで 0%</div>
+    <div class="goal-row">
+      <span class="goal-lbl">目標：</span>
+      <button class="goal-btn active" data-type="daily" data-h="2">2h</button>
+      <button class="goal-btn" data-type="daily" data-h="4">4h</button>
+      <button class="goal-btn" data-type="daily" data-custom="true" id="daily-custom-btn">✏</button>
+    </div>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">今週の合計</span>
+    <span class="stat-value" id="stat-weekly">0 h 0 m</span>
+    <div class="prog-bg"><div class="prog-fill" id="weekly-prog" style="width:0%"></div></div>
+    <div class="prog-info" id="weekly-prog-info">目標 10h まで 0%</div>
+    <div class="goal-row">
+      <span class="goal-lbl">目標：</span>
+      <button class="goal-btn active" data-type="weekly" data-h="10">10h</button>
+      <button class="goal-btn" data-type="weekly" data-h="20">20h</button>
+      <button class="goal-btn" data-type="weekly" data-custom="true" id="weekly-custom-btn">✏ カスタム</button>
+    </div>
+  </div>
+  <div class="stat-card">
+    <span class="stat-label">今月の合計</span>
+    <span class="stat-value" id="stat-monthly">0 h 0 m</span>
+    <div class="prog-bg"><div class="prog-fill" id="monthly-prog" style="width:0%"></div></div>
+    <div class="prog-info" id="monthly-prog-info">目標 30h まで 0%</div>
+    <div class="goal-row">
+      <span class="goal-lbl">目標：</span>
+      <button class="goal-btn active" data-type="monthly" data-h="30">30h</button>
+      <button class="goal-btn" data-type="monthly" data-h="60">60h</button>
+      <button class="goal-btn" data-type="monthly" data-custom="true" id="monthly-custom-btn">✏ カスタム</button>
+    </div>
+  </div>
+</div>
+
+<!-- ストーリー & 週間チャレンジ -->
+<div class="challenge-wrap">
+  <!-- Story main card D案 (always visible) -->
+  <div class="story-main-card" id="story-main-card">
+    <div class="story-top-row">
+      <div class="story-char-wrap">
+        <div class="story-main-char" id="story-main-char">📖</div>
+        <div class="story-loop-counter" id="story-loop-counter" style="display:none">×2</div>
+      </div>
+      <div class="story-main-body">
+        <div style="display:flex;align-items:center;gap:5px;margin-bottom:1px;">
+          <div class="story-main-title" id="story-main-title">ストーリーなし</div>
+          <div class="story-loop-badge" id="story-loop-badge" style="display:none">2周目</div>
+        </div>
+        <div class="story-main-msg" id="story-main-msg">設定でストーリーを選択できます</div>
+      </div>
+      <div class="story-lv-chip" id="story-lv-chip" style="display:none">Lv.1</div>
+      <button class="challenge-fab" id="challenge-fab" onclick="toggleChallengePopup()" title="今週のチャレンジ">🎯</button>
+    </div>
+    <div id="story-prog-area" style="display:none">
+      <div class="story-divider"></div>
+      <div class="story-bar-track"><div class="story-bar-fill" id="story-bar-fill" style="width:0%"></div></div>
+      <div class="story-bar-row" id="story-bar-row"></div>
+      <div class="story-dots-row" id="story-dots-row"></div>
+      <div class="story-quote-box" id="story-quote-box"></div>
+      <div id="story-loop-complete" style="display:none;text-align:center;margin-top:8px;">
+        <button class="story-next-loop-btn" onclick="startNextStoryLoop()">🎉 ストーリークリア！　次の周回へ →</button>
+        <div class="story-countdown-row" id="story-countdown-row"><span id="story-countdown">10</span>秒後に自動で次の周回へ…</div>
+      </div>
+    </div>
+  </div>
+  <!-- 今週のチャレンジ popup (collapsible) -->
+  <div class="challenge-popup" id="challenge-popup">
+    <div class="challenge-popup-header">
+      <span>🎯 今週のチャレンジ</span>
+      <button class="challenge-popup-close" onclick="toggleChallengePopup()">✕</button>
+    </div>
+    <div class="challenge-popup-body">
+      <div class="challenge-card" id="challenge-card">
+        <div class="challenge-icon" id="challenge-icon">🎯</div>
+        <div class="challenge-body">
+          <div class="challenge-title" id="challenge-title">読み込み中...</div>
+          <div class="challenge-desc" id="challenge-desc"></div>
+          <div class="challenge-prog">
+            <div class="challenge-prog-bg"><div class="challenge-prog-fill" id="challenge-prog-fill" style="width:0%"></div></div>
+            <div class="challenge-prog-txt" id="challenge-prog-txt"></div>
+          </div>
+        </div>
+        <div class="challenge-status" id="challenge-status"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 日ビュー -->
+<div class="view active" id="view-daily">
+  <div id="sakura-tree-bg" aria-hidden="true">
+    <svg viewBox="0 0 700 560" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax meet">
+      <defs>
+        <filter id="bf" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="9"/></filter>
+        <filter id="bf2" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="6"/></filter>
+      </defs>
+      <g class="tree-branches" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M350,560 C352,510 347,465 350,415" stroke="#7B4A2A" stroke-width="16"/>
+        <path d="M350,460 C325,445 285,425 248,405" stroke="#7B4A2A" stroke-width="10"/>
+        <path d="M350,460 C375,445 415,425 452,405" stroke="#7B4A2A" stroke-width="10"/>
+        <path d="M350,430 C347,400 344,370 347,340" stroke="#7B4A2A" stroke-width="8"/>
+        <path d="M248,405 C222,388 190,370 160,352" stroke="#9A6038" stroke-width="6"/>
+        <path d="M248,405 C236,378 222,356 212,332" stroke="#9A6038" stroke-width="5"/>
+        <path d="M452,405 C478,388 510,370 540,352" stroke="#9A6038" stroke-width="6"/>
+        <path d="M452,405 C464,378 478,356 488,332" stroke="#9A6038" stroke-width="5"/>
+        <path d="M347,370 C330,350 316,332 300,315" stroke="#9A6038" stroke-width="4"/>
+        <path d="M350,370 C367,350 382,332 400,315" stroke="#9A6038" stroke-width="4"/>
+        <path d="M160,352 C142,337 122,324 104,312" stroke="#B07845" stroke-width="3"/>
+        <path d="M160,352 C152,330 146,312 142,295" stroke="#B07845" stroke-width="3"/>
+        <path d="M540,352 C558,337 578,324 596,312" stroke="#B07845" stroke-width="3"/>
+        <path d="M540,352 C548,330 554,312 558,295" stroke="#B07845" stroke-width="3"/>
+        <path d="M212,332 C198,314 188,298 182,282" stroke="#B07845" stroke-width="3"/>
+        <path d="M212,332 C220,312 228,296 232,280" stroke="#B07845" stroke-width="3"/>
+        <path d="M488,332 C502,314 512,298 518,282" stroke="#B07845" stroke-width="3"/>
+        <path d="M488,332 C480,312 472,296 468,280" stroke="#B07845" stroke-width="3"/>
+        <path d="M300,315 C288,296 280,280 275,264" stroke="#B07845" stroke-width="3"/>
+        <path d="M400,315 C412,296 420,280 425,264" stroke="#B07845" stroke-width="3"/>
+        <path d="M347,340 C337,318 330,298 326,278" stroke="#B07845" stroke-width="3"/>
+        <path d="M350,340 C360,318 367,298 371,278" stroke="#B07845" stroke-width="3"/>
+      </g>
+      <g class="blossom-group" id="bg1">
+        <circle cx="100" cy="328" r="38" fill="var(--blossom1,#ffd6e4)" filter="url(#bf)"/>
+        <circle cx="600" cy="328" r="38" fill="var(--blossom1,#ffd6e4)" filter="url(#bf)"/>
+        <circle cx="240" cy="408" r="30" fill="var(--blossom2,#ffe0ec)" filter="url(#bf2)"/>
+        <circle cx="460" cy="408" r="30" fill="var(--blossom2,#ffe0ec)" filter="url(#bf2)"/>
+      </g>
+      <g class="blossom-group" id="bg2">
+        <circle cx="128" cy="305" r="36" fill="var(--blossom3,#ffcad8)" filter="url(#bf)"/>
+        <circle cx="572" cy="305" r="36" fill="var(--blossom3,#ffcad8)" filter="url(#bf)"/>
+        <circle cx="152" cy="278" r="28" fill="var(--blossom1,#ffd6e4)" filter="url(#bf2)"/>
+        <circle cx="548" cy="278" r="28" fill="var(--blossom1,#ffd6e4)" filter="url(#bf2)"/>
+      </g>
+      <g class="blossom-group" id="bg3">
+        <circle cx="168" cy="258" r="34" fill="var(--blossom4,#ffbdce)" filter="url(#bf)"/>
+        <circle cx="532" cy="258" r="34" fill="var(--blossom4,#ffbdce)" filter="url(#bf)"/>
+        <circle cx="192" cy="312" r="30" fill="var(--blossom3,#ffcad8)" filter="url(#bf2)"/>
+        <circle cx="508" cy="312" r="30" fill="var(--blossom3,#ffcad8)" filter="url(#bf2)"/>
+      </g>
+      <g class="blossom-group" id="bg4">
+        <circle cx="205" cy="272" r="34" fill="var(--blossom5,#ffadc2)" filter="url(#bf)"/>
+        <circle cx="495" cy="272" r="34" fill="var(--blossom5,#ffadc2)" filter="url(#bf)"/>
+        <circle cx="228" cy="248" r="26" fill="var(--blossom4,#ffbdce)" filter="url(#bf2)"/>
+        <circle cx="472" cy="248" r="26" fill="var(--blossom4,#ffbdce)" filter="url(#bf2)"/>
+      </g>
+      <g class="blossom-group" id="bg5">
+        <circle cx="248" cy="298" r="32" fill="var(--blossom6,#ff9fba)" filter="url(#bf)"/>
+        <circle cx="452" cy="298" r="32" fill="var(--blossom6,#ff9fba)" filter="url(#bf)"/>
+        <circle cx="262" cy="268" r="28" fill="var(--blossom5,#ffadc2)" filter="url(#bf2)"/>
+        <circle cx="438" cy="268" r="28" fill="var(--blossom5,#ffadc2)" filter="url(#bf2)"/>
+      </g>
+      <g class="blossom-group" id="bg6">
+        <circle cx="278" cy="252" r="32" fill="var(--blossom7,#ff90b5)" filter="url(#bf)"/>
+        <circle cx="422" cy="252" r="32" fill="var(--blossom7,#ff90b5)" filter="url(#bf)"/>
+        <circle cx="300" cy="315" r="28" fill="var(--blossom5,#ffadc2)" filter="url(#bf2)"/>
+        <circle cx="400" cy="315" r="28" fill="var(--blossom5,#ffadc2)" filter="url(#bf2)"/>
+      </g>
+      <g class="blossom-group" id="bg7">
+        <circle cx="298" cy="268" r="30" fill="var(--blossom8,#ff80aa)" filter="url(#bf)"/>
+        <circle cx="402" cy="268" r="30" fill="var(--blossom8,#ff80aa)" filter="url(#bf)"/>
+        <circle cx="318" cy="248" r="26" fill="var(--blossom6,#ff9fba)" filter="url(#bf2)"/>
+        <circle cx="382" cy="248" r="26" fill="var(--blossom6,#ff9fba)" filter="url(#bf2)"/>
+      </g>
+      <g class="blossom-group" id="bg8">
+        <circle cx="322" cy="285" r="30" fill="var(--blossom9,#ff6fa3)" filter="url(#bf)"/>
+        <circle cx="378" cy="285" r="30" fill="var(--blossom9,#ff6fa3)" filter="url(#bf)"/>
+        <circle cx="348" cy="338" r="28" fill="var(--blossom7,#ff90b5)" filter="url(#bf2)"/>
+        <circle cx="348" cy="302" r="24" fill="var(--blossom3,#ffcad8)" filter="url(#bf2)"/>
+      </g>
+      <g class="blossom-group" id="bg9">
+        <circle cx="332" cy="255" r="28" fill="var(--blossom10,#ff5c9e)" filter="url(#bf)"/>
+        <circle cx="368" cy="255" r="28" fill="var(--blossom10,#ff5c9e)" filter="url(#bf)"/>
+        <circle cx="350" cy="272" r="26" fill="var(--blossom8,#ff80aa)" filter="url(#bf2)"/>
+        <circle cx="310" cy="248" r="22" fill="var(--blossom5,#ffadc2)" filter="url(#bf2)"/>
+        <circle cx="390" cy="248" r="22" fill="var(--blossom5,#ffadc2)" filter="url(#bf2)"/>
+      </g>
+      <g class="blossom-group" id="bg10">
+        <circle cx="350" cy="222" r="42" fill="var(--blossom-core,#ff69b4)" filter="url(#bf)"/>
+        <circle cx="328" cy="242" r="30" fill="var(--blossom9,#ff6fa3)" filter="url(#bf2)"/>
+        <circle cx="372" cy="242" r="30" fill="var(--blossom9,#ff6fa3)" filter="url(#bf2)"/>
+        <circle cx="350" cy="258" r="26" fill="var(--blossom3,#ffb7c5)" filter="url(#bf2)"/>
+        <circle cx="304" cy="244" r="24" fill="var(--blossom2,#ffc5d8)" filter="url(#bf2)"/>
+        <circle cx="396" cy="244" r="24" fill="var(--blossom2,#ffc5d8)" filter="url(#bf2)"/>
+        <circle cx="350" cy="208" r="18" fill="var(--blossom-tip,#fff0f5)" filter="url(#bf2)"/>
+        <circle cx="332" cy="226" r="13" fill="var(--blossom2,#ffe4ef)" filter="url(#bf2)"/>
+        <circle cx="368" cy="226" r="13" fill="var(--blossom2,#ffe4ef)" filter="url(#bf2)"/>
+      </g>
+    </svg>
+  </div>
+  <div class="grid-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="hour-col">時</th>
+          <th class="all-col">🌸</th>
+          <th class="min-col">10分</th><th class="min-col">20分</th>
+          <th class="min-col">30分</th><th class="min-col">40分</th>
+          <th class="min-col">50分</th><th class="min-col">60分</th>
+        </tr>
+      </thead>
+      <tbody id="grid-body"></tbody>
+    </table>
+  </div>
+  <div class="diary-wrap">
+    <div class="diary-date-label" id="diary-date-label"></div>
+    <input type="text" id="diary-input" class="diary-input" maxlength="100" placeholder="📝 今日のひとこと…">
+  </div>
+  <div class="forecast-section" style="display:none">
+    <div class="forecast-title">📈 試験日までの学習予測</div>
+    <div class="forecast-body">
+      <div class="forecast-num">--</div>
+      <div class="forecast-sub">試験日までに積み上がる予測時間</div>
+      <div class="forecast-pace"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 週ビュー -->
+<div class="view" id="view-weekly">
+  <div class="sub-nav">
+    <button class="nav-btn" id="week-prev">&#8249;</button>
+    <span class="sub-nav-label" id="week-label"></span>
+    <button class="nav-btn" id="week-next">&#8250;</button>
+    <button class="weekly-report-btn" id="weekly-report-btn">📸 週報を画像保存</button>
+  </div>
+  <div class="time-part-legend">
+    <div class="tpl-item"><div class="tpl-dot morning"></div>午前（4〜12時）</div>
+    <div class="tpl-item"><div class="tpl-dot afternoon"></div>午後（12〜18時）</div>
+    <div class="tpl-item"><div class="tpl-dot evening"></div>夜（18〜4時）</div>
+  </div>
+  <div class="week-section-label" id="week-curr-label"></div>
+  <div class="bar-chart" id="bar-chart-curr"></div>
+  <div class="bar-bottom"></div>
+  <div class="week-section-label" id="week-prev-label"></div>
+  <div class="bar-chart" id="bar-chart-prev"></div>
+  <div class="bar-bottom"></div>
+  <div class="forecast-section" style="display:none">
+    <div class="forecast-title">📈 試験日までの学習予測</div>
+    <div class="forecast-body">
+      <div class="forecast-num">--</div>
+      <div class="forecast-sub">試験日までに積み上がる予測時間</div>
+      <div class="forecast-pace"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 月ビュー -->
+<div class="view" id="view-monthly">
+  <div class="sub-nav">
+    <button class="nav-btn" id="month-prev">&#8249;</button>
+    <span class="sub-nav-label" id="month-label"></span>
+    <button class="nav-btn" id="month-next">&#8250;</button>
+  </div>
+  <div class="time-part-legend">
+    <div class="tpl-item"><div class="tpl-dot morning"></div>午前（4〜12時）</div>
+    <div class="tpl-item"><div class="tpl-dot afternoon"></div>午後（12〜18時）</div>
+    <div class="tpl-item"><div class="tpl-dot evening"></div>夜（18〜4時）</div>
+  </div>
+  <div id="month-summary-label"></div>
+  <div class="cal-grid" id="cal-grid"></div>
+  <div class="legend">
+    少ない
+    <div class="legend-box" style="opacity:.15"></div>
+    <div class="legend-box" style="opacity:.3"></div>
+    <div class="legend-box" style="opacity:.5"></div>
+    <div class="legend-box" style="opacity:.7"></div>
+    <div class="legend-box" style="opacity:.9"></div>
+    多い
+  </div>
+  <!-- 年間ヒートマップ -->
+  <div class="heatmap-section">
+    <div class="heatmap-title">
+      📅 年間学習マップ（過去365日）
+      <div class="heatmap-legend" style="margin-left:auto;">
+        少<div class="hm-leg" style="background:var(--surface2)"></div>
+        <div class="hm-leg hm-h1"></div>
+        <div class="hm-leg hm-h2"></div>
+        <div class="hm-leg hm-h3"></div>
+        <div class="hm-leg hm-h4"></div>
+        <div class="hm-leg hm-h5"></div>多
+      </div>
+    </div>
+    <div class="heatmap-scroll">
+      <div class="heatmap-grid" id="heatmap-grid"></div>
+    </div>
+  </div>
+  <!-- 予測セクション -->
+  <div class="forecast-section" id="forecast-section" style="display:none">
+    <div class="forecast-title">📈 試験日までの学習予測</div>
+    <div class="forecast-body">
+      <div class="forecast-num" id="forecast-num">--</div>
+      <div class="forecast-sub">試験日までに積み上がる予測時間</div>
+      <div class="forecast-pace" id="forecast-pace"></div>
+    </div>
+  </div>
+</div>
+
+<div class="all-time-wrap">
+  <div id="all-time-card"></div>
+</div>
+
+<script>
+
+const $=id=>document.getElementById(id);
+const HOURS=[4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,0,1,2,3];
+const MINS=[10,20,30,40,50,60];
+const WD=['日','月','火','水','木','金','土'];
+let GOAL=120,WEEK_GOAL=600,MONTH_GOAL=1800;
+let currentDate=toStudyDateStr(new Date());
+let weekOff=0,monthOff=0,currentView='daily';
+let data={};
+let lastBloomPct=-1,lastWeeklyPct=-1,lastMonthlyPct=-1;
+let petalBusy=false;
+
+const QUOTES=[
+  '千里の道も一歩から。今日の一歩が未来を作る。',
+  '努力は裏切らない。継続は力なり。',
+  '今日できることを明日に回すな。',
+  '学ぶことをやめた人は、老いている。学び続ける人は、若くいられる。',
+  '成功とは、失敗を重ねても情熱を失わないことだ。',
+  '夢は逃げない。逃げるのはいつも自分だ。',
+  '今日の努力が、明日の自分を作る。',
+  '一日一日を大切に。積み重ねが奇跡を生む。',
+  'できないと思うな。やってみなければわからない。',
+  '苦しいときほど、踏ん張れ。そこが勝負どころだ。',
+  '知識は最も強力な武器だ。',
+  '毎日少しずつ、それが最強の戦略。',
+  '完璧を求めるより、継続を選べ。',
+  '昨日より少しだけ賢くなろう。',
+  '諦めなければ失敗ではない。',
+  'どんな遠い道のりも、歩き続ければ必ず着く。',
+  '自分を信じること。それが最初の一歩。',
+  '焦らず、でも止まらず。',
+  '今この瞬間の努力が未来の宝になる。',
+  '苦労した分だけ、喜びは大きい。',
+  '学ぶ楽しさを忘れずに。',
+  '小さな前進も、立派な前進だ。',
+  '人生で唯一後悔することは、挑戦しなかったことだ。',
+  '今日の自分は昨日の努力の結果。明日の自分は今日の努力が作る。',
+  '天才とは、努力し続けた者のことだ。',
+  '一歩一歩、確実に。焦りは敵だ。',
+  '休むことも戦略のうち。でも今日は学ぼう。',
+  'ライバルは昨日の自分。',
+  '学んだことは誰にも奪えない財産だ。',
+  '難しいことほど、達成したときの喜びは大きい。',
+  '続けることの難しさを知っている者だけが、継続の価値を知る。',
+  '夢中になって努力している間に、気づけば目標に近づいている。',
+  '今日という日は、残りの人生の最初の日だ。',
+  '才能は努力によって磨かれる。',
+  '自分の限界は自分で決めるな。',
+  '諦めなかった者だけが、最後に笑える。',
+  'コツコツと積み上げることが、最大の力になる。',
+  '今日も一緒に頑張ろう。あなたならできる。',
+  '目標に向かって歩き続ける姿が美しい。',
+  '少しの積み重ねが、大きな差を生む。'
+];
+
+const LEVEL_DEF=[
+  {lv:1,  minH:0,   title:'見習い受験生', icon:'📖'},
+  {lv:11, minH:23,  title:'学習者',       icon:'📝'},
+  {lv:21, minH:65,  title:'勉強家',       icon:'✏️'},
+  {lv:31, minH:129, title:'努力家',       icon:'💪'},
+  {lv:41, minH:211, title:'秀才',         icon:'🌟'},
+  {lv:51, minH:308, title:'猛勉強家',     icon:'🔥'},
+  {lv:61, minH:420, title:'達人',         icon:'⚡'},
+  {lv:71, minH:545, title:'学習仙人',     icon:'🧘'},
+  {lv:81, minH:684, title:'求道者',       icon:'🗻'},
+  {lv:91, minH:836, title:'覚者',         icon:'👑'},
+  {lv:100,minH:1000,title:'伝説の学者',   icon:'🏆'},
+];
+
+const FEATURE_UNLOCKS={
+  2:{key:'forest',     label:'🌲 フォレストテーマ'},
+  4:{key:'ocean',      label:'🌊 オーシャンテーマ'},
+  5:{key:'sunset',     label:'🌅 サンセットテーマ'},
+  6:{key:'startBloom', label:'🌸 スタート花吹雪（ランダム）'},
+  7:{key:'comboFlash', label:'✨ コンボフラッシュエフェクト'},
+  8:{key:'fireworks',  label:'🎆 マイルストーン花火演出'},
+  9:{key:'godMode',    label:'👑 神降臨モード（10連続コンボ）'},
+  10:{key:'bigBang',   label:'💥 ビッグバン演出'},
+};
+function isUnlocked(key){const lv=getLevelData(allTimeTotal()).lv;return Object.entries(FEATURE_UNLOCKS).some(([r,f])=>f.key===key&&lv>=Number(r));}
+
+const MILESTONES=[
+  {h:10,  emoji:'🌱',msg:'10時間突破！\nスタートダッシュ！'},
+  {h:50,  emoji:'📚',msg:'50時間突破！\n立派な学習者！'},
+  {h:100, emoji:'🌟',msg:'100時間突破！\n秀才の域へ！'},
+  {h:200, emoji:'🔥',msg:'200時間突破！\n圧倒的努力！'},
+  {h:300, emoji:'💎',msg:'300時間突破！\nトップレベル！'},
+  {h:500, emoji:'⚡',msg:'500時間突破！\nもはや達人！'},
+  {h:750, emoji:'🗻',msg:'750時間突破！\n求道の境地！'},
+  {h:1000,emoji:'👑',msg:'1000時間突破！\n覚者に認定！'},
+  {h:2000,emoji:'🏆',msg:'2000時間突破！\n伝説の学者！'},
+];
+
+const BADGE_DEF=[
+  {id:'first',       icon:'🌱',name:'はじめの一歩',  desc:'はじめての学習記録',          check:()=>allTimeDays()>=1},
+  {id:'streak3',     icon:'🔥',name:'3日連続',        desc:'3日連続で学習',                check:()=>currentStreak()>=3},
+  {id:'streak7',     icon:'⚡',name:'7日連続',        desc:'7日連続で学習',                check:()=>currentStreak()>=7},
+  {id:'streak30',    icon:'🌊',name:'30日連続',       desc:'30日連続で学習',               check:()=>currentStreak()>=30},
+  {id:'streak100',   icon:'💎',name:'100日連続',      desc:'100日連続で学習',              check:()=>currentStreak()>=100},
+  {id:'morning',     icon:'☀️',name:'朝型学習者',     desc:'午前4〜8時の学習を10回以上',  check:()=>countMorningBlocks()>=10},
+  {id:'night',       icon:'🌙',name:'夜型マスター',   desc:'深夜0〜3時の学習を10回以上',  check:()=>countNightBlocks()>=10},
+  {id:'bloom5',      icon:'🌸',name:'桜マスター',     desc:'日別目標を5回達成',            check:()=>countDailyGoalAchieved()>=5},
+  {id:'bloom20',     icon:'💮',name:'満開の達人',     desc:'日別目標を20回達成',           check:()=>countDailyGoalAchieved()>=20},
+  {id:'weekly_goal', icon:'🎯',name:'週間目標達成',   desc:'週間目標をはじめて達成',       check:()=>hasAchievedWeekGoal()},
+  {id:'monthly_goal',icon:'📅',name:'月間目標達成',   desc:'月間目標をはじめて達成',       check:()=>hasAchievedMonthGoal()},
+  {id:'h50',         icon:'🎓',name:'50時間突破',     desc:'累計50時間を学習',             check:()=>allTimeTotal()>=3000},
+  {id:'h100',        icon:'🏅',name:'100時間突破',    desc:'累計100時間を学習',            check:()=>allTimeTotal()>=6000},
+  {id:'h500',        icon:'🏆',name:'500時間突破',    desc:'累計500時間を学習',            check:()=>allTimeTotal()>=30000},
+];
+
+const CHALLENGES=[
+  {icon:'🌅',title:'毎日30分以上',      desc:'今週7日間、毎日30分以上学習する',       check:(wd)=>wd.filter(d=>dayTotal(d)>=30).length,target:7,unit:'日/7日'},
+  {icon:'☀️',title:'朝活チャレンジ',    desc:'今週、午前8時前に3回以上学習する',      check:(wd)=>wd.filter(d=>hasMorningStudy(d)).length,target:3,unit:'回/3回'},
+  {icon:'📚',title:'週10時間突破',      desc:'今週の合計を10時間以上にする',          check:(wd)=>Math.min(wd.reduce((s,d)=>s+dayTotal(d),0)/60,10),target:10,unit:'h/10h'},
+  {icon:'🌙',title:'夜間集中学習',      desc:'今週、夜18時以降に合計5時間以上学習する',check:(wd)=>wd.reduce((s,d)=>s+getEveningMinutes(d),0)/60,target:5,unit:'h/5h'},
+  {icon:'🎯',title:'連続3時間達成',     desc:'1日の中で3時間以上連続チェック',       check:(wd)=>wd.some(d=>maxConsecBlocks(d)>=18)?1:0,target:1,unit:'日/1日'},
+  {icon:'⚡',title:'週5日学習',        desc:'今週5日以上学習する',                   check:(wd)=>wd.filter(d=>dayTotal(d)>0).length,target:5,unit:'日/5日'},
+  {icon:'🌟',title:'週20時間チャレンジ',desc:'今週の合計を20時間以上にする',          check:(wd)=>Math.min(wd.reduce((s,d)=>s+dayTotal(d),0)/60,20),target:20,unit:'h/20h'},
+  {icon:'🔥',title:'ノルマ120%達成',   desc:'週間目標の120%を達成する',             check:(wd)=>Math.min(wd.reduce((s,d)=>s+dayTotal(d),0)/(WEEK_GOAL*1.2)*100,100),target:100,unit:'%'},
+];
+
+let soundEnabled=true;
+let audioCtx=null;
+function getAudioCtx(){if(!audioCtx){try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}}return audioCtx;}
+function playTone(freq,dur,type='sine',vol=0.18){
+  if(!soundEnabled)return;
+  const ctx=getAudioCtx();if(!ctx)return;
+  const osc=ctx.createOscillator();
+  const gain=ctx.createGain();
+  osc.connect(gain);gain.connect(ctx.destination);
+  osc.type=type;osc.frequency.value=freq;
+  gain.gain.setValueAtTime(vol,ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur);
+  osc.start(ctx.currentTime);osc.stop(ctx.currentTime+dur);
+}
+const SFX={
+  check:()=>playTone(880,.08,'sine',.12),
+  combo:n=>{const f=[523,659,784,1047,1319];playTone(f[Math.min(n-3,4)],.15,'square',.08);},
+  goal: ()=>[523,659,784,1047].forEach((f,i)=>setTimeout(()=>playTone(f,.18,'sine',.14),i*100)),
+  lvup: ()=>[392,494,587,784,988].forEach((f,i)=>setTimeout(()=>playTone(f,.2,'sine',.15),i*80)),
+  lucky:()=>[784,988,1175,1568].forEach((f,i)=>setTimeout(()=>playTone(f,.1,'sine',.1),i*60)),
+  ms:   ()=>[523,659,784,1047,1319,1568].forEach((f,i)=>setTimeout(()=>playTone(f,.25,'sine',.16),i*90)),
+  badge:()=>{playTone(1047,.3,'sine',.15);setTimeout(()=>playTone(1319,.3,'sine',.15),120);},
+};
+function playCheckSound(){SFX.check();}
+function playComboSound(n){SFX.combo(n);}
+function playGoalSound(){SFX.goal();}
+function playLevelUpSound(){SFX.lvup();}
+function playLuckySound(){SFX.lucky();}
+function playMilestoneSound(){SFX.ms();}
+function playBadgeSound(){SFX.badge();}
+
+(function(){
+  const canvas=$('fw-canvas');
+  const ctx=canvas.getContext('2d');
+  let W,H,particles=[],rockets=[],animId=null,running=false;
+  function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+  window.addEventListener('resize',resize);resize();
+  class Particle{
+    constructor(x,y,color){
+      this.x=x;this.y=y;this.color=color;
+      const angle=Math.random()*Math.PI*2,speed=1.5+Math.random()*5;
+      this.vx=Math.cos(angle)*speed;this.vy=Math.sin(angle)*speed;
+      this.alpha=1;this.decay=0.012+Math.random()*0.016;this.r=1.5+Math.random()*2;
+    }
+    update(){this.vx*=0.97;this.vy=this.vy*0.97+0.09;this.x+=this.vx;this.y+=this.vy;this.alpha-=this.decay;}
+    draw(){ctx.save();ctx.globalAlpha=Math.max(0,this.alpha);ctx.fillStyle=this.color;ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fill();ctx.strokeStyle=this.color;ctx.lineWidth=this.r*.6;ctx.beginPath();ctx.moveTo(this.x,this.y);ctx.lineTo(this.x-this.vx*3,this.y-this.vy*3);ctx.stroke();ctx.restore();}
+  }
+  class Rocket{
+    constructor(palette){
+      this.x=W*(0.1+Math.random()*0.8);this.y=H+10;
+      this.vy=-(H*(0.45+Math.random()*0.3)/(28+Math.random()*10));
+      this.targetY=H*(0.1+Math.random()*0.38);this.palette=palette;this.trail=[];this.exploded=false;
+    }
+    update(){
+      this.trail.push({x:this.x,y:this.y,a:1});
+      if(this.trail.length>12)this.trail.shift();
+      this.vy+=0.06;this.y+=this.vy;
+      if(this.y<=this.targetY||this.vy>=0)this.explode();
+    }
+    explode(){
+      if(this.exploded)return;this.exploded=true;
+      const count=60+Math.floor(Math.random()*50);
+      for(let i=0;i<count;i++)particles.push(new Particle(this.x,this.y,this.palette[Math.floor(Math.random()*this.palette.length)]));
+      particles.push({x:this.x,y:this.y,alpha:1,r:18,color:'#fff',update(){this.alpha-=.08;this.r+=2;},draw(){ctx.save();ctx.globalAlpha=Math.max(0,this.alpha);ctx.fillStyle=this.color;ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fill();ctx.restore();}});
+    }
+    draw(){this.trail.forEach((t,i)=>{ctx.save();ctx.globalAlpha=t.a*(i/this.trail.length)*.6;ctx.fillStyle='#fffde7';ctx.beginPath();ctx.arc(t.x,t.y,1.5,0,Math.PI*2);ctx.fill();ctx.restore();});ctx.save();ctx.globalAlpha=.9;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(this.x,this.y,2.5,0,Math.PI*2);ctx.fill();ctx.restore();}
+  }
+  function loop(){ctx.clearRect(0,0,W,H);rockets=rockets.filter(r=>{if(r.exploded)return false;r.update();r.draw();return!r.exploded;});particles=particles.filter(p=>{p.update();p.draw();return p.alpha>0;});if(rockets.length===0&&particles.length===0){running=false;cancelAnimationFrame(animId);ctx.clearRect(0,0,W,H);return;}animId=requestAnimationFrame(loop);}
+  const PALETTES={weekly:['#fde68a','#fbbf24','#f59e0b','#fcd34d','#fff9c4','#fffde7','#ffecb3'],monthly:['#f9a8d4','#a78bfa','#34d399','#60a5fa','#fb923c','#fde68a','#f472b6','#38bdf8','#4ade80','#e879f9','#facc15','#fff']};
+  window.launchFireworks=function(type){resize();const palette=PALETTES[type]||PALETTES.monthly;const count=(type==='monthly')?12:7;let launched=0;function fire(){if(launched>=count)return;rockets.push(new Rocket(palette));launched++;setTimeout(fire,280+Math.random()*350);}fire();if(!running){running=true;loop();}};
+})();
+
+function toDateStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function parseDate(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
+function fmt(min){return Math.floor(min/60)+' h '+min%60+' m';}
+function toStudyDateStr(d){const dt=new Date(d||Date.now());if(dt.getHours()<4)dt.setDate(dt.getDate()-1);return toDateStr(dt);}
+function load(){try{data=JSON.parse(LS.get('study-data','{}'));}catch{data={};}}
+function save(){LS.set('study-data',JSON.stringify(data));}
+
+let notes={};
+function loadNotes(){try{notes=JSON.parse(LS.get('study-notes','{}'));}catch{notes={};}}
+function saveNote(ds,text){if(text){notes[ds]=text;}else{delete notes[ds];}LS.set('study-notes',JSON.stringify(notes));}
+function refreshDiary(){
+  const input=$('diary-input');
+  const label=$('diary-date-label');
+  if(!input)return;
+  const note=notes[currentDate]||'';
+  input.value=note;
+  input.classList.toggle('has-note',note.length>0);
+  const isToday=currentDate===toStudyDateStr(new Date());
+  label.textContent=isToday?'':currentDate.slice(5).replace('-','/')+'　';
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  const input=$('diary-input');
+  if(!input)return;
+  input.addEventListener('input',()=>{saveNote(currentDate,input.value.trim());input.classList.toggle('has-note',input.value.length>0);});
+});
+
+const LS={get:(k,d=null)=>localStorage.getItem(k)??d,set:(k,v)=>localStorage.setItem(k,v),del:(k)=>localStorage.removeItem(k)};
+function loadGoal(){
+  const s=parseInt(LS.get('study-goal'));if(s>0)GOAL=s;
+  const sw=parseInt(LS.get('study-week-goal'));if(sw>0)WEEK_GOAL=sw;
+  const sm=parseInt(LS.get('study-month-goal'));if(sm>0)MONTH_GOAL=sm;
+  ['daily','weekly','monthly'].forEach(t=>{const g=t==='daily'?GOAL:t==='weekly'?WEEK_GOAL:MONTH_GOAL;document.querySelectorAll(`.goal-btn[data-type="${t}"]:not([data-custom])`).forEach(b=>b.classList.toggle('active',+b.dataset.h*60===g));});
+  if(window.refreshCustomGoalBtns)window.refreshCustomGoalBtns();
+}
+function saveGoal(){LS.set('study-goal',GOAL);LS.set('study-week-goal',WEEK_GOAL);LS.set('study-month-goal',MONTH_GOAL);}
+
+function _nthWeekday(y,m,dow,n){const first=new Date(y,m-1,1).getDay();return 1+(dow-first+7)%7+(n-1)*7;}
+function _springEquinox(y){return Math.floor(20.8431+0.242194*(y-1980)-Math.floor((y-1980)/4));}
+function _autumnEquinox(y){return Math.floor(23.2488+0.242194*(y-1980)-Math.floor((y-1980)/4));}
+function _baseHoliday(y,m,d){
+  const dow=new Date(y,m-1,d).getDay();
+  if(m===1&&d===1)return true;if(m===2&&d===11)return true;if(m===2&&d===23)return true;
+  if(m===3&&d===_springEquinox(y))return true;if(m===4&&d===29)return true;if(m===5&&d===3)return true;
+  if(m===5&&d===4)return true;if(m===5&&d===5)return true;if(m===8&&d===11)return true;
+  if(m===9&&d===_autumnEquinox(y))return true;if(m===11&&d===3)return true;if(m===11&&d===23)return true;
+  if(m===1&&dow===1&&d===_nthWeekday(y,1,1,2))return true;if(m===7&&dow===1&&d===_nthWeekday(y,7,1,3))return true;
+  if(m===9&&dow===1&&d===_nthWeekday(y,9,1,3))return true;if(m===10&&dow===1&&d===_nthWeekday(y,10,1,2))return true;
+  return false;
+}
+function isHoliday(ds){
+  const dt=parseDate(ds);const y=dt.getFullYear(),m=dt.getMonth()+1,d=dt.getDate(),dow=dt.getDay();
+  if(_baseHoliday(y,m,d))return true;
+  if(dow>=1&&dow<=6){let back=1;while(back<=7){const p=new Date(dt.getTime()-86400000*back);const py=p.getFullYear(),pm=p.getMonth()+1,pd=p.getDate();if(p.getDay()===0&&_baseHoliday(py,pm,pd))return true;if(!_baseHoliday(py,pm,pd))break;back++;}}
+  if(dow!==0){const prev=new Date(dt.getTime()-86400000);const next=new Date(dt.getTime()+86400000);if(_baseHoliday(prev.getFullYear(),prev.getMonth()+1,prev.getDate())&&_baseHoliday(next.getFullYear(),next.getMonth()+1,next.getDate()))return true;}
+  return false;
+}
+
+function dayTotal(ds){if(!data[ds])return 0;return Object.values(data[ds]).filter(Boolean).length*10;}
+function dayPartMinutes(ds){
+  if(!data[ds])return{morning:0,afternoon:0,evening:0};
+  const MORNING=[4,5,6,7,8,9,10,11],AFTERNOON=[12,13,14,15,16,17];
+  let morning=0,afternoon=0,evening=0;
+  Object.entries(data[ds]).forEach(([key,val])=>{if(!val)return;const h=parseInt(key.split(':')[0]);if(MORNING.includes(h))morning+=10;else if(AFTERNOON.includes(h))afternoon+=10;else evening+=10;});
+  return{morning,afternoon,evening};
+}
+function allTimeTotal(){return Object.values(data).reduce((sum,day)=>sum+Object.values(day).filter(Boolean).length*10,0);}
+function allTimeDays(){return Object.keys(data).filter(ds=>dayTotal(ds)>0).length;}
+function currentStreak(){
+  const todayStudyStr=toStudyDateStr(new Date());const todayDt=parseDate(todayStudyStr);
+  const startFrom=dayTotal(todayStudyStr)>0?todayDt:new Date(todayDt.getTime()-86400000);
+  let streak=0;let cur=new Date(startFrom);
+  while(streak<3650){const ds=toDateStr(cur);if(dayTotal(ds)>0){streak++;cur=new Date(cur.getTime()-86400000);}else break;}
+  return streak;
+}
+function hasMorningStudy(ds){if(!data[ds])return false;return Object.entries(data[ds]).some(([k,v])=>{if(!v)return false;const h=parseInt(k);return h>=4&&h<8;});}
+function getEveningMinutes(ds){if(!data[ds])return 0;let m=0;Object.entries(data[ds]).forEach(([k,v])=>{if(!v)return;const h=parseInt(k);if(h>=18||h<4)m+=10;});return m;}
+function maxConsecBlocks(ds){
+  if(!data[ds])return 0;
+  const allKeys=[];
+  HOURS.forEach(h=>MINS.forEach(m=>{if(data[ds][h+':'+m])allKeys.push(h*60+m);}));
+  allKeys.sort((a,b)=>a-b);
+  let max=0,cur=0,prev=-100;
+  allKeys.forEach(k=>{if(k-prev===10){cur++;max=Math.max(max,cur);}else{cur=1;}prev=k;});
+  return max;
+}
+function countMorningBlocks(){
+  let cnt=0;
+  Object.entries(data).forEach(([ds,day])=>{if(!day)return;Object.entries(day).forEach(([k,v])=>{if(!v)return;const h=parseInt(k);if(h>=4&&h<8)cnt++;});});
+  return cnt;
+}
+function countNightBlocks(){
+  let cnt=0;
+  Object.entries(data).forEach(([ds,day])=>{if(!day)return;Object.entries(day).forEach(([k,v])=>{if(!v)return;const h=parseInt(k);if(h>=0&&h<4)cnt++;});});
+  return cnt;
+}
+function countDailyGoalAchieved(){return Object.keys(data).filter(ds=>dayTotal(ds)>=GOAL).length;}
+function hasAchievedWeekGoal(){
+  const achieved=JSON.parse(LS.get('weekly-goal-achieved','false'));return achieved;
+}
+function hasAchievedMonthGoal(){
+  const achieved=JSON.parse(LS.get('monthly-goal-achieved','false'));return achieved;
+}
+function fmtLongHtml(min){const h=Math.floor(min/60),m=min%60;if(h>=100)return h+'時間';const minSpan=`<span class="atc-min">${m}分</span>`;return h+'時間 '+minSpan;}
+
+function renderQuote(){
+  const el=$('quote-bar');if(!el)return;
+  const s=getActiveStory();
+  const storyQ=s?((CUST.storyOverrides&&CUST.storyOverrides[s.id]&&CUST.storyOverrides[s.id].quotes)||s.quotes||[]):[];
+  // 現在の周回に応じた名言（2周目はquotes2、3周目以降はquotes3）
+  const loopCnt=s?(CUST.storyLoopCount&&CUST.storyLoopCount[s.id])||0:0;
+  const loopQ=s?((loopCnt>=2?s.quotes3:loopCnt===1?s.quotes2:null)||[]):[];
+  // 現在のストーリーティアのキャラメッセージ
+  const tier=s?getStoryTier(getLevelData(allTimeTotal()).lv):null;
+  const tierMsg=tier?tier.msg:'';
+  let pool;
+  if(CUST.useCustomQuotesOnly&&CUST.customQuotes&&CUST.customQuotes.length>0){
+    pool=CUST.customQuotes;
+  } else if(s&&storyQ.length>0){
+    // ストーリーアクティブ時: ティアメッセージ→ストーリー名言→周回名言→カスタム の順で構成
+    pool=[...(tierMsg?[tierMsg]:[]),...storyQ,...loopQ,...(CUST.customQuotes||[])];
+  } else {
+    pool=[...QUOTES,...(CUST.customQuotes||[])];
+  }
+  if(pool.length===0)pool=[...QUOTES];
+  const d=new Date();const idx=(d.getFullYear()*400+d.getMonth()*31+d.getDate())%pool.length;
+  el.textContent=(s?s.icon+' ':'💬 ')+pool[idx];
+}
+
+function _lvFormula(lv){return lv<=1?0:Math.round(Math.pow(lv/100,1.7)*1000);}
+function _lvFromH(h){if(h<=0)return 1;if(h>=1000)return 100;return Math.min(100,Math.max(1,Math.floor(Math.pow(h/1000,1/1.7)*100+0.999)));}
+function getLevelData(totalMin){
+  const totalH=totalMin/60;
+  const lv=_lvFromH(totalH);
+  const tier=LEVEL_DEF.filter(t=>t.lv<=lv).pop()||LEVEL_DEF[0];
+  const curH=_lvFormula(lv), nextH=lv<100?_lvFormula(lv+1):null;
+  let pct=0,xpInfo='';
+  if(nextH!==null){const cM=curH*60,nM=nextH*60;pct=Math.max(0,Math.min(100,Math.round((totalMin-cM)/(nM-cM)*100)));xpInfo=`次 Lv.${lv+1} まで ${Math.round((nM-totalMin)/60*10)/10}h`;}
+  else{pct=100;xpInfo='MAX LEVEL！';}
+  const _storyLvNames=(typeof getActiveStory==='function'&&getActiveStory()?.levelNames)||{};
+  const _cTitle=(CUST.levelNames&&CUST.levelNames[lv])||_storyLvNames[tier.lv]||tier.title;
+  const _cIcon=(CUST.levelIcons&&CUST.levelIcons[lv])||tier.icon;
+  return{lv,title:_cTitle,icon:_cIcon,pct,xpInfo,nextLv:lv<100?lv+1:null};
+}
+let lastLv=0;
+function updateThemeDots(){
+  const lv=getLevelData(allTimeTotal()).lv;
+  const req={forest:2,ocean:4,sunset:5};
+  document.querySelectorAll('.theme-dot').forEach(d=>{
+    const r=req[d.dataset.theme];
+    if(!r)return;
+    const unlocked=lv>=r;
+    d.style.opacity=unlocked?'1':'0.25';
+    d.style.pointerEvents=unlocked?'':'none';
+    d.title=unlocked?(d.dataset.theme.charAt(0).toUpperCase()+d.dataset.theme.slice(1)):'Lv'+r+'で解放';
+  });
+}
+function renderLevelBar(){
+  const total=allTimeTotal();
+  const ld=getLevelData(total);
+  $('level-icon').textContent=ld.icon;
+  $('level-badge').textContent='Lv.'+ld.lv;
+  $('level-title-text').textContent=ld.title;
+  $('level-xp-fill').style.width=ld.pct+'%';
+  $('level-xp-info').textContent=ld.xpInfo;
+  if(lastLv>0&&ld.lv>lastLv){showLevelUp(ld);}
+  lastLv=ld.lv;
+  updateThemeDots();
+
+  // Refresh story card tier when level changes
+  if(typeof updateStoryMainCard==='function')updateStoryMainCard();
+}
+function showLevelUp(ld){
+  _queuePopup(()=>{
+    const popup=$('levelup-popup');
+    const unlock=FEATURE_UNLOCKS[ld.lv];
+    const unlockHtml=unlock?`<div class="lu-unlock">🔓 ${unlock.label} 解放！</div>`:'';
+    const _st=getStoryTier(ld.lv);
+    const storyHtml=_st?`<div class="lu-story">${_st.char} <span class="lu-story-msg">${getStoryTierMsg(STORY_DEF.find(s=>s.id===CUST.storyId)?.tiers.indexOf(_st))}</span></div>`:'';
+    popup.innerHTML=`<div class="lu-lv">${ld.icon} Lv.${ld.lv}</div><div class="lu-title">「${ld.title}」に昇格！</div>${storyHtml}${unlockHtml}`;
+    popup.style.display='block';
+    playLevelUpSound();
+    launchFireworks('weekly');
+    if(unlock)setTimeout(()=>launchPetals(),600);
+    if(ld.lv===10&&isUnlocked('bigBang')){const o=$('big-bang-overlay');if(o){o.style.display='flex';setTimeout(()=>{o.style.display='none';},3200);}}
+    setTimeout(()=>popup.style.display='none',unlock?6500:5000);
+  },5000);
+}
+
+let achievedMs={};
+function loadMilestones(){try{achievedMs=JSON.parse(LS.get('study-milestones','{}'));}catch{achievedMs={};}}
+function saveMilestones(){LS.set('study-milestones',JSON.stringify(achievedMs));}
+function checkMilestones(totalMin){
+  MILESTONES.forEach(m=>{
+    if(!achievedMs[m.h]&&totalMin>=m.h*60){
+      achievedMs[m.h]=true;saveMilestones();
+      showMilestoneBanner(m);
+    }
+  });
+}
+function showMilestoneBanner(m){
+  _queuePopup(()=>{
+    const popup=$('milestone-popup');
+    popup.innerHTML=`<span class="ms-hours">${m.emoji} ${m.h}時間</span><span class="ms-title">${m.msg.replace('\n','<br>')}</span>`;
+    popup.style.display='block';
+    playMilestoneSound();
+    if(isUnlocked('fireworks'))launchFireworks('monthly');
+    setTimeout(()=>popup.style.display='none',8000);
+  },8000);
+}
+
+let earnedBadges={};
+function loadBadges(){try{earnedBadges=JSON.parse(LS.get('study-badges','{}'));}catch{earnedBadges={};}}
+function saveBadges(){LS.set('study-badges',JSON.stringify(earnedBadges));}
+function checkBadges(){
+  let newBadge=false;
+  BADGE_DEF.forEach(b=>{
+    if(!earnedBadges[b.id]&&b.check()){
+      earnedBadges[b.id]=new Date().toISOString().slice(0,10);
+      saveBadges();
+      showBadgePopup(b);
+      newBadge=true;
+    }
+  });
+  if(CUST.customBadges&&CUST.customBadges.length>0){
+    const _tMin=allTimeTotal();
+    CUST.customBadges.forEach(cb=>{
+      if(!earnedBadges[cb.id]&&cb.trigger!=='manual'){
+        const th=parseFloat(cb.trigger)||0;
+        if(th>0&&_tMin>=th*60){earnedBadges[cb.id]=new Date().toISOString().slice(0,10);saveBadges();showBadgePopup({icon:cb.icon,name:cb.name,desc:cb.desc||''});newBadge=true;}
+      }
+    });
+  }
+  updateBadgeCount();
+  if(newBadge)renderBadgeGrid();
+}
+function updateBadgeCount(){
+  const cnt=Object.keys(earnedBadges).length;
+  $('badge-count').textContent=cnt;
+}
+function showBadgePopup(b){
+  _queuePopup(()=>{
+    const popup=$('badge-popup');
+    popup.innerHTML=`<span class="bp-icon">${b.icon}</span><div class="bp-name">バッジ獲得！「${b.name}」</div><div class="bp-msg">${b.desc}</div>`;
+    popup.style.display='block';
+    playBadgeSound();
+    setTimeout(()=>popup.style.display='none',4000);
+  },4000);
+}
+function openBadgePanel(){renderBadgeGrid();$('badge-overlay').classList.add('show');}
+function closeBadgePanel(){$('badge-overlay').classList.remove('show');}
+function renderBadgeGrid(){
+  const grid=$('badge-grid');
+  grid.innerHTML='';
+  function _getBadgeDisp(b){const ov=CUST.badgeOverrides&&CUST.badgeOverrides[b.id]||{};return{icon:b.icon,name:ov.name||b.name,desc:ov.desc||b.desc};}
+  BADGE_DEF.forEach(b=>{
+    const earned=!!earnedBadges[b.id];
+    const {icon,name,desc}=_getBadgeDisp(b);
+    const el=document.createElement('div');
+    el.className='badge-item'+(earned?' earned':' locked');
+    el.title=desc;
+    el.innerHTML=`<div class="badge-icon">${icon}</div><div class="badge-name">${name}</div><div class="badge-desc">${desc}</div>${earned?`<div class="badge-date">${earnedBadges[b.id]} 達成</div>`:'<div class="badge-desc">未達成</div>'}`;
+    grid.appendChild(el);
+  });
+  if(CUST.customBadges&&CUST.customBadges.length>0){
+    CUST.customBadges.forEach(cb=>{
+      const earned=!!earnedBadges[cb.id];
+      const el=document.createElement('div');
+      el.className='badge-item'+(earned?' earned':' locked');
+      el.title=cb.desc||'';
+      const manualBtn=(!earned&&cb.trigger==='manual')?`<button style="background:var(--accent);color:#fff;border:none;border-radius:5px;padding:3px 8px;font-size:.6rem;font-weight:700;cursor:pointer;margin-top:3px;" onclick="manualUnlockBadge('${cb.id}')">✓ 達成！</button>`:'';
+      el.innerHTML=`<div class="badge-icon">${cb.icon}</div><div class="badge-name">${cb.name}</div><div class="badge-desc">${cb.desc||''}</div>${earned?`<div class="badge-date">${earnedBadges[cb.id]} 達成</div>`:manualBtn||'<div class="badge-desc">未達成</div>'}`;
+      grid.appendChild(el);
+    });
+  }
+}
+function manualUnlockBadge(id){
+  earnedBadges[id]=new Date().toISOString().slice(0,10);
+  saveBadges();updateBadgeCount();renderBadgeGrid();
+  const cb=CUST.customBadges&&CUST.customBadges.find(b=>b.id===id);
+  if(cb)showBadgePopup({icon:cb.icon,name:cb.name,desc:cb.desc||''});
+}
+
+// ── ポップアップキュー（重なり防止） ──
+const _popQ=[];let _popBusy=false;
+function _queuePopup(fn,dur){_popQ.push({fn,dur});if(!_popBusy)_runNextPopup();}
+function _runNextPopup(){if(!_popQ.length){_popBusy=false;return;}_popBusy=true;const{fn,dur}=_popQ.shift();fn();setTimeout(_runNextPopup,dur+600);}
+function _showPopup(id,html,dur,sfx,fw){
+  _queuePopup(()=>{const el=$(id);el.innerHTML=html;el.style.display='block';if(sfx)sfx();if(fw)launchFireworks(fw);setTimeout(()=>el.style.display='none',dur);},dur);
+}
+
+let comboCount=0,comboTimer=null;
+function resetCombo(){comboCount=0;clearTimeout(comboTimer);comboTimer=null;}
+function onCombo(clickX,clickY){
+  comboCount++;
+  clearTimeout(comboTimer);
+  comboTimer=setTimeout(()=>comboCount=0,2000);
+  if(comboCount>=3)showComboText(comboCount,clickX,clickY);
+  if(comboCount>=3)playComboSound(comboCount);
+}
+function showComboText(n,x,y){
+  const el=document.createElement('div');
+  el.className='combo-float';
+  const colors=['#fb923c','#f472b6','#facc15','#4ade80','#38bdf8'];
+  const color=colors[Math.min(n-3,colors.length-1)];
+  const _ce=CUST.comboEmoji||'✨';const _ct=CUST.comboText||'コンボ！';const _cht=CUST.comboHighText||'すごい！';
+  const _scm=getStoryText('comboMsg');
+  const _sicon=(getActiveStory()?.icon)||'';
+  let label=(_sicon||_ce)+n+_ct;
+  if(n>=10)label='🔥'+n+_ct+(_scm?'　'+_scm:_cht);
+  else if(n>=7)label=(_sicon||_ce)+n+_ct+(_scm?'　'+_scm:'');
+  else if(n>=5)label=(_sicon||_ce)+n+_ct;
+  el.style.cssText=`left:${x-30}px;top:${y-20}px;color:${color};font-size:${14+n}px;`;
+  el.textContent=label;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),900);
+  if(n>=7&&isUnlocked('comboFlash')){
+    document.querySelectorAll('.block.checked:not(.lucky)').forEach(b=>{b.classList.remove('combo-glow');void b.offsetWidth;b.classList.add('combo-glow');setTimeout(()=>b.classList.remove('combo-glow'),600);});
+  }
+  if(n>=10&&isUnlocked('godMode')){
+    const gw=document.querySelector('.grid-wrap');if(gw){gw.classList.remove('god-mode');void gw.offsetWidth;gw.classList.add('god-mode');setTimeout(()=>gw.classList.remove('god-mode'),2100);}
+  }
+}
+
+let luckyKey=null;
+function getLuckyBlockKey(){
+  const today=toStudyDateStr(new Date());
+  const seed=today.split('-').reduce((s,n)=>s*31+parseInt(n),1);
+  const hi=HOURS[seed%HOURS.length];
+  const mi=MINS[(seed>>4)%MINS.length];
+  return{ds:today,h:hi,m:mi,key:hi+':'+mi};
+}
+function applyLuckyBlock(){
+  const lb=getLuckyBlockKey();
+  luckyKey=lb.key;
+  if(currentDate!==lb.ds)return;
+  document.querySelectorAll('.block').forEach(div=>{
+    const h=+div.dataset.h,m=+div.dataset.m;
+    div.classList.toggle('lucky',h===lb.h&&m===lb.m&&!div.classList.contains('checked'));
+  });
+}
+let _swIsRunning=false;
+let _nowProgressTimer=null;
+function updateNowBlock(){
+  const now=new Date();
+  const todayStr=toStudyDateStr(now);
+  const isToday=(currentDate===todayStr);
+  const nowH=now.getHours();
+  const nowMm=now.getMinutes();
+  const nowM=(nowMm===0)?10:Math.ceil(nowMm/10)*10;
+  const pct=((nowMm%10)*60+now.getSeconds())/600*100;
+  document.querySelectorAll('.block').forEach(div=>{
+    const h=+div.dataset.h,m=+div.dataset.m;
+    const isNow=isToday&&h===nowH&&m===nowM&&!div.classList.contains('checked');
+    div.classList.toggle('now-time',isNow);
+    if(isNow&&_swIsRunning){
+      div.style.background=`linear-gradient(to right,rgba(255,133,161,.60) 0%,rgba(255,133,161,.60) ${pct}%,var(--block-bg) ${pct}%)`;
+    }else{
+      div.style.background='';
+    }
+  });
+}
+function onLuckyCheck(h,m){
+  const lb=getLuckyBlockKey();
+  if(currentDate===lb.ds&&h===lb.h&&m===lb.m){
+    playLuckySound();
+    showEasterToast('⭐ ラッキーブロック！今日はボーナスタイム✨');
+  }
+}
+
+function checkEasterEggs(){
+  const streak=currentStreak();
+  const days=allTimeDays();
+  const totalH=Math.floor(allTimeTotal()/60);
+  const msgs=[];
+  if([7,30,77,100,365].includes(streak))msgs.push(`🔥 連続${streak}日！キリ番達成！おめでとう！`);
+  if([11,22,33,44,55,66,77,88,99,111,222,333].includes(days))msgs.push(`✨ ${days}日目！ゾロ目ゲット！`);
+  const now=new Date();
+  if(now.getHours()===0&&now.getMinutes()===0)msgs.push('🌙 真夜中の学習者！深夜0時にチェック！');
+  if(totalH===100)msgs.push('🎓 ちょうど100時間！ピタリ賞！');
+  if(msgs.length)setTimeout(()=>showEasterToast(msgs[0]),500);
+}
+function showEasterToast(msg){
+  _queuePopup(()=>{
+    const el=$('easter-toast');
+    el.textContent=msg;el.classList.add('show');
+    setTimeout(()=>el.classList.remove('show'),4500);
+  },4500);
+}
+
+function getWeekChallengeIdx(){
+  const mon=weekMonday(toStudyDateStr(new Date()));
+  const base=new Date(2024,0,1);
+  const diffDays=Math.floor((mon-base)/86400000);
+  const weekNum=Math.floor(diffDays/7);
+  return weekNum%CHALLENGES.length;
+}
+function getThisWeekDates(){return weekDates(toStudyDateStr(new Date()),0);}
+function renderChallenge(){
+  const idx=getWeekChallengeIdx();
+  const ch=CHALLENGES[idx];
+  const wd=getThisWeekDates();
+  const val=ch.check(wd);
+  const pct=Math.min(Math.round(val/ch.target*100),100);
+  const done=pct>=100;
+  $('challenge-icon').textContent=ch.icon;
+  $('challenge-title').textContent=ch.title;
+  $('challenge-desc').textContent=ch.desc;
+  $('challenge-prog-fill').style.width=pct+'%';
+  const valDisp=typeof val==='number'?Math.round(val*10)/10:val;
+  $('challenge-prog-txt').textContent=`${valDisp} / ${ch.target} ${ch.unit}`;
+  $('challenge-status').textContent=done?'🎉':'';
+  $('challenge-card').classList.toggle('achieved',done);
+  if(done){LS.set('weekly-goal-achieved','true');}
+}
+
+function renderAnnualHeatmap(){
+  const grid=$('heatmap-grid');
+  if(!grid)return;
+  grid.innerHTML='';
+  const today=new Date();today.setHours(0,0,0,0);
+  const start=new Date(today);start.setDate(start.getDate()-364);
+  // 週の始まりを月曜に揃える
+  while(start.getDay()!==1)start.setDate(start.getDate()-1);
+  const weeks=[];let week=[];let cur=new Date(start);
+  while(cur<=today||week.length>0){
+    if(week.length===7){weeks.push(week);week=[];}
+    if(cur<=today){
+      week.push(new Date(cur));
+      cur.setDate(cur.getDate()+1);
+    }else{
+      week.push(null);
+      if(week.length===7){weeks.push(week);week=[];break;}
+    }
+  }
+  // 月ラベル用
+  let lastMonth=-1;
+  weeks.forEach((wk,wi)=>{
+    const col=document.createElement('div');
+    col.className='heatmap-month-col';
+    // 月ラベル
+    const lbl=document.createElement('div');
+    lbl.className='heatmap-month-label';
+    const firstDay=wk.find(d=>d);
+    if(firstDay&&firstDay.getMonth()!==lastMonth){
+      lastMonth=firstDay.getMonth();
+      lbl.textContent=(firstDay.getMonth()+1)+'月';
+    }
+    col.appendChild(lbl);
+    const weekDiv=document.createElement('div');
+    weekDiv.className='heatmap-week';
+    wk.forEach(d=>{
+      const cell=document.createElement('div');
+      cell.className='heatmap-cell';
+      if(d){
+        const ds=toDateStr(d);
+        const min=dayTotal(ds);
+        let hcls='';
+        if(min>=240)hcls='hm-h5';
+        else if(min>=120)hcls='hm-h4';
+        else if(min>=60)hcls='hm-h3';
+        else if(min>=30)hcls='hm-h2';
+        else if(min>0)hcls='hm-h1';
+        if(hcls)cell.classList.add(hcls);
+        cell.title=(d.getMonth()+1)+'/'+d.getDate()+' '+fmt(min);
+        cell.addEventListener('click',()=>{currentDate=ds;switchView('daily');});
+      }else{cell.style.visibility='hidden';}
+      weekDiv.appendChild(cell);
+    });
+    col.appendChild(weekDiv);
+    grid.appendChild(col);
+  });
+}
+
+function renderForecast(){
+  const sections=document.querySelectorAll('.forecast-section');
+  const cdVal=$('cd-input').value;
+  if(!cdVal){
+    sections.forEach(s=>{
+      s.style.display='block';
+      s.querySelector('.forecast-num').innerHTML='--';
+      s.querySelector('.forecast-pace').textContent='設定 → 試験日を入力してください';
+    });
+    return;
+  }
+  const examDate=new Date(cdVal);examDate.setHours(0,0,0,0);
+  const today=new Date();today.setHours(0,0,0,0);
+  const daysLeft=Math.round((examDate-today)/86400000);
+  if(daysLeft<=0){
+    sections.forEach(s=>{
+      s.style.display='block';
+      s.querySelector('.forecast-num').innerHTML='--';
+      s.querySelector('.forecast-pace').textContent='試験日が過去の日付です。設定を更新してください。';
+    });
+    return;
+  }
+  // 過去14日の平均
+  const past14=[];const cur=new Date(today);
+  for(let i=0;i<14;i++){cur.setDate(cur.getDate()-1);past14.push(dayTotal(toDateStr(new Date(cur))));}
+  const avgPerDay=past14.reduce((s,v)=>s+v,0)/14;
+  const predicted=Math.round(avgPerDay*daysLeft);
+  const avgRounded=Math.round(avgPerDay),avgH=Math.floor(avgRounded/60),avgM=avgRounded%60;
+  sections.forEach(s=>{
+    s.style.display='block';
+    s.querySelector('.forecast-num').innerHTML=fmtLongHtml(predicted);
+    s.querySelector('.forecast-pace').textContent=`1日平均 ${avgH}h${avgM}m（過去14日実績）`;
+  });
+}
+
+function exportWeeklyReport(){
+  const canvas=document.createElement('canvas');
+  canvas.width=700;canvas.height=420;
+  const ctx=canvas.getContext('2d');
+  const wd=getThisWeekDates();
+  const maxMin=Math.max(wd.reduce((mx,d)=>Math.max(mx,dayTotal(d)),0),60);
+  const total=wd.reduce((s,d)=>s+dayTotal(d),0);
+  const isDark=(LS.get('study-theme','dark'))!=='light';
+  const bg=isDark?'#0f1117':'#f0f4f8';
+  const surface=isDark?'#1a1d27':'#ffffff';
+  const accent='#4f8ef7';
+  const checked='#3ecf8e';
+  const textColor=isDark?'#e8eaf6':'#1a202c';
+  const mutedColor=isDark?'#6b7280':'#718096';
+  // 背景
+  ctx.fillStyle=bg;ctx.fillRect(0,0,700,420);
+  // ヘッダー
+  ctx.fillStyle=surface;ctx.fillRect(0,0,700,70);
+  ctx.font='bold 22px sans-serif';ctx.fillStyle=accent;ctx.textAlign='center';
+  ctx.fillText('コツコツ✏️サクサク🌸 週報',350,32);
+  const mon=parseDate(wd[0]),sun=parseDate(wd[6]);
+  ctx.font='13px sans-serif';ctx.fillStyle=mutedColor;
+  ctx.fillText(`${mon.getMonth()+1}/${mon.getDate()} 〜 ${sun.getMonth()+1}/${sun.getDate()}  合計: ${fmt(total)}`,350,55);
+  // 棒グラフ
+  const chartX=60,chartY=90,chartW=580,chartH=230;
+  const barW=Math.floor(chartW/7)-8;
+  const labels=['月','火','水','木','金','土','日'];
+  wd.forEach((d,i)=>{
+    const min=dayTotal(d);const pct=maxMin>0?min/maxMin:0;
+    const bx=chartX+i*(barW+8);const bh=Math.max(pct*chartH,min>0?4:0);const by=chartY+chartH-bh;
+    ctx.fillStyle=min>0?checked:surface;
+    ctx.beginPath();ctx.roundRect?ctx.roundRect(bx,by,barW,bh,4):ctx.rect(bx,by,barW,bh);ctx.fill();
+    ctx.font='bold 12px sans-serif';ctx.fillStyle=textColor;ctx.textAlign='center';
+    ctx.fillText(labels[i],bx+barW/2,chartY+chartH+18);
+    if(min>0){ctx.font='11px sans-serif';ctx.fillStyle=mutedColor;ctx.fillText(fmt(min),bx+barW/2,by-5);}
+  });
+  // ストリーク表示
+  ctx.font='bold 14px sans-serif';ctx.fillStyle=mutedColor;ctx.textAlign='left';
+  ctx.fillText(`🔥 連続 ${currentStreak()}日   📚 累計 ${fmt(allTimeTotal())}   🏅 バッジ ${Object.keys(earnedBadges).length}個`,50,380);
+  // ウォーターマーク
+  ctx.font='11px sans-serif';ctx.fillStyle=mutedColor;ctx.textAlign='right';
+  ctx.fillText('コツコツサクサク v2',650,405);
+  // ダウンロード
+  const dataUrl=canvas.toDataURL('image/png');
+  const now=new Date();
+  const fname=`週報_${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}.png`;
+  if(isIOS()){
+    window.open(dataUrl,'_blank');
+    showToast('📸 開いた画像を長押し→「イメージを保存」で保存できます');
+  }else{
+    const a=document.createElement('a');
+    a.download=fname;a.href=dataUrl;a.click();
+    showToast('📸 週報を保存しました！');
+  }
+}
+
+const SEASON_COLORS={
+  spring:['#ffd6e4','#ffe0ec','#ffcad8','#ffbdce','#ffadc2','#ff9fba','#ff90b5','#ff80aa','#ff6fa3','#ff5c9e','#ff69b4','#fff0f5'],
+  summer:['#d1fae5','#a7f3d0','#6ee7b7','#34d399','#10b981','#059669','#047857','#065f46','#064e3b','#022c22','#4ade80','#f0fdf4'],
+  autumn:['#fef3c7','#fde68a','#fbbf24','#f59e0b','#d97706','#ef4444','#dc2626','#b91c1c','#991b1b','#7f1d1d','#fb923c','#fff7ed'],
+  winter:['#e0f2fe','#bae6fd','#7dd3fc','#38bdf8','#0ea5e9','#dbeafe','#bfdbfe','#93c5fd','#60a5fa','#3b82f6','#7dd3fc','#f0f9ff'],
+};
+function applySeasonToTree(){
+  const m=new Date().getMonth()+1,r=document.documentElement;
+  const c=SEASON_COLORS[m>=3&&m<=5?'spring':m>=6&&m<=8?'summer':m>=9&&m<=11?'autumn':'winter'];
+  for(let i=1;i<=10;i++)r.style.setProperty('--blossom'+i,c[i-1]);
+  r.style.setProperty('--blossom-core',c[10]);r.style.setProperty('--blossom-tip',c[11]);
+}
+
+function updateSakuraTree(pct){
+  [1,2,3,4,5,6,7,8,9,10].forEach(i=>{
+    const g=$('bg'+i);if(!g)return;
+    const threshold=i*10;
+    if(pct>=threshold)g.classList.add('bloom');else g.classList.remove('bloom');
+  });
+  const treeBg=$('sakura-tree-bg');
+  if(pct>=100){
+    treeBg.classList.add('full-bloom');
+    if(lastBloomPct<100){showBloomBanner();launchPetals();}
+  }else{treeBg.classList.remove('full-bloom');}
+  lastBloomPct=pct;
+}
+function showBloomBanner(){const b=$('bloom-banner');b.style.display='block';setTimeout(()=>b.style.display='none',10000);}
+function launchPetals(){
+  if(petalBusy)return;petalBusy=true;let count=0;const total=35;
+  function spawn(){
+    if(count>=total){setTimeout(()=>petalBusy=false,4000);return;}
+    count++;const el=document.createElement('span');el.className='falling-petal';
+    const sz=12+Math.random()*10,dur=2.2+Math.random()*2.8;
+    const drift=(Math.random()*160-80)+'px',spin=(Math.random()*480-240)+'deg';
+    el.style.cssText=`left:${Math.random()*100}vw;--sz:${sz}px;--dur:${dur}s;--drift:${drift};--spin:${spin};`;
+    el.textContent=CUST.checkEmoji||'🌸';document.body.appendChild(el);
+    el.addEventListener('animationend',()=>el.remove());
+    setTimeout(spawn,120+Math.random()*200);
+  }
+  spawn();
+}
+
+function buildGrid(){
+  const tb=$('grid-body');tb.innerHTML='';
+  const seps=new Set([12,18,0]),minGuideAfter=new Set([11,17]);
+  HOURS.forEach(h=>{
+    const tr=document.createElement('tr');
+    if(seps.has(h))tr.classList.add('sep');
+    const hd=document.createElement('td');hd.className='hour-cell';hd.textContent=h===0?'24':String(h).padStart(2,'0');tr.appendChild(hd);
+    const btnTd=document.createElement('td');btnTd.className='hour-btn-cell';
+    const hBtn=document.createElement('button');hBtn.className='hour-btn';hBtn.dataset.h=h;hBtn.textContent=CUST.checkEmoji||'🌸';
+    hBtn.title=String(h===0?24:h)+'時台をまとめて入力';
+    hBtn.addEventListener('click',()=>onHourBtn(h));
+    btnTd.appendChild(hBtn);tr.appendChild(btnTd);
+    MINS.forEach((m,i)=>{
+      const td=document.createElement('td');td.className='block-cell';
+      const div=document.createElement('div');
+      let cls='block';if(i===0)cls+=' first';if(i===MINS.length-1)cls+=' last';
+      div.className=cls;div.dataset.h=h;div.dataset.m=m;
+      div.addEventListener('click',onBlock);
+      td.appendChild(div);tr.appendChild(td);
+    });
+    tb.appendChild(tr);
+    if(minGuideAfter.has(h)){
+      const guide=document.createElement('tr');guide.className='min-guide';
+      const lbl=document.createElement('td');lbl.textContent='';guide.appendChild(lbl);
+      const empty=document.createElement('td');guide.appendChild(empty);
+      MINS.forEach(m=>{const td=document.createElement('td');td.textContent=m+'分';guide.appendChild(td);});
+      tb.appendChild(guide);
+    }
+  });
+}
+function onHourBtn(h){
+  const allChecked=MINS.every(m=>isChecked(currentDate,h,m));
+  if(!data[currentDate])data[currentDate]={};
+  if(allChecked){
+    MINS.forEach(m=>{delete data[currentDate][h+':'+m];});
+    if(Object.keys(data[currentDate]).length===0)delete data[currentDate];
+  }else{
+    MINS.forEach(m=>{data[currentDate][h+':'+m]=true;});
+  }
+  save();refreshGrid();updateStats();
+  // 一括チェック時にコンボ発生（チェック入力のときのみ）
+  if(!allChecked){
+    const hBtn=document.querySelector('.hour-btn[data-h="'+h+'"]');
+    const rect=hBtn?hBtn.getBoundingClientRect():{left:window.innerWidth/2,top:window.innerHeight/2,width:0,height:0};
+    const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
+    comboCount=Math.max(comboCount,0)+MINS.length;
+    clearTimeout(comboTimer);
+    comboTimer=setTimeout(()=>comboCount=0,2000);
+    showComboText(comboCount,cx,cy);
+    playComboSound(comboCount);
+  }
+}
+function onBlock(e){
+  const div=e.currentTarget;
+  const h=+div.dataset.h,m=+div.dataset.m;
+  const wasChecked=isChecked(currentDate,h,m);
+  toggle(currentDate,h,m);
+  div.classList.toggle('checked',isChecked(currentDate,h,m));
+  // ラッキーブロック判定
+  if(!wasChecked)onLuckyCheck(h,m);
+  // コンボ
+  if(!wasChecked){const rect=div.getBoundingClientRect();onCombo(rect.left+rect.width/2,rect.top+rect.height/2);}
+  // サウンド
+  if(!wasChecked)playCheckSound();
+  const hBtn=document.querySelector('.hour-btn[data-h="'+h+'"]');
+  if(hBtn)hBtn.classList.toggle('full',MINS.every(mm=>isChecked(currentDate,h,mm)));
+  // ラッキースタイルを更新
+  div.classList.toggle('lucky',isLucky(h,m)&&!isChecked(currentDate,h,m));
+  // 現在時刻マス表示を更新
+  updateNowBlock();
+  updateStats();
+  checkBadges();
+  checkEasterEggs();
+}
+function isLucky(h,m){
+  const lb=getLuckyBlockKey();
+  return currentDate===lb.ds&&h===lb.h&&m===lb.m;
+}
+function isChecked(ds,h,m){return !!(data[ds]&&data[ds][h+':'+m]);}
+function toggle(ds,h,m){
+  if(!data[ds])data[ds]={};
+  if(data[ds][h+':'+m]){
+    delete data[ds][h+':'+m];
+    if(Object.keys(data[ds]).length===0)delete data[ds];
+  }else{
+    data[ds][h+':'+m]=true;
+  }
+  save();
+}
+function refreshGrid(){
+  document.querySelectorAll('.block').forEach(div=>{
+    const h=+div.dataset.h,m=+div.dataset.m;
+    const chk=isChecked(currentDate,h,m);
+    div.classList.toggle('checked',chk);
+    div.classList.toggle('lucky',isLucky(h,m)&&!chk);
+  });
+  document.querySelectorAll('.hour-btn').forEach(btn=>{
+    const h=+btn.dataset.h;btn.classList.toggle('full',MINS.every(m=>isChecked(currentDate,h,m)));
+  });
+  updateNowBlock();
+}
+
+function weekMonday(ds){const dt=parseDate(ds);const day=dt.getDay();const diff=day===0?-6:1-day;const m=new Date(dt);m.setDate(dt.getDate()+diff);return m;}
+function weekDates(ds,off){const mon=weekMonday(ds);mon.setDate(mon.getDate()+off*7);return Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return toDateStr(d);});}
+function weekTotal(ds,off){return weekDates(ds,off).reduce((s,d)=>s+dayTotal(d),0);}
+function monthInfo(ds,off){const d=parseDate(ds);const dt=new Date(d.getFullYear(),d.getMonth()+off,1);return{year:dt.getFullYear(),month:dt.getMonth()+1};}
+function monthDates(y,m){const n=new Date(y,m,0).getDate();return Array.from({length:n},(_,i)=>y+'-'+String(m).padStart(2,'0')+'-'+String(i+1).padStart(2,'0'));}
+function monthTotal(y,m){return monthDates(y,m).reduce((s,d)=>s+dayTotal(d),0);}
+
+function renderAllTimeCard(){
+  const el=$('all-time-card');if(!el)return;
+  const total=allTimeTotal(),days=allTimeDays(),avgMin=days>0?Math.round(total/days):0;
+  const studiedKeys=Object.keys(data).filter(ds=>dayTotal(ds)>0).sort();
+  let elapsedDays=0,startStr='';
+  if(studiedKeys.length>0){
+    const first=parseDate(studiedKeys[0]);const today=new Date();today.setHours(0,0,0,0);first.setHours(0,0,0,0);
+    elapsedDays=Math.round((today-first)/86400000)+1;startStr=(first.getMonth()+1)+'/'+first.getDate()+'〜';
+  }
+  const daysLabel=elapsedDays>0?`${days}日 <span class="atc-days-total">/ ${elapsedDays}日</span>`:`${days}日`;
+  const streak=currentStreak();
+  let streakContent='';
+  if(streak>=2)streakContent=`<div class="atc-streak-val">🔥 ${streak}日</div><div class="atc-elapsed-lbl">連続学習中！</div>`;
+  else if(streak===1)streakContent=`<div class="atc-streak-val">✨ 1日</div><div class="atc-elapsed-lbl">今日も学習中！</div>`;
+  else streakContent=`<div class="atc-streak-val atc-streak-zero">─</div><div class="atc-elapsed-lbl">今日から再スタート</div>`;
+  el.innerHTML=`
+    <div class="atc-icon">📚</div>
+    <div class="atc-body">
+      <div class="atc-label">累計学習時間</div>
+      <div class="atc-value">${fmtLongHtml(total)}</div>
+      <div class="atc-sub">1日平均 ${Math.floor(avgMin/60)}h${avgMin%60}m</div>
+    </div>
+    <div class="atc-elapsed">${streakContent}</div>
+    <div class="atc-days">
+      <div class="atc-days-val">${daysLabel}</div>
+      <div class="atc-days-lbl">学習日数${startStr?'（'+startStr+'）':''}</div>
+    </div>`;
+}
+
+function isIOS(){return /iP(ad|hone|od)/.test(navigator.userAgent)&&!!navigator.maxTouchPoints;}
+function showToast(msg,isError=false){
+  const t=$('backup-toast');
+  t.textContent=msg;t.className='backup-toast'+(isError?' error':'');
+  void t.offsetWidth;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+$('export-btn').addEventListener('click',()=>{
+  const backup={version:1,exportedAt:new Date().toISOString(),studyData:JSON.parse(LS.get('study-data','{}')),studyNotes:JSON.parse(LS.get('study-notes','{}')),studyGoal:localStorage.getItem('study-goal'),studyWeekGoal:localStorage.getItem('study-week-goal'),studyMonthGoal:localStorage.getItem('study-month-goal'),examDate:LS.get('exam-date'),theme:LS.get('study-theme'),badges:localStorage.getItem('study-badges'),milestones:localStorage.getItem('study-milestones'),customizations:LS.get('study-cust')};
+  const json=JSON.stringify(backup,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const now=new Date();const dateStr=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0')+'-'+String(now.getDate()).padStart(2,'0');
+  if(isIOS()){
+    window.open(url,'_blank');
+    showToast('📂 開いたページを長押し→「ダウンロード」で保存できます');
+  }else{
+    const a=document.createElement('a');
+    a.href=url;a.download='コツコツサクサク_backup_'+dateStr+'.json';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    showToast('✅ バックアップを保存しました！');
+  }
+  setTimeout(()=>URL.revokeObjectURL(url),60000);
+});
+$('import-btn').addEventListener('click',()=>$('import-file-input').click());
+$('import-file-input').addEventListener('change',function(){
+  const file=this.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const backup=JSON.parse(e.target.result);
+      if(typeof backup.version==='undefined'||!backup.studyData){showToast('❌ ファイルの形式が正しくありません',true);return;}
+      const exportDate=backup.exportedAt?new Date(backup.exportedAt).toLocaleString('ja-JP'):'不明';
+      if(!confirm('バックアップ（'+exportDate+'）を復元します。\n現在のデータは上書きされます。よろしいですか？'))return;
+      LS.set('study-data',JSON.stringify(backup.studyData));
+      if(backup.studyNotes)LS.set('study-notes',JSON.stringify(backup.studyNotes));
+      if(backup.studyGoal)LS.set('study-goal',backup.studyGoal);
+      if(backup.studyWeekGoal)LS.set('study-week-goal',backup.studyWeekGoal);
+      if(backup.studyMonthGoal)LS.set('study-month-goal',backup.studyMonthGoal);
+      if(backup.examDate)LS.set('exam-date',backup.examDate);
+      if(backup.theme)LS.set('study-theme',backup.theme);
+      if(backup.badges)LS.set('study-badges',backup.badges);
+      if(backup.milestones)LS.set('study-milestones',backup.milestones);
+      if(backup.customizations)LS.set('study-cust',backup.customizations);
+      load();loadNotes();loadGoal();loadCountdown();loadBadges();loadMilestones();
+      applyTheme(LS.get('study-theme','light'));
+      lastBloomPct=-1;lastWeeklyPct=-1;lastMonthlyPct=-1;lastLv=0;
+      switchView('daily');if(window.refreshCustomGoalBtns)window.refreshCustomGoalBtns();
+      showToast('✅ データを復元しました！');
+    }catch(err){showToast('❌ 読み込みに失敗しました',true);}
+  };
+  reader.readAsText(file);this.value='';
+});
+$('clear-all-btn').addEventListener('click',()=>{
+  if(!confirm('すべての学習データ・設定をクリアします。\nこの操作は元に戻せません。よろしいですか？'))return;
+  if(!confirm('本当にすべて削除してよろしいですか？'))return;
+  ['study-data','study-notes','study-goal','study-week-goal','study-month-goal','exam-date','study-theme','study-badges','study-milestones','weekly-goal-achieved','monthly-goal-achieved','study-cust'].forEach(k=>LS.del(k));
+  data={};notes={};earnedBadges={};achievedMs={};GOAL=120;WEEK_GOAL=600;MONTH_GOAL=1800;CUST={...CUST_DEFAULTS};
+  lastBloomPct=-1;lastWeeklyPct=-1;lastMonthlyPct=-1;lastLv=0;
+  loadGoal();loadCountdown();applyTheme('dark');applyAllCust();switchView('daily');
+  showToast('🗑 すべてのデータをクリアしました');
+});
+
+function renderWeekly(){
+  const todayStr=toStudyDateStr(new Date());
+  const currDates=weekDates(currentDate,weekOff);
+  const prevDates=weekDates(currentDate,weekOff-1);
+  const prevMon=parseDate(prevDates[0]),currSun=parseDate(currDates[6]);
+  $('week-label').textContent=(prevMon.getMonth()+1)+'/'+prevMon.getDate()+' 〜 '+(currSun.getMonth()+1)+'/'+currSun.getDate();
+  const allDates=[...prevDates,...currDates];
+  const maxMin=Math.max(allDates.reduce((mx,d)=>Math.max(mx,dayTotal(d)),0),GOAL);
+  const realCurrDates=weekDates(toStudyDateStr(new Date()),0);
+  const realPrevDates=weekDates(toStudyDateStr(new Date()),-1);
+  function weekName(dates){
+    if(JSON.stringify(dates)===JSON.stringify(realCurrDates))return '今週';
+    if(JSON.stringify(dates)===JSON.stringify(realPrevDates))return '先週';
+    const m=parseDate(dates[0]);return(m.getMonth()+1)+'/'+m.getDate()+'〜';
+  }
+  function buildChart(containerId,dates,isCurr){
+    const chart=$(containerId);chart.innerHTML='';
+    dates.forEach(d=>{
+      const min=dayTotal(d);const pct=maxMin>0?min/maxMin*100:0;
+      const parts=dayPartMinutes(d);const dt=parseDate(d);const isToday=d===todayStr;
+      const col=document.createElement('div');col.className='bar-col';
+      col.title=(dt.getMonth()+1)+'/'+dt.getDate()+' ('+WD[dt.getDay()]+')\n計: '+fmt(min)+'\n☀ 午前: '+fmt(parts.morning)+'\n☀ 午後: '+fmt(parts.afternoon)+'\n🌙 夜: '+fmt(parts.evening);
+      col.addEventListener('click',()=>{currentDate=d;weekOff=0;switchView('daily');});
+      const te=document.createElement('div');te.className='bar-time';te.textContent=min>0?fmt(min):'';
+      const wrap=document.createElement('div');wrap.className='bar-fill-wrap';
+      const stack=document.createElement('div');stack.className='bar-stack';
+      if(!isCurr&&min>0)stack.style.opacity='0.6';
+      stack.style.height=Math.max(pct,min>0?1.5:0)+'%';
+      if(min>0){
+        if(parts.morning>0){const s=document.createElement('div');s.className='bar-seg morning';s.style.flex=String(parts.morning);stack.appendChild(s);}
+        if(parts.afternoon>0){const s=document.createElement('div');s.className='bar-seg afternoon';s.style.flex=String(parts.afternoon);stack.appendChild(s);}
+        if(parts.evening>0){const s=document.createElement('div');s.className='bar-seg evening';s.style.flex=String(parts.evening);stack.appendChild(s);}
+      }
+      const dow=dt.getDay();const hol=!isToday&&isHoliday(d);
+      const dl=document.createElement('div');dl.className='bar-day'+(isToday?' today':hol||dow===0?' sun':dow===6?' sat':'');dl.textContent=WD[dow];
+      const datel=document.createElement('div');datel.className='bar-date';datel.textContent=(dt.getMonth()+1)+'/'+dt.getDate();
+      wrap.appendChild(stack);col.appendChild(te);col.appendChild(wrap);col.appendChild(dl);col.appendChild(datel);
+      chart.appendChild(col);
+    });
+  }
+  const prevTotal=prevDates.reduce((s,d)=>s+dayTotal(d),0);
+  const currTotal=currDates.reduce((s,d)=>s+dayTotal(d),0);
+  let pctHtml='';
+  if(prevTotal>0){const pct=Math.round(currTotal/prevTotal*100);const diff=pct-100;const cls=diff>0?'up':diff<0?'down':'even';const arrow=diff>0?'▲ ':diff<0?'▼ ':'─ ';const sign=diff>0?'+':'';pctHtml=`<span class="wsl-pct ${cls}">${arrow}先週比 ${sign}${diff}%（${pct}%）</span>`;}
+  else pctHtml=`<span class="wsl-pct even">先週データなし</span>`;
+  const currLabel=$('week-curr-label');currLabel.className='week-section-label curr';
+  currLabel.innerHTML=`<span class="wsl-name">${weekName(currDates)}</span><span class="wsl-total">${fmt(currTotal)}</span>${pctHtml}`;
+  const prevLabel=$('week-prev-label');prevLabel.className='week-section-label';
+  prevLabel.innerHTML=`<span class="wsl-name">${weekName(prevDates)}</span><span class="wsl-total">${fmt(prevTotal)}</span>`;
+  buildChart('bar-chart-prev',prevDates,false);buildChart('bar-chart-curr',currDates,true);
+}
+
+function renderMonthly(){
+  const{year,month}=monthInfo(currentDate,monthOff);
+  $('month-label').textContent=year+'年 '+month+'月';
+  const currMTotal=monthTotal(year,month);
+  const{year:py,month:pm}=monthInfo(currentDate,monthOff-1);
+  const prevMTotal=monthTotal(py,pm);
+  const isThisMonth=(monthOff===0),mName=isThisMonth?'今月':month+'月';
+  let pctHtml='';
+  if(prevMTotal>0){const pct=Math.round(currMTotal/prevMTotal*100);const diff=pct-100;const cls=diff>0?'up':diff<0?'down':'even';const arrow=diff>0?'▲ ':diff<0?'▼ ':'─ ';const sign=diff>0?'+':'';pctHtml=`<span class="wsl-pct ${cls}">${arrow}先月比 ${sign}${diff}%（${pct}%）</span>`;}
+  else pctHtml=`<span class="wsl-pct even">先月データなし</span>`;
+  const summaryEl=$('month-summary-label');summaryEl.className='week-section-label curr';
+  summaryEl.innerHTML=`<span class="wsl-name">${mName}</span><span class="wsl-total">${fmt(currMTotal)}</span>${pctHtml}`;
+  renderAllTimeCard();
+  const todayStr=toStudyDateStr(new Date());
+  let monthMaxPart=120;
+  monthDates(year,month).forEach(ds=>{const p=dayPartMinutes(ds);monthMaxPart=Math.max(monthMaxPart,p.morning,p.afternoon,p.evening);});
+  const cal=$('cal-grid');cal.innerHTML='';
+  ['月','火','水','木','金','土','日'].forEach((h,i)=>{const th=document.createElement('div');th.className='cal-header'+(i===5?' sat':i===6?' sun':'');th.textContent=h;cal.appendChild(th);});
+  const firstDay=new Date(year,month-1,1).getDay();const startOff=firstDay===0?6:firstDay-1;
+  for(let i=0;i<startOff;i++){const e=document.createElement('div');e.className='cal-day empty';cal.appendChild(e);}
+  const days=new Date(year,month,0).getDate();
+  for(let d=1;d<=days;d++){
+    const ds=year+'-'+String(month).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const min=dayTotal(ds);const isToday=ds===todayStr;
+    let heat='';
+    if(min>=240)heat=' heat-5';else if(min>=120)heat=' heat-4';else if(min>=60)heat=' heat-3';else if(min>=30)heat=' heat-2';else if(min>0)heat=' heat-1';
+    const dow=new Date(year,month-1,d).getDay();const hol=!isToday&&isHoliday(ds);
+    const numColorClass=isToday?'':hol||dow===0?' sun':dow===6?' sat':'';
+    const cell=document.createElement('div');cell.className='cal-day'+heat+(isToday?' today-day':'');
+    cell.title=month+'/'+d+' '+fmt(min);
+    cell.addEventListener('click',()=>{currentDate=ds;monthOff=0;switchView('daily');});
+    const bg=document.createElement('div');bg.className='cal-day-bg';
+    const num=document.createElement('div');num.className='cal-day-num'+(numColorClass?' '+numColorClass:'');num.textContent=d;
+    const te=document.createElement('div');te.className='cal-day-time';
+    if(min>0){const h=Math.floor(min/60),m=min%60;te.innerHTML=h>0?`<span class="cdt-h">${h}<small>h</small></span>${m>0?`<span class="cdt-m">${m}<small>m</small></span>`:''}`:`<span class="cdt-m">${m}<small>m</small></span>`;}
+    let partsDiv=null;
+    if(min>0){const parts=dayPartMinutes(ds);partsDiv=document.createElement('div');partsDiv.className='cal-parts';['morning','afternoon','evening'].forEach(period=>{const bar=document.createElement('div');bar.className='cal-part '+period;const pct=Math.min(Math.round(parts[period]/monthMaxPart*100),100);bar.style.width=pct+'%';partsDiv.appendChild(bar);});}
+    cell.appendChild(bg);cell.appendChild(num);cell.appendChild(te);if(partsDiv)cell.appendChild(partsDiv);cal.appendChild(cell);
+  }
+  renderAnnualHeatmap();
+  renderForecast();
+}
+
+function _setStat(sid,pid,val,goal,ach){
+  const pct=Math.min(100,Math.round(val/goal*100));
+  $(sid).textContent=fmt(val);$(pid).style.width=pct+'%';
+  $(pid+'-info').textContent=pct>=100?ach:'目標 '+goal/60+'h まで '+pct+'%';
+  return pct;
+}
+function updateStats(){
+  const dPct=_setStat('stat-daily','daily-prog',dayTotal(currentDate),GOAL,'🌸 目標 '+GOAL/60+'h 達成！満開！');
+  const wPct=_setStat('stat-weekly','weekly-prog',weekTotal(currentDate,0),WEEK_GOAL,'🎆 目標 '+WEEK_GOAL/60+'h 達成！');
+  if(wPct>=100&&lastWeeklyPct<100){LS.set('weekly-goal-achieved','true');_queuePopup(()=>{launchFireworks('weekly');playGoalSound();const b=$('fw-banner-weekly');b.style.display='block';setTimeout(()=>b.style.display='none',10000);},10000);}
+  lastWeeklyPct=wPct;
+  const{year,month}=monthInfo(currentDate,0);
+  const mPct=_setStat('stat-monthly','monthly-prog',monthTotal(year,month),MONTH_GOAL,'🎇 目標 '+MONTH_GOAL/60+'h 達成！');
+  if(mPct>=100&&lastMonthlyPct<100){LS.set('monthly-goal-achieved','true');_queuePopup(()=>{launchFireworks('monthly');playGoalSound();const b=$('fw-banner-monthly');b.style.display='block';setTimeout(()=>b.style.display='none',10000);},10000);}
+  lastMonthlyPct=mPct;
+  updateSakuraTree(dPct);
+  renderAllTimeCard();
+  renderLevelBar();
+  checkMilestones(allTimeTotal());
+  renderChallenge();
+}
+
+function updateDateLabel(){
+  const[y,mo,d]=currentDate.split('-').map(Number);const dt=new Date(y,mo-1,d);
+  const isToday=currentDate===toStudyDateStr(new Date());
+  $('date-label').textContent=String(mo).padStart(2,'0')+'/'+String(d).padStart(2,'0')+' ('+WD[dt.getDay()]+')'+(isToday?' 今日':'');
+  refreshDiary();
+}
+
+function switchView(view){
+  currentView=view;
+  resetCombo();
+  // dailyビュー以外に切り替えたらストーリー自動周回タイマーを止める
+  if(view!=='daily'&&_loopTimer){clearInterval(_loopTimer);_loopTimer=null;}
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+view));
+  if(view==='daily'){refreshGrid();updateDateLabel();applyLuckyBlock();}
+  else if(view==='weekly'){weekOff=0;renderWeekly();}
+  else if(view==='monthly'){monthOff=0;renderMonthly();}
+  updateStats();renderAllTimeCard();renderForecast();
+  const isMonthly=view==='monthly';
+}
+
+document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>switchView(b.dataset.view)));
+$('prev-btn').addEventListener('click',()=>{
+  const dt=parseDate(currentDate);dt.setDate(dt.getDate()-1);currentDate=toDateStr(dt);lastBloomPct=-1;
+  resetCombo();
+  if(currentView==='daily'){refreshGrid();updateDateLabel();updateStats();applyLuckyBlock();}
+});
+$('next-btn').addEventListener('click',()=>{
+  const dt=parseDate(currentDate);dt.setDate(dt.getDate()+1);currentDate=toDateStr(dt);lastBloomPct=-1;
+  resetCombo();
+  if(currentView==='daily'){refreshGrid();updateDateLabel();updateStats();applyLuckyBlock();}
+});
+$('today-btn').addEventListener('click',()=>{
+  currentDate=toStudyDateStr(new Date());weekOff=0;monthOff=0;lastBloomPct=-1;lastWeeklyPct=-1;lastMonthlyPct=-1;
+  resetCombo();
+  switchView('daily');
+});
+$('week-prev').addEventListener('click',()=>{weekOff--;renderWeekly();});
+$('week-next').addEventListener('click',()=>{weekOff++;renderWeekly();});
+$('month-prev').addEventListener('click',()=>{monthOff--;renderMonthly();});
+$('month-next').addEventListener('click',()=>{monthOff++;renderMonthly();});
+document.querySelectorAll('.goal-btn:not([data-custom])').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const type=btn.dataset.type,val=+btn.dataset.h*60;
+    if(type==='daily')GOAL=val;else if(type==='weekly')WEEK_GOAL=val;else MONTH_GOAL=val;
+    saveGoal();
+    document.querySelectorAll('.goal-btn[data-type="'+type+'"]:not([data-custom])').forEach(b=>b.classList.toggle('active',+b.dataset.h===+btn.dataset.h));
+    if(window.refreshCustomGoalBtns)window.refreshCustomGoalBtns();
+    updateStats();
+  });
+});
+
+function updateCountdown(){
+  const val=$('cd-input').value;
+  const daysEl=$('cd-days'),unitEl=$('cd-unit'),labelEl=$('cd-label');
+  if(!val){daysEl.textContent='--';daysEl.className='countdown-days';unitEl.textContent='日';labelEl.textContent='🌸 開花するまで';return;}
+  const today=new Date();today.setHours(0,0,0,0);const target=new Date(val);target.setHours(0,0,0,0);
+  const diff=Math.round((target-today)/(1000*60*60*24));
+  if(diff>0){labelEl.textContent='🌸 開花するまであと';daysEl.textContent=diff;daysEl.className='countdown-days';unitEl.textContent='日';}
+  else if(diff===0){labelEl.textContent='未来を';daysEl.textContent='今日';daysEl.className='countdown-days';unitEl.textContent='🌸開花🌸させる！';}
+  else{labelEl.textContent='🌸 開花した日から';daysEl.textContent=Math.abs(diff);daysEl.className='countdown-passed';unitEl.textContent='日経過🌸';}
+}
+function loadCountdown(){const saved=LS.get('exam-date');if(saved)$('cd-input').value=saved;updateCountdown();}
+$('cd-input').addEventListener('change',()=>{
+  LS.set('exam-date',$('cd-input').value);
+  const _ci=$('cust-cd-input');if(_ci)_ci.value=$('cd-input').value;
+  updateCountdown();renderForecast();
+});
+$('cd-clear').addEventListener('click',()=>{$('cd-input').value='';LS.del('exam-date');updateCountdown();renderForecast();});
+const _custCdInp=$('cust-cd-input');
+if(_custCdInp){
+  _custCdInp.addEventListener('change',()=>{
+    const v=_custCdInp.value;
+    if(v){LS.set('exam-date',v);$('cd-input').value=v;}
+    else{LS.del('exam-date');$('cd-input').value='';}
+    updateCountdown();renderForecast();
+  });
+}
+const _custCdClear=$('cust-cd-clear');
+if(_custCdClear){
+  _custCdClear.addEventListener('click',()=>{
+    $('cust-cd-input').value='';$('cd-input').value='';
+    LS.del('exam-date');updateCountdown();
+    renderForecast();
+  });
+}
+
+function applyTheme(theme){
+  if(theme==='dark')document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme',theme);
+  document.querySelectorAll('.theme-dot').forEach(d=>d.classList.toggle('active',d.dataset.theme===theme));
+  LS.set('study-theme',theme);
+}
+document.querySelectorAll('.theme-dot').forEach(dot=>dot.addEventListener('click',()=>applyTheme(dot.dataset.theme)));
+(function(){applyTheme(LS.get('study-theme','light'));})();
+
+(function(){
+  soundEnabled=LS.get('sound-enabled')!=='false';
+  const btn=$('sound-btn');
+  function refresh(){btn.textContent=soundEnabled?'🔊':'🔇';btn.classList.toggle('muted',!soundEnabled);}
+  refresh();
+  btn.addEventListener('click',()=>{soundEnabled=!soundEnabled;LS.set('sound-enabled',soundEnabled);refresh();if(soundEnabled)playCheckSound();});
+})();
+
+$('weekly-report-btn').addEventListener('click',exportWeeklyReport);
+
+(function(){
+  const DAILY_PRESETS=[120,240],WEEKLY_PRESETS=[600,1200],MONTHLY_PRESETS=[1800,3600];
+  const refreshFns=[];
+  window.refreshCustomGoalBtns=function(){refreshFns.forEach(fn=>fn());};
+  function setupCustom(btnId,type,presets,defaultH){
+    const btn=$(btnId);if(!btn)return;
+    function getGoal(){if(type==='daily')return GOAL;if(type==='weekly')return WEEK_GOAL;return MONTH_GOAL;}
+    function isCustom(){return!presets.includes(getGoal());}
+    function refreshBtn(){const custom=isCustom();btn.textContent=custom?'✏'+(getGoal()/60)+'h':'✏';btn.classList.toggle('active',custom);}
+    refreshFns.push(refreshBtn);
+    function openInput(){
+      const currentH=isCustom()?getGoal()/60:defaultH;
+      const inp=document.createElement('input');inp.type='number';inp.className='goal-input-custom';inp.min='1';inp.max='9999';inp.value=currentH;inp.placeholder='h';inp.title='時間数を入力してEnterで確定';
+      btn.replaceWith(inp);inp.focus();inp.select();
+      let done=false;
+      function commit(){
+        if(done)return;done=true;const h=parseInt(inp.value);
+        if(h>=1&&h<=9999){
+          if(type==='daily')GOAL=h*60;else if(type==='weekly')WEEK_GOAL=h*60;else MONTH_GOAL=h*60;
+          saveGoal();
+          document.querySelectorAll(`.goal-btn[data-type="${type}"]:not([data-custom])`).forEach(b=>b.classList.toggle('active',+b.dataset.h*60===getGoal()));
+          updateStats();
+        }
+        inp.replaceWith(btn);refreshBtn();
+      }
+      inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();commit();}if(e.key==='Escape'){done=true;inp.replaceWith(btn);refreshBtn();}});
+      inp.addEventListener('blur',()=>setTimeout(commit,100));
+    }
+    btn.addEventListener('click',openInput);refreshBtn();
+  }
+  setupCustom('daily-custom-btn','daily',DAILY_PRESETS,8);
+  setupCustom('weekly-custom-btn','weekly',WEEKLY_PRESETS,40);
+  setupCustom('monthly-custom-btn','monthly',MONTHLY_PRESETS,120);
+  setupCustom('cust-daily-custom-btn','daily',DAILY_PRESETS,8);
+  setupCustom('cust-weekly-custom-btn','weekly',WEEKLY_PRESETS,40);
+  setupCustom('cust-monthly-custom-btn','monthly',MONTHLY_PRESETS,120);
+})();
+
+(function(){
+  let swRunning=false,swElapsed=0,swLastStart=0,swInterval=null,swCheckedCount=0;
+  const dispEl=$('sw-display'),hintEl=$('sw-hint'),nextTimeEl=$('sw-next-time');
+  const startBtn=$('sw-start-btn'),stopBtn=$('sw-stop-btn'),resetBtn=$('sw-reset-btn');
+  function fmtSw(ms){const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;if(h>0)return h+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');}
+  function fmtNext(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60),sec=s%60;return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');}
+  function updateNext(elapsed){const nextMs=(swCheckedCount+1)*600000;const rem=Math.max(0,nextMs-elapsed);nextTimeEl.textContent=fmtNext(rem);nextTimeEl.classList.toggle('soon',rem<60000);}
+  function getBlockForNow(){const now=new Date();const h=now.getHours(),mm=now.getMinutes();const blockMin=(mm===0)?10:Math.ceil(mm/10)*10;return{h,blockMin,ds:toStudyDateStr(now)};}
+  function autoCheck(){
+    const{h,blockMin,ds}=getBlockForNow();if(!data[ds])data[ds]={};const key=h+':'+blockMin;
+    if(!data[ds][key]){data[ds][key]=true;save();if(currentView==='daily'&&currentDate===ds){refreshGrid();updateStats();}
+      hintEl.textContent=String(h===0?24:h).padStart(2,'0')+':'+String(blockMin).padStart(2,'0')+' '+(CUST.checkEmoji||'🌸');
+      playCheckSound();setTimeout(()=>hintEl.textContent='10分ごとに '+(CUST.checkEmoji||'🌸'),3000);}
+    swCheckedCount++;
+  }
+  function tick(){const elapsed=swElapsed+(Date.now()-swLastStart);dispEl.textContent=fmtSw(elapsed);const newBlocks=Math.floor(elapsed/600000);while(swCheckedCount<newBlocks)autoCheck();updateNext(elapsed);}
+  function swStart(){if(swRunning)return;swRunning=true;swLastStart=Date.now();swInterval=setInterval(tick,500);dispEl.classList.add('running');startBtn.disabled=true;stopBtn.disabled=false;resetBtn.disabled=true;hintEl.textContent='計測中… 10分ごとに '+(CUST.checkEmoji||'🌸');if(isUnlocked('startBloom')&&Math.random()<0.25)setTimeout(()=>launchPetals(),300);
+  const _sm=getStoryText('startMsg');if(_sm){showToast('📖 '+_sm);}
+  _swIsRunning=true;if(_nowProgressTimer)clearInterval(_nowProgressTimer);_nowProgressTimer=setInterval(()=>{if(currentView==='daily')updateNowBlock();},500);
+}
+  function swStop(){if(!swRunning)return;swElapsed+=Date.now()-swLastStart;swRunning=false;clearInterval(swInterval);dispEl.classList.remove('running');startBtn.disabled=false;stopBtn.disabled=true;resetBtn.disabled=false;hintEl.textContent='一時停止中 — スタートで再開';_swIsRunning=false;if(_nowProgressTimer){clearInterval(_nowProgressTimer);_nowProgressTimer=null;}document.querySelectorAll('.block.now-time').forEach(b=>b.style.background='');}
+  function swReset(){if(swRunning)swStop();swElapsed=0;swCheckedCount=0;dispEl.textContent='00:00';dispEl.classList.remove('running');startBtn.disabled=false;stopBtn.disabled=true;resetBtn.disabled=false;hintEl.textContent='10分ごとに '+(CUST.checkEmoji||'🌸');nextTimeEl.textContent='--:--';nextTimeEl.classList.remove('soon');}
+  function _swBind(el,fn){
+    el.addEventListener('click',fn);
+    el.addEventListener('touchend',function(e){
+      if(el.disabled)return;
+      e.preventDefault();
+      fn();
+    });
+  }
+  _swBind(startBtn,swStart);_swBind(stopBtn,swStop);_swBind(resetBtn,swReset);
+})();
+
+const STORY_DEF=[
+  {id:'gorilla',name:'ゴリラ成長記',icon:'🦍',
+   tiers:[
+     {lvMin:1, char:'🐣',title:'卵から生まれた子ゴリラ',  msg:'ウホ…まだちっちゃいゴリ…'},
+     {lvMin:3, char:'🦍',title:'仲間を従えるゴリラ',      msg:'ウホウホ！仲間ができたゴリ！'},
+     {lvMin:6, char:'💪',title:'リーダー格ゴリラ',         msg:'このゴリラに従うゴリ！'},
+     {lvMin:9, char:'👑',title:'受験界のボスゴリラ',       msg:'もはや試験など怖くないゴリ…'},
+     {lvMin:10,char:'🏆',title:'伝説のゴリラ誕生',         msg:'合格ゴリ――！！'},
+   ],
+   startMsg:'ウホッ！今日も修行するゴリ！ジャングルに帰るまで勉強するゴリ！',
+   comboMsg:'ウホウホ連打！ゴリラは止まらないゴリ！',
+   quotes:['バナナより大事なのは合格ゴリ！','ゴリラも積み上げれば伝説になるゴリ！','今日も修行ゴリ。昨日より賢いゴリ。','ゴリラが頑張るなら人間も頑張れるゴリ！','諦めたらそこで終わりゴリ。'],
+   levelNames:{1:'子ゴリラ',11:'若ゴリラ',21:'仲間ゴリラ',31:'リーダーゴリラ',41:'威厳ゴリラ',51:'山の王ゴリラ',61:'最強ゴリラ',71:'神ゴリラ',81:'帝王ゴリラ',91:'ゴリラ帝王',100:'伝説のゴリラ'},
+   quotes2:['2周目ゴリラは一味違うゴリ！経験値が違うゴリ！','また卵に戻ったゴリ。でも今度は最速で育つゴリ！','前回より賢いゴリ。記録を塗り替えるゴリ！','2度目の修行は怖くないゴリ。むしろ楽しいゴリ！','バナナ2倍食べた分、実力2倍ゴリ！'],
+   quotes3:['3周目ゴリラはもはや伝説ゴリ。','問題を見た瞬間に答えが見えるゴリ。これが本物ゴリ！','3度目の合格は確実ゴリ。ゴリラに不可能はないゴリ。','諦めなかったゴリラが、最後に笑うゴリ！','頂点のゴリラが、今日も修行するゴリ。'],
+  },
+  {id:'samurai',name:'受験剣士の道',icon:'⚔️',
+   tiers:[
+     {lvMin:1, char:'🌱',title:'道場入門したての見習い',   msg:'今日から修行が始まる。'},
+     {lvMin:3, char:'🗡️',title:'百の問いを斬った剣士',     msg:'刃に迷いはない。'},
+     {lvMin:6, char:'🔥',title:'不敗を誇る猛者',            msg:'この剣、止まらぬ。'},
+     {lvMin:9, char:'⚡',title:'伝説に名を刻む剣聖',        msg:'試験が、最後の決闘だ。'},
+     {lvMin:10,char:'🏆',title:'試験完全制覇',              msg:'制した。この剣は、もう折れない。'},
+   ],
+   startMsg:'刀を研ぐように、今日も知識を磨け。積み重ねた時間だけが己の武器になる。',
+   comboMsg:'連撃！止まるな——これが剣士の怒涛だ！',
+   quotes:['迷いは剣を鈍らせる。ただ、前へ。','今日の努力が、明日の刃になる。','一問を制する者が、試験を制す。','休むな。ただし、折れるな。','強さとは、諦めない意志だ。'],
+   levelNames:{1:'見習い剣士',11:'修行中の剣士',21:'一人前の剣士',31:'猛者',41:'剣豪',51:'達人剣士',61:'剣聖',71:'無敵の剣士',81:'最強の剣士',91:'伝説の剣士',100:'試験完全制覇'},
+   quotes2:['二度目の刃は、迷いを知らない。','同じ道を歩いても、見える景色が違う。','剣を再び握る。今度こそ、本物だ。','2度目の修行は速い。体が覚えているから。','強さとは、何度でも立ち上がる意志だ。'],
+   quotes3:['三度目の境地に、敵はいない。','刃を研ぎ続けた者だけが、頂点を知る。','究極の剣士とは、何度でも立ち上がる者だ。','三たび剣を抜く者を、天才と呼ぶ。','この剣は、もう折れない。永遠に。'],
+  },
+  {id:'space',name:'宇宙探検家の旅',icon:'🚀',
+   tiers:[
+     {lvMin:1, char:'👶',title:'訓練中の新人宇宙飛行士',  msg:'ミッション開始。準備はいい？'},
+     {lvMin:3, char:'🛸',title:'初飛行を終えたパイロット', msg:'初めての軌道離脱に成功！'},
+     {lvMin:6, char:'🌍',title:'未知の星を発見した探検家', msg:'誰も知らない星に降り立った。'},
+     {lvMin:9, char:'🌌',title:'銀河の英雄',               msg:'伝説の航路を走っている。'},
+     {lvMin:10,char:'🏆',title:'最終ミッション完了',        msg:'君の名は、永遠に星図に刻まれる。'},
+   ],
+   startMsg:'今日のミッション開始。知識の宇宙は広大だ——一歩ずつ、星へ近づいていこう。',
+   comboMsg:'ワープ連続発動！このスピード、誰も追いつけない！',
+   quotes:['宇宙は広い。でも諦めなければ端まで行ける。','一つの星を知ることが、銀河を知る一歩。','ミッションに失敗はない。あるのは学習だけだ。','星は毎日、少しずつ近づいてくる。','今日の一時間が、明日の軌道を変える。'],
+   levelNames:{1:'訓練生',11:'飛行士候補',21:'初期パイロット',31:'宇宙飛行士',41:'探検家',51:'銀河探検家',61:'星の発見者',71:'銀河の英雄候補',81:'宇宙の伝説',91:'銀河の英雄',100:'伝説の宇宙人'},
+   quotes2:['二度目の宇宙は、もうホームだ。','初飛行の経験が、今の航路を豊かにする。','同じ星でも、二度目は違う顔を見せる。','二周目のパイロットは、もう迷わない。','知識が増えると、宇宙はさらに広く見える。'],
+   quotes3:['銀河を三周する者を、伝説と呼ぶ。','三度目の宇宙。ここはもう君のホームだ。','宇宙の果てを知る者だけが、本当の始まりを知る。','三たび星図を描く者に、未知の星はない。','永遠の探検家よ、今日も星へ向かえ。'],
+  },
+  
+  {id:'boki3',name:'日商簿記3級合格への道',icon:'📗',
+   tiers:[
+     {lvMin:1, char:'📗',title:'簿記ってなに？から出発',   msg:'借方・貸方の意味から学ぼう。難しくないよ！'},
+     {lvMin:3, char:'✏️',title:'仕訳の基礎をマスター中',  msg:'勘定科目と仕訳のルールが分かってきた。'},
+     {lvMin:6, char:'📋',title:'試算表・精算表に挑戦',     msg:'試算表が合わせられるようになった！'},
+     {lvMin:9, char:'📄',title:'財務諸表の作成ができる',   msg:'貸借対照表と損益計算書を自力で作れる。'},
+     {lvMin:10,char:'🎓',title:'3級合格レベル到達',        msg:'基礎は完璧！本試験で実力を発揮しよう。'},
+   ],
+   startMsg:'今日も簿記3級の勉強開始！基礎をしっかり固めれば、必ず合格できる。',
+   comboMsg:'連続正解！この調子で合格をつかみ取ろう！',
+   quotes:['簿記3級は毎日30分でも続ければ必ず受かる。','仕訳を制する者が簿記を制す。まずここを完璧に。','試算表が合ったときの快感を覚えると簿記が好きになる。','3級は入口。ここで基礎を固めれば2級も見えてくる。','合格率40〜50%。ちゃんと勉強すれば確実に取れる試験だ。'],
+   quotes2:['2周目の仕訳は反射で解ける。','試算表の作り方が自然と身についてきた。','同じ問題でも、2度目は理解の深さが違う。','基礎に戻ることで、本質がより見えてくる。','3級の全体像が完璧に頭に入っている。'],
+   quotes3:['3周で簿記3級は完全にマスターした。','問題を見た瞬間に解法が浮かぶ境地。','この積み重ねが2級・1級への土台になる。','仕訳に一切の迷いがない。これが本物の力。','3級を3周した者は、もう怖いものはない。'],
+   levelNames:{1:'簿記の入口',11:'勘定科目覚え中',21:'仕訳の基礎習得',31:'現金・預金科目完璧',41:'試算表作成習得',51:'精算表マスター',61:'財務諸表作成習得',71:'過去問演習中',81:'弱点克服完了',91:'合格圏内',100:'3級合格'},
+  },
+  
+  {id:'boki2',name:'日商簿記2級合格への道',icon:'📒',
+   tiers:[
+     {lvMin:1, char:'📒',title:'簿記ゼロから出発',        msg:'借方・貸方って何？まずは基礎から。'},
+     {lvMin:3, char:'📊',title:'仕訳をマスター中',        msg:'仕訳の感覚が掴めてきた。あとは量をこなすだけ。'},
+     {lvMin:6, char:'📈',title:'商業簿記を制覇',          msg:'商業簿記はほぼ完璧。次は工業簿記へ。'},
+     {lvMin:9, char:'🏭',title:'工業簿記も射程内',        msg:'原価計算まで理解できた。合格が見えてきた！'},
+     {lvMin:10,char:'🎓',title:'2級合格レベル到達',       msg:'本試験で実力を発揮するだけ！'},
+   ],
+   startMsg:'今日も仕訳トレーニング開始！積み重ねた一問一答が合格への道になる。',
+   comboMsg:'連続正解！この調子で本試験も突破だ！',
+   quotes:['簿記は慣れだ。毎日触れれば必ず解ける。','仕訳が完璧なら合格の半分はもらった。','精算表が怖くなくなった日が、合格が近い証拠。','工業簿記は難しい。でも繰り返せば必ず慣れる。','合格率20%を恐れるな。対策した自分を信じろ。'],
+   quotes2:['2周目の仕訳は指が覚えている。','商業簿記の深みが見えてきた。','同じ問題でも、2度目は解き方が洗練されている。','2度目の工業簿記は全く違う景色だ。','基礎を固め直すと、また新たな発見がある。'],
+   quotes3:['3周で簿記の本質が見えてきた。','仕訳に迷いがなくなった。これが本物の実力だ。','3度磨いた知識は、もう錆びない。','問題を見た瞬間に答えが見える境地。','合格は当然の結果。それがこの積み重ねだ。'],
+   levelNames:{1:'仕訳見習い',11:'帳簿記録者',21:'勘定科目マスター',31:'商業簿記習得',41:'工業簿記入門',51:'原価計算修得',61:'精算表の達人',71:'財務諸表の使い手',81:'試験対策完了',91:'合格圏内',100:'2級合格'},
+  },
+  
+  {id:'takken',name:'宅建合格への道',icon:'🏠',
+   tiers:[
+     {lvMin:1, char:'🏠',title:'権利関係から学び始める',  msg:'民法って難しい…でも基礎から丁寧に。'},
+     {lvMin:3, char:'📋',title:'宅建業法を攻略中',        msg:'業法の条文が頭に入ってきた！'},
+     {lvMin:6, char:'🗺️',title:'法令上の制限をクリア',    msg:'用途地域も建蔽率も制覇した。'},
+     {lvMin:9, char:'💰',title:'税・その他も仕上げ完了',  msg:'全分野の仕上げが完了。あとは過去問だけ。'},
+     {lvMin:10,char:'🔑',title:'宅建合格レベル到達',       msg:'50問で35点以上、確実に取れる実力がついた！'},
+   ],
+   startMsg:'今日も宅建の勉強開始！権利関係から業法まで、一歩ずつ積み上げよう。',
+   comboMsg:'連続正解！この調子で合格ライン突破だ！',
+   quotes:['宅建は過去問が命。10年分を繰り返せば必ず受かる。','権利関係は難しい。でも捨てるな。基礎だけ取ればいい。','業法満点が合格への近道。条文を熟知せよ。','法令制限は暗記だ。ゴロ合わせでも何でも使え。','合格率15〜17%。対策した者だけが突破できる。'],
+   quotes2:['2周目の権利関係は別物に見える。','業法の細かいルールが自然と出てくるようになった。','同じ過去問でも、2度目は本質が見える。','法令制限の暗記が格段に速くなった。','宅建の全体像が見えてきた。'],
+   quotes3:['3周で宅建の全てが腑に落ちた。','問題を見た瞬間に論点が分かる。これが真の実力。','3度積み上げた知識は本物だ。','合格は当然の結果。この積み重ねがそれを保証する。','宅建のプロフェッショナルへの道を歩んでいる。'],
+   levelNames:{1:'不動産初心者',11:'権利関係学習中',21:'民法の基礎習得',31:'宅建業法マスター',41:'法令制限習得',51:'税務知識習得',61:'全分野カバー',71:'過去問演習中',81:'弱点克服完了',91:'合格圏内',100:'宅建合格'},
+  },
+  
+  {id:'sharoshi',name:'社労士合格への道',icon:'⚖️',
+   tiers:[
+     {lvMin:1, char:'📚',title:'労働基準法から学び始める',msg:'労基法の条文が多い…まずは基礎から。'},
+     {lvMin:3, char:'🏥',title:'社会保険の全体像を把握',  msg:'健保・年金の仕組みが見えてきた。'},
+     {lvMin:6, char:'💼',title:'雇用・労災科目を制覇',    msg:'給付の種類と条件を全て押さえた。'},
+     {lvMin:9, char:'⚖️',title:'全科目横断理解',           msg:'横断整理で全科目がつながってきた。合格が近い。'},
+     {lvMin:10,char:'🎓',title:'社労士合格レベル到達',     msg:'選択式・択一式の両方で実力を発揮できる！'},
+   ],
+   startMsg:'今日も社労士の学習開始！範囲は広いが、積み上げれば必ず道は開ける。',
+   comboMsg:'連続正解！社労士の難関を突破する実力がついてきた！',
+   quotes:['社労士は範囲が広い。でも一科目ずつ積み上げれば必ず制覇できる。','選択式の足切りを恐れるな。基礎を徹底すれば越えられる。','横断整理が社労士合格の鍵。科目間のつながりを意識せよ。','労基法を完璧にすれば、他科目の理解も速くなる。','合格率6〜7%を逆に言えば、対策した者の勝率は高い。'],
+   quotes2:['2周目の社労士は横断理解が深まる。','条文の意味がより鮮明に見えてきた。','2度目の択一式は選択肢の誤りが瞬時に分かる。','労働と社会保険の全体像が腑に落ちてきた。','基礎を固め直すと、応用問題が怖くなくなる。'],
+   quotes3:['3周で社労士の全科目が体に入った。','選択式の罠が見えるようになった。これが本物の実力。','3度積み上げた知識は本試験でも揺るがない。','社労士の全体像を俯瞰できる境地に達した。','合格は確実。あとは本番で力を出すだけ。'],
+   levelNames:{1:'労働法初学者',11:'労基法習得',21:'安衛法・労災習得',31:'雇用保険習得',41:'健康保険習得',51:'年金科目習得',61:'労一・社一習得',71:'全科目横断整理',81:'過去問演習完了',91:'合格圏内',100:'社労士合格'},
+  },
+  
+  {id:'zeirishi',name:'税理士試験 1科目完全攻略',icon:'🧮',
+   tiers:[
+     {lvMin:1, char:'📝',title:'テキストで基礎理論を把握',  msg:'まず理論の骨格を頭に入れよう。焦らず丁寧に。'},
+     {lvMin:3, char:'🧮',title:'計算問題の基礎を習得',     msg:'計算の型が身についてきた。反復あるのみ。'},
+     {lvMin:6, char:'📖',title:'理論暗記を本格化',          msg:'条文を丸ごと覚える段階へ。積み上げが実る。'},
+     {lvMin:9, char:'⚡',title:'応用・答練で仕上げ',        msg:'本試験レベルの問題に対応できるようになった。'},
+     {lvMin:10,char:'🏆',title:'1科目合格レベル到達',       msg:'計算も理論も完璧。この科目は制した！'},
+   ],
+   startMsg:'今日も税理士試験の学習開始！理論と計算、両輪を磨いていこう。',
+   comboMsg:'連続正解！税理士レベルの集中力がついてきた！',
+   quotes:['税理士試験は1科目ずつ確実に。焦らず積み上げれば必ず合格できる。','理論と計算のバランスが合格の鍵。どちらも手を抜くな。','毎日の理論暗記が、本試験での得点源になる。','計算は量をこなせば必ず速くなる。諦めないことが最強の戦略だ。','ライバルより1時間多く勉強した者が、合格を手にする。'],
+   quotes2:['2周目の理論暗記は速い。体が覚えているから。','同じ計算問題でも、2度目は本質が見える。','条文の意味がより深く理解できるようになった。','2度目の答練は解法のキレが違う。','基礎に戻ることで、また新たな気づきがある。'],
+   quotes3:['3周で理論が完全に体に入った。','計算問題を見た瞬間に解法が浮かぶ境地。','3度磨いた知識は本試験でも揺るがない。','この1科目を3周した者は、本物の税理士候補だ。','積み重ねが確かな合格への道になっている。'],
+   levelNames:{1:'税法ゼロスタート',11:'基礎理論把握',21:'計算基礎習得',31:'理論暗記開始',41:'計算応用習得',51:'理論完成',61:'答練演習中',71:'模試対応力完成',81:'弱点克服完了',91:'合格圏内',100:'1科目合格'},
+  },
+  
+  {id:'fp2',name:'FP2級合格への道',icon:'💰',
+   tiers:[
+     {lvMin:1, char:'💰',title:'6分野の全体像を把握',      msg:'ライフ・金融・不動産・保険・タックス・相続。まず地図を描こう。'},
+     {lvMin:3, char:'📊',title:'ライフ・金融分野を制覇',   msg:'ライフプランと金融資産の計算が分かってきた。'},
+     {lvMin:6, char:'🏡',title:'不動産・保険分野を習得',   msg:'不動産取引と各種保険の仕組みを押さえた。'},
+     {lvMin:9, char:'🧾',title:'タックス・相続も完璧',     msg:'所得税・相続税の計算まで対応できる。'},
+     {lvMin:10,char:'🎓',title:'FP2級合格レベル到達',      msg:'学科・実技ともに実力発揮できる状態に！'},
+   ],
+   startMsg:'今日もFP2級の勉強開始！6分野をバランスよく攻略していこう。',
+   comboMsg:'連続正解！FPの知識が確実に身についてきた証拠だ！',
+   quotes:['FPは生活に直結する知識。学ぶほど自分の人生設計にも役立つ。','6分野をバランスよく勉強した者が合格する。捨て分野を作るな。','計算問題は型を覚えれば必ず解ける。反復が命だ。','合格率30〜40%。しっかり準備すれば十分届く資格だ。','学んだ知識が実生活でも使える。それがFPの最大の魅力だ。'],
+   quotes2:['2周目のFP学習は6分野の繋がりが見えてくる。','同じ問題でも、2度目は深い理解で解ける。','2度目の計算問題は手が自動的に動く。','人生設計に必要な知識が確実に身についている。','6分野の関連性が理解できると、学習効率が上がる。'],
+   quotes3:['3周でFPの全分野が完全にマスターできた。','問題を見た瞬間に解法が浮かぶ境地。','3度積み上げた知識は実生活でも活かせる本物だ。','FPの知識は一生使える財産になった。','合格は当然の結果。この積み重ねが証明している。'],
+   levelNames:{1:'マネー初心者',11:'ライフプラン習得',21:'金融資産習得',31:'不動産知識習得',41:'保険知識習得',51:'タックス習得',61:'相続・事業習得',71:'全分野カバー',81:'過去問演習完了',91:'合格圏内',100:'FP2級合格'},
+  },
+  
+  {id:'koumuin',name:'公務員試験合格への道',icon:'🏛️',
+   tiers:[
+     {lvMin:1, char:'📚',title:'教養試験の基礎固め',        msg:'まず教養科目の全体像を把握しよう。'},
+     {lvMin:3, char:'🧩',title:'数的推理・判断推理を攻略', msg:'数的推理の型が掴めてきた。あとは量だ。'},
+     {lvMin:6, char:'🏛️',title:'専門科目を本格的に習得',   msg:'行政法・憲法・民法の骨格が見えてきた。'},
+     {lvMin:9, char:'📝',title:'論文・面接対策も完璧',      msg:'面接カードを仕上げ、論文の型も習得した。'},
+     {lvMin:10,char:'🎌',title:'公務員試験合格レベル到達',  msg:'筆記も面接も万全。合格をつかみ取ろう！'},
+   ],
+   startMsg:'今日も公務員試験の勉強開始！教養から専門まで、着実に積み上げよう。',
+   comboMsg:'連続正解！この集中力が本番でも活きる！',
+   quotes:['公務員試験は継続が命。毎日コツコツ積み上げれば必ず突破できる。','数的推理は慣れれば怖くない。毎日1題でも続けよ。','教養と専門のバランスが合格を決める。どちらも手を抜くな。','面接は筆記が終わってからではなく、今から準備を始めよ。','合格した人は特別な人ではない。ただ諦めなかった人だ。'],
+   quotes2:['2周目の数的推理は解法が自然と浮かぶ。','行政法の条文が頭に入ってきた。','2度目は解くスピードが段違いだ。','2度目の学習で全体像がより鮮明になった。','繰り返すことで、確実な実力が積み上がっている。'],
+   quotes3:['3周で公務員試験の全科目が体に入った。','過去問を見た瞬間に答えが浮かぶ境地。','3度積み上げた実力は本番でも絶対に揺るがない。','筆記も面接も、もう怖いものはない。','この積み重ねが合格という形で実を結ぶ。'],
+   levelNames:{1:'受験生スタート',11:'教養科目基礎習得',21:'数的推理習得',31:'行政法習得',41:'憲法・民法習得',51:'専門科目全般習得',61:'論文対策完了',71:'面接対策開始',81:'模擬面接完了',91:'合格圏内',100:'公務員合格'},
+  },
+  
+  {id:'shindanshi',name:'中小企業診断士合格への道',icon:'💼',
+   tiers:[
+     {lvMin:1, char:'📋',title:'1次試験7科目の全体把握',   msg:'経済・財務・企業経営…まず全科目の地図を描こう。'},
+     {lvMin:3, char:'💹',title:'経済・財務会計を習得',     msg:'マクロ・ミクロ経済と財務分析が分かってきた。'},
+     {lvMin:6, char:'🏢',title:'企業経営・運営管理を制覇', msg:'経営戦略から生産管理まで幅広く押さえた。'},
+     {lvMin:9, char:'💡',title:'2次試験の事例対策',        msg:'SWOT・事例問題の解答骨子が組めるようになった。'},
+     {lvMin:10,char:'🎓',title:'診断士合格レベル到達',     msg:'1次・2次ともに実力発揮できる状態に！'},
+   ],
+   startMsg:'今日も診断士試験の勉強開始！7科目の壁を一つずつ乗り越えよう。',
+   comboMsg:'連続正解！診断士の思考力が鍛えられている！',
+   quotes:['診断士は暗記だけでなく思考力が問われる。理解を深めて学べ。','1次7科目は広い。でも一つずつ丁寧に積み上げれば必ず制覇できる。','2次試験は唯一の正解がない。フレームワークを使いこなせ。','財務会計と経済学は早めに固めろ。後半の科目が楽になる。','合格率20%前後。しっかり準備した者だけが突破できる試験だ。'],
+   quotes2:['2周目の1次は科目間のつながりが見えてくる。','同じ事例問題でも、2度目は解答の質が上がる。','財務分析のスピードが段違いになってきた。','2度目の学習で思考の型が確立されてきた。','また基礎に戻ることで、新たな発見がある。'],
+   quotes3:['3周で1次7科目が完全に体に入った。','事例を見た瞬間に解答骨子が浮かぶ境地。','3度積み上げた思考力は本試験でも絶対揺るがない。','診断士の視点で物事を見られるようになった。','合格は確実。この積み重ねがそれを証明している。'],
+   levelNames:{1:'経営ゼロスタート',11:'経済学習得',21:'財務会計習得',31:'企業経営習得',41:'運営管理習得',51:'法務・情報習得',61:'中小企業政策習得',71:'2次事例対策開始',81:'事例演習完了',91:'合格圏内',100:'診断士合格'},
+  },
+  
+  {id:'kaikeishi',name:'公認会計士試験への挑戦',icon:'🔍',
+   tiers:[
+     {lvMin:1, char:'📊',title:'財務会計の基礎を固める',   msg:'まず簿記・財務会計から。会計士の土台を作ろう。'},
+     {lvMin:3, char:'🔍',title:'監査論・管理会計を学ぶ',  msg:'監査の仕組みと管理会計の計算が見えてきた。'},
+     {lvMin:6, char:'⚖️',title:'企業法・租税法に突入',    msg:'法的思考と税務の知識が組み合わさってきた。'},
+     {lvMin:9, char:'📝',title:'論文式試験対策を本格化',   msg:'短答式突破。論文の記述力を磨く段階へ。'},
+     {lvMin:10,char:'🏆',title:'会計士合格レベル到達',     msg:'短答・論文ともに実力発揮できる状態に！'},
+   ],
+   startMsg:'今日も会計士試験の学習開始！最難関の壁を一つずつ越えていこう。',
+   comboMsg:'連続正解！会計士を目指す者の集中力だ！',
+   quotes:['公認会計士は最難関の国家資格の一つ。でも積み上げれば必ず届く。','財務会計の深い理解が会計士試験の土台になる。妥協するな。','短答突破は通過点。論文で真の実力が問われる。','合格まで平均2〜3年。でも毎日の積み重ねが必ず距離を縮める。','難しいほど価値がある。会計士の称号はその努力に値する。'],
+   quotes2:['2周目の財務会計は理解の深さが違う。','同じ論文問題でも、2度目は記述の質が上がる。','監査の思考が自然と身についてきた。','2度目の企業法は論理構造がより鮮明だ。','繰り返すことで確実な実力が積み上がっている。'],
+   quotes3:['3周で会計士試験の全分野が体に入った。','問題を見た瞬間に解法が浮かぶ境地。','3度磨いた知識は本試験でも絶対揺るがない。','この積み重ねが、最難関資格の合格へとつながる。','会計士の称号は、この努力の結晶だ。'],
+   levelNames:{1:'会計ゼロスタート',11:'簿記論習得',21:'財務会計習得',31:'管理会計習得',41:'監査論習得',51:'企業法習得',61:'租税法習得',71:'短答式対応完了',81:'論文式演習中',91:'合格圏内',100:'公認会計士合格'},
+  },
+];
+function getActiveStory(){return CUST.storyId?STORY_DEF.find(s=>s.id===CUST.storyId)||null:null;}
+function getStoryTier(lv){
+  const s=getActiveStory();if(!s)return null;
+  const ov=(CUST.storyOverrides&&CUST.storyOverrides[s.id])||{};
+  const tiers=ov.tiers||(s.tiers.map((t,i)=>({...t,msg:(ov['tierMsg'+i])||t.msg})));
+  return [...s.tiers].filter(t=>lv>=t.lvMin).pop()||s.tiers[0];
+}
+function getStoryText(key){
+  const s=getActiveStory();if(!s)return '';
+  const ov=(CUST.storyOverrides&&CUST.storyOverrides[s.id])||{};
+  return (ov[key]!==undefined&&ov[key]!=='')?ov[key]:s[key]||'';
+}
+function getStoryTierMsg(tierIdx){
+  const s=getActiveStory();if(!s)return '';
+  const ov=(CUST.storyOverrides&&CUST.storyOverrides[s.id])||{};
+  return (ov['tierMsg'+tierIdx]!==undefined&&ov['tierMsg'+tierIdx]!=='')?ov['tierMsg'+tierIdx]:s.tiers[tierIdx]?.msg||'';
+}
+
+const CUST_DEFAULTS={appName:'コツコツ✏️サクサク🌸',checkEmoji:'🌸',comboEmoji:'✨',comboText:'コンボ！',comboHighText:'すごい！',showTreeBg:true,customQuotes:[],useCustomQuotesOnly:false,levelNames:{},levelIcons:{},badgeOverrides:{},customBadges:[],storyId:'samurai',storyOverrides:{},storyLoopCount:{},storyLoopStartMin:{}};
+let CUST={...CUST_DEFAULTS};
+
+const CHECK_EMOJI_LIST=['🌸','🦍','🔥','⭐','💪','🎯','📚','✅','🌟','💎','🎉','🌈','🐉','🦊','🤖','👾','🍕','🧠','🚀','💐','🐧','🐸','🎸','🍎'];
+const COMBO_EMOJI_LIST=['✨','🔥','⚡','💥','🌟','🎯','🚀','💫','🎊','🏆','👏','🦍','🌈','💪','🤩','🐱','🎆','🎵'];
+
+function loadCust(){try{const s=LS.get('study-cust');if(s)CUST=Object.assign({},CUST_DEFAULTS,JSON.parse(s));}catch(e){CUST={...CUST_DEFAULTS};}}
+function saveCust(){LS.set('study-cust',JSON.stringify(CUST));}
+
+function applyCheckEmojiCSS(emoji){
+  let st=document.getElementById('cust-emoji-st');
+  if(!st){st=document.createElement('style');st.id='cust-emoji-st';document.head.appendChild(st);}
+  const e=emoji||'🌸';
+  st.textContent=`.block.checked:not(.lucky)::after{content:'${e}'!important;font-size:11px;line-height:1;animation:petalWiggle 2.5s ease-in-out infinite;}`;
+}
+function applyAppName(name){
+  const n=name||CUST_DEFAULTS.appName;
+  const el=document.querySelector('.header-title');if(el)el.textContent=n;
+  document.title=n;
+}
+function applyTreeBg(show){
+  const bg=$('sakura-tree-bg');if(bg)bg.style.visibility=(show!==false)?'':'hidden';
+}
+
+function _getLoopCount(sid){return(CUST.storyLoopCount&&CUST.storyLoopCount[sid])||1;}
+function _getLoopStartMin(sid){return(CUST.storyLoopStartMin&&CUST.storyLoopStartMin[sid])||0;}
+function _getLoopLv(sid){
+  const loopMin=Math.max(0,allTimeTotal()-_getLoopStartMin(sid));
+  return _lvFromH(loopMin/60);
+}
+let _loopTimer=null,_loopCountdown=10;
+function startNextStoryLoop(){
+  if(_loopTimer){clearInterval(_loopTimer);_loopTimer=null;}
+  const s=getActiveStory();if(!s)return;
+  if(!CUST.storyLoopCount)CUST.storyLoopCount={};
+  if(!CUST.storyLoopStartMin)CUST.storyLoopStartMin={};
+  const next=(_getLoopCount(s.id))+1;
+  CUST.storyLoopCount[s.id]=next;
+  CUST.storyLoopStartMin[s.id]=allTimeTotal();
+  saveCust();updateStoryMainCard();
+  showToast('🎉 '+next+'周目スタート！');
+}
+
+function updateStoryMainCard(){
+  const charEl=$('story-main-char'),titleEl=$('story-main-title'),msgEl=$('story-main-msg');
+  const progArea=$('story-prog-area'),lvChip=$('story-lv-chip');
+  const loopBadge=$('story-loop-badge'),loopCounter=$('story-loop-counter');
+  if(!charEl||!titleEl||!msgEl)return;
+  const s=getActiveStory();
+  if(!s){
+    charEl.textContent='📖';
+    titleEl.textContent='ストーリーなし';
+    msgEl.textContent='設定でストーリーを選択できます';
+    if(progArea)progArea.style.display='none';
+    if(lvChip)lvChip.style.display='none';
+    if(loopBadge)loopBadge.style.display='none';
+    if(loopCounter)loopCounter.style.display='none';
+    return;
+  }
+  // ── 周回情報
+  const loopN=_getLoopCount(s.id);
+  const loopLv=_getLoopLv(s.id);
+  const realLv=getLevelData(allTimeTotal()).lv;
+  const tiers=s.tiers||[];
+  const tier=[...tiers].filter(t=>loopLv>=t.lvMin).pop()||tiers[0];
+  const tierIdx=tiers.indexOf(tier);
+  const tierMsg=getStoryTierMsg(tierIdx);
+  // ── 上部：キャラ・タイトル・メッセージ
+  charEl.textContent=tier.char||s.icon||'📖';
+  titleEl.textContent=tier.title||s.name;
+  msgEl.textContent=tierMsg;
+  // ── 周回バッジ・カウンター
+  if(loopBadge){
+    if(loopN>=2){
+      loopBadge.textContent=loopN+'周目';
+      loopBadge.className='story-loop-badge loop'+(loopN<=4?loopN:'4');
+      loopBadge.style.display='';
+    }else{loopBadge.style.display='none';}
+  }
+  if(loopCounter){
+    if(loopN>=2){loopCounter.textContent='×'+loopN;loopCounter.style.display='';}
+    else{loopCounter.style.display='none';}
+  }
+  // ── レベルチップ（実ゲームLv表示）
+  if(lvChip){lvChip.textContent='Lv.'+realLv;lvChip.style.display='';}
+  if(!progArea)return;
+  progArea.style.display='';
+  // ── バーカラーを周回で変化
+  const barFill=$('story-bar-fill');
+  if(barFill){
+    const colors=['linear-gradient(90deg,var(--checked),#7ee8a2)',
+                  'linear-gradient(90deg,#ba7517,#ef9f27)',
+                  'linear-gradient(90deg,#534ab7,#7f77dd)',
+                  'linear-gradient(90deg,#a32d2d,#e24b4a)'];
+    barFill.style.background=colors[Math.min(loopN-1,3)];
+  }
+  // ── プログレスバー（周回内 次ステージまで）
+  const loopH=Math.max(0,(allTimeTotal()-_getLoopStartMin(s.id))/60);
+  const nextTier=tiers[tierIdx+1];
+  const curTierH=_lvFormula(tier.lvMin);
+  let pct=100,barInfo='';
+  const isComplete=!nextTier;
+  if(!isComplete){
+    const nextTierH=_lvFormula(nextTier.lvMin);
+    const span=Math.max(1,nextTierH-curTierH);
+    pct=Math.min(100,Math.max(0,Math.round((loopH-curTierH)/span*100)));
+    const left=Math.max(0,Math.round((nextTierH-loopH)*10)/10);
+    barInfo='ステージ '+(tierIdx+1)+'/'+tiers.length+' — 次「'+nextTier.title+'」まで | あと '+left+'h';
+  }else{
+    barInfo='ステージ '+tiers.length+'/'+tiers.length+' — 🎉 ストーリークリア！';
+    pct=100;
+  }
+  const row=$('story-bar-row');
+  if(barFill)barFill.style.width=pct+'%';
+  if(row)row.textContent=barInfo;
+  // ── 段階ドット
+  const dotsEl=$('story-dots-row');
+  if(dotsEl){
+    dotsEl.innerHTML='';
+    tiers.forEach((_,i)=>{
+      const d=document.createElement('div');
+      d.className='story-dot'+(i<tierIdx?' done':i===tierIdx?' active':'');
+      dotsEl.appendChild(d);
+    });
+  }
+  // ── 周回に応じた名言
+  const quoteEl=$('story-quote-box');
+  if(quoteEl){
+    const qKey=loopN>=3?'quotes3':loopN===2?'quotes2':'quotes';
+    const pool=(s[qKey]&&s[qKey].length)?s[qKey]:(s.quotes||['今日も頑張ろう！']);
+    const qi=Math.floor(Date.now()/30000)%pool.length;
+    quoteEl.textContent='「'+pool[qi]+'」';
+  }
+  // ── クリア時のボタン表示 + 10秒カウントダウン
+  const completeDiv=$('story-loop-complete');
+  if(completeDiv){
+    if(isComplete){
+      completeDiv.style.display='';
+      if(!_loopTimer){
+        _loopCountdown=10;
+        const cdEl=$('story-countdown');
+        if(cdEl)cdEl.textContent=_loopCountdown;
+        _loopTimer=setInterval(function(){
+          _loopCountdown--;
+          const cdEl=$('story-countdown');
+          if(cdEl)cdEl.textContent=_loopCountdown;
+          if(_loopCountdown<=0){clearInterval(_loopTimer);_loopTimer=null;startNextStoryLoop();}
+        },1000);
+      }
+    }else{
+      completeDiv.style.display='none';
+      if(_loopTimer){clearInterval(_loopTimer);_loopTimer=null;}
+    }
+  }
+}
+
+function toggleChallengePopup(){
+  const popup=$('challenge-popup');
+  if(!popup)return;
+  popup.classList.toggle('open');
+}
+
+function applyAllCust(){
+  if(_loopTimer){clearInterval(_loopTimer);_loopTimer=null;}
+  applyAppName(CUST.appName);
+  applyCheckEmojiCSS(CUST.checkEmoji||'🌸');
+  applyTreeBg(CUST.showTreeBg);
+  renderQuote();
+  updateStoryMainCard();
+  const swHint=$('sw-hint');
+  if(swHint&&!swHint.textContent.includes('中'))swHint.textContent='10分ごとに '+(CUST.checkEmoji||'🌸');
+  const swNextLbl=document.querySelector('.sw-next-lbl');
+  if(swNextLbl)swNextLbl.textContent=(CUST.checkEmoji||'🌸')+'まであと';
+}
+
+function openCustPanel(){_syncCustPanel();$('cust-overlay').classList.add('show');}
+function saveCustAndClose(){
+  saveCust();
+  applyAllCust();
+  closeCustPanel();
+  showToast('✅ 設定を保存しました');
+}
+function closeCustPanel(){$('cust-overlay').classList.remove('show');}
+
+function _renderLevelList(){
+  const list=$('cust-level-list');if(!list)return;list.innerHTML='';
+  LEVEL_DEF.forEach(ld=>{
+    const row=document.createElement('div');row.className='cust-lvl-row';
+    const iconInp=document.createElement('input');
+    iconInp.type='text';iconInp.className='cust-lvl-icon';iconInp.maxLength='4';
+    iconInp.placeholder=ld.icon;iconInp.title='アイコン';
+    iconInp.value=(CUST.levelIcons&&CUST.levelIcons[ld.lv])||'';
+    iconInp.addEventListener('input',function(){
+      if(!CUST.levelIcons)CUST.levelIcons={};
+      const v=this.value.trim();CUST.levelIcons[ld.lv]=v;saveCust();renderLevelBar();
+    });
+    const lbl=document.createElement('span');lbl.className='cust-lvl-lbl';lbl.textContent='Lv.'+ld.lv;
+    const nameInp=document.createElement('input');
+    nameInp.type='text';nameInp.className='cust-lvl-name';nameInp.maxLength='20';
+    nameInp.placeholder=ld.title;nameInp.title='レベル名称';
+    nameInp.value=(CUST.levelNames&&CUST.levelNames[ld.lv])||'';
+    nameInp.addEventListener('input',function(){
+      if(!CUST.levelNames)CUST.levelNames={};
+      CUST.levelNames[ld.lv]=this.value.trim();saveCust();renderLevelBar();
+    });
+    row.appendChild(iconInp);row.appendChild(lbl);row.appendChild(nameInp);
+    list.appendChild(row);
+  });
+}
+function _renderBadgeEditList(){
+  const list=$('cust-badge-edit-list');if(!list)return;list.innerHTML='';
+  BADGE_DEF.forEach(b=>{
+    const ov=(CUST.badgeOverrides&&CUST.badgeOverrides[b.id])||{};
+    const row=document.createElement('div');row.className='cust-badge-row';
+    const ic=document.createElement('span');ic.className='cust-badge-icon-lbl';ic.textContent=b.icon;
+    const ni=document.createElement('input');ni.type='text';ni.className='cust-badge-ninp';
+    ni.maxLength='20';ni.placeholder=b.name;ni.title='名前';ni.value=ov.name||'';
+    ni.addEventListener('input',function(){
+      if(!CUST.badgeOverrides)CUST.badgeOverrides={};
+      if(!CUST.badgeOverrides[b.id])CUST.badgeOverrides[b.id]={};
+      CUST.badgeOverrides[b.id].name=this.value.trim();saveCust();
+    });
+    const di=document.createElement('input');di.type='text';di.className='cust-badge-dinp';
+    di.maxLength='40';di.placeholder=b.desc;di.title='説明';di.value=ov.desc||'';
+    di.addEventListener('input',function(){
+      if(!CUST.badgeOverrides)CUST.badgeOverrides={};
+      if(!CUST.badgeOverrides[b.id])CUST.badgeOverrides[b.id]={};
+      CUST.badgeOverrides[b.id].desc=this.value.trim();saveCust();
+    });
+    row.appendChild(ic);row.appendChild(ni);row.appendChild(di);list.appendChild(row);
+  });
+  if(CUST.customBadges&&CUST.customBadges.length>0){
+    const sep=document.createElement('div');
+    sep.style='font-size:.6rem;color:var(--text-muted);padding:5px 0 2px;border-top:1px solid var(--border);margin-top:2px;font-weight:700;';
+    sep.textContent='カスタムバッジ';list.appendChild(sep);
+    [...CUST.customBadges].forEach((cb,i)=>{
+      const row=document.createElement('div');row.className='cust-cb-row';
+      const ic=document.createElement('span');ic.style='font-size:1rem;flex-shrink:0;';ic.textContent=cb.icon;
+      const info=document.createElement('span');info.style='flex:1;font-size:.68rem;color:var(--text);';
+      const tLabel=cb.trigger==='manual'?'手動':cb.trigger+'h突破';
+      info.textContent=cb.name+' ('+tLabel+')';
+      const del=document.createElement('button');
+      del.style='background:transparent;border:none;color:#f87171;cursor:pointer;font-size:.8rem;padding:0 4px;flex-shrink:0;';
+      del.textContent='🗑';del.title='削除';
+      del.addEventListener('click',()=>{
+        if(!confirm('「'+cb.name+'」バッジを削除しますか？'))return;
+        CUST.customBadges.splice(i,1);
+        delete earnedBadges[cb.id];saveBadges();saveCust();
+        _renderBadgeEditList();updateBadgeCount();renderBadgeGrid();
+      });
+      row.appendChild(ic);row.appendChild(info);row.appendChild(del);list.appendChild(row);
+    });
+  }
+}
+
+function onStorySelChange(val){
+  CUST.storyId=val||null;saveCust();applyAllCust();renderQuote();
+  const ed=$('cust-story-edit');if(ed)ed.style.display=val?'block':'none';
+  _renderStoryEdit();
+}
+function _renderStoryEdit(){
+  const s=getActiveStory();if(!s)return;
+  const ov=(CUST.storyOverrides&&CUST.storyOverrides[s.id])||{};
+  const si=$('cust-story-start');if(si)si.value=ov.startMsg||'';
+  const co=$('cust-story-combo');if(co)co.value=ov.comboMsg||'';
+  const td=$('cust-story-tiers');if(td){
+    td.innerHTML='';
+    s.tiers.forEach((t,i)=>{
+      const row=document.createElement('div');row.className='story-tier-row';
+      row.innerHTML=`<span class="story-tier-char">${t.char}</span><input type="text" class="cust-input" maxlength="40" placeholder="${t.msg}" value="${(ov['tierMsg'+i])||''}" oninput="saveStoryOv('tierMsg${i}',this.value)">`;
+      td.appendChild(row);
+    });
+  }
+  const qd=$('cust-story-quotes');if(qd){
+    qd.innerHTML='';
+    const qs=ov.quotes||[...s.quotes];
+    for(let i=0;i<5;i++){
+      const row=document.createElement('div');row.className='cust-story-q-row';
+      row.innerHTML=`<span style="font-size:10px;color:var(--text-muted);min-width:14px;">${i+1}</span><input type="text" class="cust-input" maxlength="60" placeholder="${s.quotes[i]||''}" value="${qs[i]||''}" oninput="saveStoryQ(${i},this.value)">`;
+      qd.appendChild(row);
+    }
+  }
+}
+function saveStoryOv(key,val){
+  const s=getActiveStory();if(!s)return;
+  if(!CUST.storyOverrides)CUST.storyOverrides={};
+  if(!CUST.storyOverrides[s.id])CUST.storyOverrides[s.id]={};
+  CUST.storyOverrides[s.id][key]=val;saveCust();
+}
+function saveStoryQ(idx,val){
+  const s=getActiveStory();if(!s)return;
+  if(!CUST.storyOverrides)CUST.storyOverrides={};
+  if(!CUST.storyOverrides[s.id])CUST.storyOverrides[s.id]={quotes:[...s.quotes]};
+  if(!CUST.storyOverrides[s.id].quotes)CUST.storyOverrides[s.id].quotes=[...s.quotes];
+  CUST.storyOverrides[s.id].quotes[idx]=val;saveCust();
+}
+function _syncCustPanel(){
+  const ne=$('cust-app-name');if(ne)ne.value=CUST.appName!==CUST_DEFAULTS.appName?CUST.appName:'';
+  const ce=$('cust-check-inp');if(ce)ce.value=CUST.checkEmoji||'🌸';
+  const co=$('cust-combo-inp');if(co)co.value=CUST.comboEmoji||'✨';
+  const tt=$('cust-tree-tog');if(tt)tt.checked=CUST.showTreeBg!==false;
+  const qo=$('cust-qonly');if(qo)qo.checked=!!CUST.useCustomQuotesOnly;
+  _renderCheckGrid();_renderComboGrid();_renderQuotesList();_renderLevelList();_renderBadgeEditList();
+  const ct=$('cust-combo-text');if(ct)ct.value=CUST.comboText&&CUST.comboText!=='コンボ！'?CUST.comboText:'';
+  const cht=$('cust-combo-high');if(cht)cht.value=CUST.comboHighText&&CUST.comboHighText!=='すごい！'?CUST.comboHighText:'';
+  const cdInp=$('cust-cd-input');if(cdInp)cdInp.value=LS.get('exam-date')||'';
+  const ss=$('cust-story-sel');if(ss)ss.value=CUST.storyId||'';
+  const sed=$('cust-story-edit');if(sed)sed.style.display=CUST.storyId?'block':'none';
+  if(CUST.storyId)_renderStoryEdit();
+}
+function _renderCheckGrid(){
+  const g=$('cust-check-grid');if(!g)return;g.innerHTML='';
+  CHECK_EMOJI_LIST.forEach(e=>{
+    const b=document.createElement('button');b.className='cust-e-btn'+(CUST.checkEmoji===e?' active':'');
+    b.textContent=e;b.title=e;
+    b.addEventListener('click',()=>{
+      CUST.checkEmoji=e;saveCust();applyCheckEmojiCSS(e);
+      const inp=$('cust-check-inp');if(inp)inp.value=e;
+      document.querySelectorAll('.hour-btn').forEach(hb=>hb.textContent=e);
+      const sh=$('sw-hint');if(sh&&!sh.textContent.includes('中'))sh.textContent='10分ごとに '+e;
+      const nl=document.querySelector('.sw-next-lbl');if(nl)nl.textContent=e+'まであと';
+      _renderCheckGrid();
+    });
+    g.appendChild(b);
+  });
+}
+function _renderComboGrid(){
+  const g=$('cust-combo-grid');if(!g)return;g.innerHTML='';
+  COMBO_EMOJI_LIST.forEach(e=>{
+    const b=document.createElement('button');b.className='cust-e-btn'+(CUST.comboEmoji===e?' active':'');
+    b.textContent=e;b.title=e;
+    b.addEventListener('click',()=>{CUST.comboEmoji=e;saveCust();const inp=$('cust-combo-inp');if(inp)inp.value=e;_renderComboGrid();});
+    g.appendChild(b);
+  });
+}
+function _renderQuotesList(){
+  const list=$('cust-q-list');if(!list)return;list.innerHTML='';
+  if(!CUST.customQuotes||CUST.customQuotes.length===0){
+    list.innerHTML='<div style="font-size:.68rem;color:var(--text-muted);padding:4px 0">カスタム名言はまだありません</div>';return;
+  }
+  CUST.customQuotes.forEach((q,i)=>{
+    const item=document.createElement('div');item.className='cust-q-item';
+    const txt=document.createElement('div');txt.className='cust-q-text';txt.textContent=q;
+    const del=document.createElement('button');del.className='cust-q-del';del.textContent='🗑';del.title='削除';
+    del.addEventListener('click',()=>{CUST.customQuotes.splice(i,1);saveCust();_renderQuotesList();renderQuote();});
+    item.appendChild(txt);item.appendChild(del);list.appendChild(item);
+  });
+}
+
+(function(){
+  // アプリ名
+  const appNm=$('cust-app-name');
+  if(appNm)appNm.addEventListener('input',function(){CUST.appName=this.value.trim()||CUST_DEFAULTS.appName;saveCust();applyAppName(CUST.appName);});
+  // チェック絵文字テキスト入力
+  const chkInp=$('cust-check-inp');
+  if(chkInp)chkInp.addEventListener('input',function(){
+    const e=[...this.value.trim()].slice(0,2).join('')||'🌸';
+    CUST.checkEmoji=e;saveCust();applyCheckEmojiCSS(e);
+    document.querySelectorAll('.hour-btn').forEach(hb=>hb.textContent=e);
+    const sh=$('sw-hint');if(sh&&!sh.textContent.includes('中'))sh.textContent='10分ごとに '+e;
+    const nl=document.querySelector('.sw-next-lbl');if(nl)nl.textContent=e+'まであと';
+    _renderCheckGrid();
+  });
+  // コンボ絵文字テキスト入力
+  const cmbInp=$('cust-combo-inp');
+  if(cmbInp)cmbInp.addEventListener('input',function(){
+    const e=[...this.value.trim()].slice(0,2).join('')||'✨';CUST.comboEmoji=e;saveCust();_renderComboGrid();
+  });
+  // 背景トグル
+  const treeTog=$('cust-tree-tog');
+  if(treeTog)treeTog.addEventListener('change',function(){CUST.showTreeBg=this.checked;saveCust();applyTreeBg(CUST.showTreeBg);});
+  // カスタム名言のみ
+  const qOnly=$('cust-qonly');
+  if(qOnly)qOnly.addEventListener('change',function(){CUST.useCustomQuotesOnly=this.checked;saveCust();renderQuote();});
+  // 名言追加
+  const qAdd=$('cust-q-add');
+  if(qAdd)qAdd.addEventListener('click',()=>{
+    const inp=$('cust-q-inp');if(!inp)return;const q=inp.value.trim();
+    if(!q)return;if(!CUST.customQuotes)CUST.customQuotes=[];CUST.customQuotes.push(q);saveCust();inp.value='';_renderQuotesList();renderQuote();
+  });
+  const qInp=$('cust-q-inp');
+  if(qInp)qInp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const b=$('cust-q-add');if(b)b.click();}});
+  // コンボテキスト
+  const ctEl=$('cust-combo-text');
+  if(ctEl)ctEl.addEventListener('input',function(){CUST.comboText=this.value.trim()||'コンボ！';saveCust();});
+  const chtEl=$('cust-combo-high');
+  if(chtEl)chtEl.addEventListener('input',function(){CUST.comboHighText=this.value.trim()||'すごい！';saveCust();});
+  // カスタムバッジ追加
+  const nbAddBtn=$('cust-nb-add');
+  if(nbAddBtn)nbAddBtn.addEventListener('click',()=>{
+    const icon=($('cust-nb-icon')&&$('cust-nb-icon').value.trim())||'🏆';
+    const name=$('cust-nb-name')&&$('cust-nb-name').value.trim();
+    const desc=($('cust-nb-desc')&&$('cust-nb-desc').value.trim())||'';
+    const trigger=($('cust-nb-trigger')&&$('cust-nb-trigger').value)||'manual';
+    if(!name){showToast('❌ バッジ名を入力してください',true);return;}
+    if(!CUST.customBadges)CUST.customBadges=[];
+    const cbId='cb_'+Date.now();
+    CUST.customBadges.push({id:cbId,icon,name,desc,trigger});saveCust();
+    if($('cust-nb-icon'))$('cust-nb-icon').value='';
+    if($('cust-nb-name'))$('cust-nb-name').value='';
+    if($('cust-nb-desc'))$('cust-nb-desc').value='';
+    _renderBadgeEditList();updateBadgeCount();renderBadgeGrid();
+    showToast('✅ カスタムバッジを追加しました！');
+  });
+  // リセット
+  const rstBtn=$('cust-reset-btn');
+  if(rstBtn)rstBtn.addEventListener('click',()=>{
+    if(!confirm('設定をすべてリセットします。よろしいですか？'))return;
+    CUST={...CUST_DEFAULTS};saveCust();applyAllCust();
+    document.querySelectorAll('.hour-btn').forEach(hb=>hb.textContent=CUST_DEFAULTS.checkEmoji);
+    _syncCustPanel();renderLevelBar();renderBadgeGrid();
+  });
+})();
+
+loadCust();load();loadNotes();loadGoal();loadBadges();loadMilestones();loadCountdown();
+function _syncHeaderHeight(){
+  const h=document.querySelector("header");
+  if(h)document.documentElement.style.setProperty("--header-h",h.offsetHeight+"px");
+}
+_syncHeaderHeight();
+window.addEventListener("resize",_syncHeaderHeight);
+applySeasonToTree();
+applyAllCust();
+buildGrid();
+(function(){
+  const _todayStr=toStudyDateStr(new Date());
+  const _dm=dayTotal(_todayStr);lastBloomPct=Math.min(100,Math.round(_dm/GOAL*100));
+  const _wm=weekTotal(_todayStr,0);lastWeeklyPct=Math.min(100,Math.round(_wm/WEEK_GOAL*100));
+  const{year:_iy,month:_im}=monthInfo(_todayStr,0);lastMonthlyPct=Math.min(100,Math.round(monthTotal(_iy,_im)/MONTH_GOAL*100));
+  lastLv=getLevelData(allTimeTotal()).lv;
+})();
+switchView('daily');
+updateBadgeCount();
+renderLevelBar();
+// 現在時刻マスを1分ごとに更新（時刻が進んでも点滅が追従するよう）
+setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
+
+</script>
+
+<script>
+(function(){
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('./sw.js').catch(function(err){
+        console.log('Service Worker registration skipped:', err);
+      });
+    });
+  }
+})();
+</script>
+
+</body>
+</html>
