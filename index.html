@@ -3056,6 +3056,17 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
     });
   }
 })();
+
+let currentStudyDateKey = getStudyDateKey();
+
+setInterval(() => {
+  const latestStudyDateKey = getStudyDateKey();
+
+  if (latestStudyDateKey !== currentStudyDateKey) {
+    location.reload();
+  }
+}, 30000);
+  
 </script>
 
 </body>
@@ -3080,12 +3091,4 @@ function getStudyDateKey(date = new Date()) {
   return `${year}-${month}-${day}`;
 }
 
-let currentStudyDateKey = getStudyDateKey();
 
-setInterval(() => {
-  const latestStudyDateKey = getStudyDateKey();
-
-  if (latestStudyDateKey !== currentStudyDateKey) {
-    location.reload();
-  }
-}, 30000);
