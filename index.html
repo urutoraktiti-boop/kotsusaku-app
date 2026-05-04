@@ -3072,3 +3072,20 @@ function getStudyDate(date = new Date()) {
   studyDate.setHours(0, 0, 0, 0);
   return studyDate;
 }
+function getStudyDateKey(date = new Date()) {
+  const studyDate = getStudyDate(date);
+  const year = studyDate.getFullYear();
+  const month = String(studyDate.getMonth() + 1).padStart(2, '0');
+  const day = String(studyDate.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+let currentStudyDateKey = getStudyDateKey();
+
+setInterval(() => {
+  const latestStudyDateKey = getStudyDateKey();
+
+  if (latestStudyDateKey !== currentStudyDateKey) {
+    location.reload();
+  }
+}, 30000);
