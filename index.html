@@ -3057,15 +3057,29 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
   }
 })();
 
+// 4時をまたいだら画面を更新する
 let currentStudyDateKey = getStudyDateKey();
 
-setInterval(() => {
+function checkStudyDateChanged() {
   const latestStudyDateKey = getStudyDateKey();
 
   if (latestStudyDateKey !== currentStudyDateKey) {
     location.reload();
   }
-}, 30000);
+}
+
+// 30秒ごとに確認
+setInterval(checkStudyDateChanged, 30000);
+
+// アプリに戻ってきた時にも確認
+window.addEventListener('focus', checkStudyDateChanged);
+
+// 画面が再表示された時にも確認
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    checkStudyDateChanged();
+  }
+});
   
 </script>
 
