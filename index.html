@@ -66,7 +66,7 @@
     .story-top-row{display:flex;align-items:center;gap:12px;}
     .story-main-char{font-size:2rem;flex-shrink:0;line-height:1;}
     .story-main-body{flex:1;min-width:0;}
-    .story-main-title{font-size:.82rem;font-weight:800;color:var(--text);margin:0 0 1px;}
+    .story-main-title{font-size:.82rem;font-weight:800;color:var(--text);margin:0;}
     .story-main-msg{font-size:.65rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
     .story-lv-chip{background:rgba(0,120,255,.12);color:var(--accent);font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap;flex-shrink:0;}
     .story-divider{height:1px;background:var(--border);margin:10px 0 8px;}
@@ -172,7 +172,7 @@
     .hour-btn.itachacha-bread-btn{background:rgba(217,119,6,.15)!important;border-color:rgba(217,119,6,.6)!important;color:#92400e!important;}
     [data-theme="light"] .hour-btn.itachacha-bread-btn{color:#78350f!important;}
     
-    .easter-toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#1a0a1e,#341b42);border:1.5px solid #f472b6;color:#fde8f7;font-size:.82rem;font-weight:700;padding:12px 22px;border-radius:12px;z-index:9996;opacity:0;transition:opacity .3s;pointer-events:none;text-align:center;box-shadow:0 4px 20px rgba(244,114,182,.3);}
+    .easter-toast{position:fixed;top:50%;left:50%;transform:translateX(-50%) translateY(-50%);background:linear-gradient(135deg,#1a0a1e,#341b42);border:1.5px solid #f472b6;color:#fde8f7;font-size:.82rem;font-weight:700;padding:12px 22px;border-radius:12px;z-index:9996;opacity:0;transition:opacity .3s;pointer-events:none;text-align:center;box-shadow:0 4px 20px rgba(244,114,182,.3);max-width:min(90vw,600px);white-space:normal;line-height:1.5;word-break:break-word;}
     .easter-toast.show{opacity:1;}
     
     .challenge-wrap{width:100%;max-width:700px;padding:0 14px;margin:12px auto 0;}
@@ -268,7 +268,7 @@
     .backup-btn.clear-btn{border-color:#f87171;color:#f87171;}
     .backup-btn.clear-btn:hover{background:#f87171;color:#fff;}
     .clear-section{border-top:1px solid var(--border);margin-top:10px;padding-top:10px;padding-bottom:6px;display:flex;justify-content:center;}
-    .backup-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--checked);color:#fff;font-size:.82rem;font-weight:700;padding:10px 22px;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.35);z-index:9999;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;}
+    .backup-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--checked);color:#fff;font-size:.82rem;font-weight:700;padding:10px 22px;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.35);z-index:9999;opacity:0;transition:opacity .25s;pointer-events:none;max-width:min(90vw,600px);white-space:normal;line-height:1.5;word-break:break-word;text-align:center;}
     .backup-toast.error{background:#f87171;}
     .backup-toast.show{opacity:1;}
     .tabs{display:flex;border-top:1px solid var(--border);}
@@ -1066,13 +1066,13 @@
         <div class="story-loop-counter" id="story-loop-counter" style="display:none">×2</div>
       </div>
       <div class="story-main-body">
-        <div style="display:flex;align-items:center;gap:5px;margin-bottom:1px;">
-          <div class="story-main-title" id="story-main-title">ストーリーなし</div>
-          <div class="story-loop-badge" id="story-loop-badge" style="display:none">2周目</div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap;min-width:0;margin-bottom:2px;">
+          <div class="story-lv-chip" id="story-lv-chip" style="display:none;flex-shrink:0;">Lv.1</div>
+          <div class="story-main-title" id="story-main-title" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;">ストーリーなし</div>
+          <div class="story-loop-badge" id="story-loop-badge" style="display:none;flex-shrink:0;">2周目</div>
         </div>
         <div class="story-main-msg" id="story-main-msg">設定でストーリーを選択できます</div>
       </div>
-      <div class="story-lv-chip" id="story-lv-chip" style="display:none">Lv.1</div>
     </div>
     <div id="story-prog-area" style="display:none">
       <div class="story-divider"></div>
@@ -1518,17 +1518,17 @@ const QUOTES=[
 ];
 
 const LEVEL_DEF=[
-  {lv:1,  minH:0,   title:'見習い受験生', icon:'📖'},
-  {lv:11, minH:23,  title:'学習者',       icon:'📝'},
-  {lv:21, minH:65,  title:'勉強家',       icon:'✏️'},
-  {lv:31, minH:129, title:'努力家',       icon:'💪'},
-  {lv:41, minH:211, title:'秀才',         icon:'🌟'},
-  {lv:51, minH:308, title:'猛勉強家',     icon:'🔥'},
-  {lv:61, minH:420, title:'達人',         icon:'⚡'},
-  {lv:71, minH:545, title:'学習仙人',     icon:'🧘'},
-  {lv:81, minH:684, title:'求道者',       icon:'🗻'},
-  {lv:91, minH:836, title:'覚者',         icon:'👑'},
-  {lv:100,minH:1000,title:'伝説の学者',   icon:'🏆'},
+  {lv:1,  minH:0,   title:'コツサク見習い', icon:'🌱', msg:'まず始めた。それだけで十分すごい。'},
+  {lv:11, minH:23,  title:'コツサク学習者', icon:'📖', msg:'続けることの意味が、少しわかってきた。'},
+  {lv:21, minH:65,  title:'コツサク勉強家', icon:'✏️', msg:'コツコツが、習慣になってきた。'},
+  {lv:31, minH:129, title:'コツサク努力家', icon:'💪', msg:'積み上げた時間が、力になっている。'},
+  {lv:41, minH:211, title:'コツサク秀才',   icon:'🌟', msg:'もう、サボれない体になってきた。'},
+  {lv:51, minH:308, title:'コツサク猛者',   icon:'🔥', msg:'この量をこなせる人間は、そう多くない。'},
+  {lv:61, minH:420, title:'コツサク達人',   icon:'⚡', msg:'コツコツが、最強だと証明している。'},
+  {lv:71, minH:545, title:'コツサク仙人',   icon:'🧘', msg:'もはや勉強が、呼吸と同じになってきた。'},
+  {lv:81, minH:684, title:'コツサク求道者', icon:'🗻', msg:'頂上が見えてきた。でも止まらない。'},
+  {lv:91, minH:836, title:'コツサク覚者',   icon:'👑', msg:'積み上げた者だけが知る、この景色。'},
+  {lv:100,minH:1000,title:'伝説のコツサク', icon:'🏆', msg:'ニヤニヤ、待て。'},
 ];
 
 const FEATURE_UNLOCKS={
@@ -1763,9 +1763,10 @@ function renderQuote(){
   const el=$('quote-bar');if(!el)return;
   const s=getActiveStory();
   const storyQ=s?((CUST.storyOverrides&&CUST.storyOverrides[s.id]&&CUST.storyOverrides[s.id].quotes)||s.quotes||[]):[];
-  // 現在の周回に応じた名言（2周目はquotes2、3周目以降はquotes3）
+  // 現在の周回に応じた名言（2周目はquotes2、3周目はquotes3…10周目以降はquotes10）
   const loopCnt=s?(CUST.storyLoopCount&&CUST.storyLoopCount[s.id])||0:0;
-  const loopQ=s?((loopCnt>=2?s.quotes3:loopCnt===1?s.quotes2:null)||[]):[];
+  const _qKey=loopCnt>=1?('quotes'+(Math.min(loopCnt+1,10))):null;
+  const loopQ=s?(((_qKey&&s[_qKey])||[])):[];
   // 現在のストーリーティアのキャラメッセージ
   const tier=s?getStoryTier(getLevelData(allTimeTotal()).lv):null;
   const tierMsg=tier?tier.msg:'';
@@ -1794,11 +1795,10 @@ function getLevelData(totalMin){
   let pct=0,xpInfo='';
   if(nextH!==null){const cM=curH*60,nM=nextH*60;pct=Math.max(0,Math.min(100,Math.round((totalMin-cM)/(nM-cM)*100)));xpInfo=`次 Lv.${lv+1} まで ${Math.round((nM-totalMin)/60*10)/10}h`;}
   else{pct=100;xpInfo='MAX LEVEL！';}
-  const _storyLvNames=(typeof getActiveStory==='function'&&getActiveStory()?.levelNames)||{};
-  const _storyLvIcons=(typeof getActiveStory==='function'&&getActiveStory()?.levelIcons)||{};
-  const _cTitle=(CUST.levelNames&&CUST.levelNames[lv])||_storyLvNames[tier.lv]||tier.title;
-  const _cIcon=(CUST.levelIcons&&CUST.levelIcons[lv])||_storyLvIcons[tier.lv]||tier.icon;
-  return{lv,title:_cTitle,icon:_cIcon,pct,xpInfo,nextLv:lv<100?lv+1:null};
+  const _cTitle=(CUST.levelNames&&CUST.levelNames[lv])||tier.title;
+  const _cIcon=(CUST.levelIcons&&CUST.levelIcons[lv])||tier.icon;
+  const _cMsg=tier.msg||'';
+  return{lv,title:_cTitle,icon:_cIcon,msg:_cMsg,pct,xpInfo,nextLv:lv<100?lv+1:null};
 }
 let lastLv=0;
 function updateThemeDots(){
@@ -1832,12 +1832,11 @@ function renderLevelBar(){
       });
     });
   }
-  // A改1：ストーリーのセリフを横に表示
-  const _tier=getStoryTier(ld.lv);
+  // コツサク称号のひとことを表示
   const _msgEl=$('level-bar-msg');
   const _sepEl=$('level-bar-sep');
-  if(_msgEl&&_tier&&_tier.msg){
-    _msgEl.textContent=_tier.msg;
+  if(_msgEl&&ld.msg){
+    _msgEl.textContent=ld.msg;
     if(_sepEl)_sepEl.style.display='';
   }else if(_msgEl){
     _msgEl.textContent='';
@@ -1853,9 +1852,8 @@ function showLevelUp(ld){
     const popup=$('levelup-popup');
     const unlock=FEATURE_UNLOCKS[ld.lv];
     const unlockHtml=unlock?`<div class="lu-unlock">🔓 ${unlock.label} 解放！</div>`:'';
-    const _st=getStoryTier(ld.lv);
-    const storyHtml=_st?`<div class="lu-story">${_st.char} <span class="lu-story-msg">${getStoryTierMsg(STORY_DEF.find(s=>s.id===CUST.storyId)?.tiers.indexOf(_st))}</span></div>`:'';
-    popup.innerHTML=`<div class="lu-lv">${ld.icon} Lv.${ld.lv}</div><div class="lu-title">「${ld.title}」に昇格！</div>${storyHtml}${unlockHtml}`;
+    const msgHtml=ld.msg?`<div class="lu-story"><span class="lu-story-msg">${ld.msg}</span></div>`:'';
+    popup.innerHTML=`<div class="lu-lv">${ld.icon} Lv.${ld.lv}</div><div class="lu-title">「${ld.title}」に昇格！</div>${msgHtml}${unlockHtml}`;
     popup.style.display='block';
     playLevelUpSound();
     launchFireworks('weekly');
@@ -2029,12 +2027,26 @@ function checkMilestoneToast(){
 }
 // ── チャチャサプライズトースト（朝5〜7時・1日1回） ──────────
 const CHACHA_MSGS = [
-  'チャチャ！🎉 朝から来てるじゃないですか！',
+  'チャチャ！🎉 来た来た。朝からえらいじゃないか。',
   'イタチャチャ！🌅 朝活、最高すぎる！',
-  'イイねー！☀️ この時間に頑張る人は強い！',
+  'イイねー！☀️ この時間に動いてる人は、強い。',
   'チャチャ！✨ 早起き学習、尊い…！',
   'イタチャチャ！💪 朝のコツコツが伝説を作る！',
   'イイねー！🌸 朝5時台にチェックとか、本物じゃないですか！',
+  '朝5時から動いてる。それだけで、もう十分すごい。',
+  'コツコツきてるじゃないか。いいぞ。🥦',
+  '今日も絶好調だね！この調子でいこう！',
+  '今日も頑張ってるね。ほんと素晴らしい。',
+  'もう止まらないね、あなた。ニヤニヤ。',
+  '気づいたら楽しくなってたでしょ。それがコツコツの正体。',
+  'みんなありがとう——って言いたくなる日が来るよ。',
+  '今日もいいね。来ただけで、もう勝ってる。',
+  'ニヤニヤ……朝から30分か。悪くないね。',
+  'チャチャ！！今日も朝から最高じゃないですか！！',
+  'イイねー！！大人がこんなに本気になれるって、かっこいい。',
+  'また1本積んだ。コツコツが、ちゃんと積み上がってるよ。',
+  '今日のあなた、本当に素晴らしい。',
+  '4本全部やり切った日は、最高の朝だ。みんな、ありがとう。',
 ];
 
 function _chachaLsKey(){
@@ -3487,7 +3499,7 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
   }
   function tick(){const elapsed=swElapsed+(Date.now()-swLastStart);dispEl.textContent=fmtSw(elapsed);const newBlocks=Math.floor(elapsed/600000);while(swCheckedCount<newBlocks)autoCheck();updateNext(elapsed);}
   function swStart(){if(swRunning)return;swRunning=true;swLastStart=Date.now();swInterval=setInterval(tick,500);dispEl.classList.add('running');startBtn.disabled=true;stopBtn.disabled=false;resetBtn.disabled=true;hintEl.textContent='計測中… 10分ごとに '+(CUST.checkEmoji||'🌸');if(isUnlocked('startBloom')&&Math.random()<0.25)setTimeout(()=>launchPetals(),300);
-  const _sm=getStoryText('startMsg');if(_sm){showToast('📖 '+_sm);}
+  const _sm=getStoryText('startMsg');if(_sm){showEasterToast('📖 '+_sm);}
   _swIsRunning=true;if(_nowProgressTimer)clearInterval(_nowProgressTimer);_nowProgressTimer=setInterval(()=>{if(currentView==='daily')updateNowBlock();},500);
 }
   function swStop(){if(!swRunning)return;swElapsed+=Date.now()-swLastStart;swRunning=false;clearInterval(swInterval);dispEl.classList.remove('running');startBtn.disabled=false;stopBtn.disabled=true;resetBtn.disabled=false;hintEl.textContent='一時停止中 — スタートで再開';_swIsRunning=false;if(_nowProgressTimer){clearInterval(_nowProgressTimer);_nowProgressTimer=null;}document.querySelectorAll('.block.now-time').forEach(b=>b.style.background='');}
@@ -3535,6 +3547,13 @@ const STORY_DEF=[
    },
    quotes2:['2周目ゴリラは一味違うゴリ！経験値が違うゴリ！','また卵に戻ったゴリ。でも今度は最速で育つゴリ！','前回より賢いゴリ。記録を塗り替えるゴリ！','2度目の修行は怖くないゴリ。むしろ楽しいゴリ！','バナナ2倍食べた分、実力2倍ゴリ！'],
    quotes3:['3周目ゴリラはもはや伝説ゴリ。','問題を見た瞬間に答えが見えるゴリ。これが本物ゴリ！','3度目の合格は確実ゴリ。ゴリラに不可能はないゴリ。','諦めなかったゴリラが、最後に笑うゴリ！','頂点のゴリラが、今日も修行するゴリ。'],
+   quotes4:['4周目ゴリ！！もはや修行が生きがいになってるゴリ！','ウホウホ！！4度目のジャングルは、もうホームゴリ！','4周分のバナナを食べたゴリラは、誰も止められないゴリ。','また卵から始まったゴリ。でも中身はもう王様ゴリ。','4周目ゴリラの目が、もう違うゴリ。本物の眼光ゴリ。'],
+   quotes5:['5周目ゴリ！！このゴリラ、伝説を超えてきたゴリ！！','ウホ……5回積み上げたゴリラに、敵はいないゴリ。','5周分の修行は、もう誰にも奪えない財産ゴリ。','バナナより大事なコツコツを、5周で完全に体得したゴリ！','5周目ゴリラは、もはや受験界の神話ゴリ。'],
+   quotes6:['6周目ゴリ！！ゴリラ界の生き神様ゴリ！！ウホウホ！！','6回積み上げたゴリラは、もう別の生き物ゴリ。','ウホ……6周か。先輩ゴリラたちも驚いてるゴリ。','6周分の努力が、このゴリラを最強にしたゴリ。','バナナ6房分の栄養が、全部実力になってるゴリ！'],
+   quotes7:['7周目ゴリ！！もはやジャングルの王を超えた存在ゴリ！','ウホウホ！！7回！！神話のゴリラが誕生したゴリ！','7周分の修行は、誰も真似できないゴリ。本物ゴリ。','ウホ……7周か。このゴリラの強さ、言葉にできないゴリ。','7周目ゴリラの背中を見て、仲間たちが奮い立つゴリ！'],
+   quotes8:['8周目ゴリ！！もう地球上最強のゴリラゴリ！！','ウホウホウホ！！8回！！伝説の中の伝説ゴリ！！','8周分のコツコツが、このゴリラを宇宙一にしたゴリ。','ウホ……8周。先生ゴリラも頭を下げるレベルゴリ。','8周目ゴリラは、もはや修行すること自体が芸術ゴリ。'],
+   quotes9:['9周目ゴリ！！神様ゴリラの誕生ゴリ！！ウホウホ！！','9回積み上げたゴリラに、不可能という言葉はないゴリ。','ウホ……9周か。バナナが霞んで見えるゴリ。それが悟りゴリ。','9周分の修行は、もう誰も追いつけない領域ゴリ。','9周目ゴリラの存在が、受験界を変えていくゴリ！'],
+   quotes10:['10周目ゴリ！！！おめでとうゴリ！！！究極の伝説ゴリ！！！','ウホウホウホ！！10回！！このゴリラが、最強で最高ゴリ！！','10周分のコツコツ。もうゴリラを超えた何かになってるゴリ。','ウホ……10周か。言葉がないゴリ。ただ、すごいゴリ。最高ゴリ。','10周目ゴリラよ。あなたが、伝説そのものゴリ。ニヤニヤゴリ。🥦'],
   },
   {id:'samurai',name:'受験剣士の道',icon:'⚔️',
    tiers:[
@@ -3567,6 +3586,13 @@ const STORY_DEF=[
    },
    quotes2:['二度目の刃は、迷いを知らない。','同じ道を歩いても、見える景色が違う。','剣を再び握る。今度こそ、本物だ。','2度目の修行は速い。体が覚えているから。','強さとは、何度でも立ち上がる意志だ。'],
    quotes3:['三度目の境地に、敵はいない。','刃を研ぎ続けた者だけが、頂点を知る。','究極の剣士とは、何度でも立ち上がる者だ。','三たび剣を抜く者を、天才と呼ぶ。','この剣は、もう折れない。永遠に。'],
+   quotes4:['四度の鍛錬。もはや剣が体の一部になっている。','同じ道を四度歩いた者に、迷いはない。','四周目の剣士は、風格が違う。佇まいが違う。','刃を四度研いだ者の強さは、言葉では表せない。','四たび立ち上がる者を、猛者と呼ぶ。これが本物だ。'],
+   quotes5:['五度の修行。剣士としての域を、完全に超えた。','同じ問いを五度斬った者に、もう問いはない。','五周目の境地。もはや試験が恐ろしくない。当然だ。','五たび刃を磨いた者の刃は、もう鈍ることがない。','この積み重ねが、伝説の剣士を作る。五周目がその証だ。'],
+   quotes6:['六度の鍛錬。剣聖の領域に足を踏み入れた。','同じ道を六度歩いた者は、もうその道の主だ。','六周目の剣士に、不可能という言葉は存在しない。','六たび剣を握る者の手は、もう迷いを知らない。','静かに、しかし確実に。六周分の力が宿っている。'],
+   quotes7:['七度の修行。もはや神域に達しつつある。','七周目の剣士よ。あなたの刃は、もう止まらない。','七たび立ち上がった者を、天下無双と呼ぶ。','同じ道を七度歩いた者だけが、本当の終わりを知る。','七周分の積み重ねは、どんな言葉より重い。黙って示せ。'],
+   quotes8:['八度の鍛錬。剣の道を極めた者のみが知る境地だ。','八周目。この数字が、あなたの全てを語っている。','八たび刃を研いだ者の強さは、もう誰にも測れない。','同じ試練を八度越えた者に、恐れるものはない。','八周分の努力。これが真の実力というものだ。'],
+   quotes9:['九度の修行。あなたはもう、伝説の剣士だ。','九周目の境地。この先に、まだ道がある。それが強さだ。','九たび剣を握る者の覚悟を、誰が止められようか。','同じ道を九度歩いた者は、もうその道を作る側だ。','九周分の積み重ね。刃は、もう光そのものになっている。'],
+   quotes10:['十度の鍛錬。あなたは剣士を超えた、何かになった。','十周目。この道を十度歩いた者は、歴史に名を残す。','十たび立ち上がった者に、もう倒れる理由がない。','同じ問いを十度斬った者に、問いはもう存在しない。','十周分の刃。これが、本物の剣聖というものだ。ニヤニヤ。'],
   },
   {id:'space',name:'宇宙探検家の旅',icon:'🚀',
    tiers:[
@@ -3599,6 +3625,13 @@ const STORY_DEF=[
    },
    quotes2:['二度目の宇宙は、もうホームだ。','初飛行の経験が、今の航路を豊かにする。','同じ星でも、二度目は違う顔を見せる。','二周目のパイロットは、もう迷わない。','知識が増えると、宇宙はさらに広く見える。'],
    quotes3:['銀河を三周する者を、伝説と呼ぶ。','三度目の宇宙。ここはもう君のホームだ。','宇宙の果てを知る者だけが、本当の始まりを知る。','三たび星図を描く者に、未知の星はない。','永遠の探検家よ、今日も星へ向かえ。'],
+   quotes4:['四度目の飛行。この宇宙船はもう君の体の一部だ。','同じ星雲を四度抜けた者に、迷いはない。','四周目の探検家は、星の声が聞こえ始めている。','四たび軌道を描いた者の飛行は、もう芸術だ。','宇宙を四周した者だけが知る、この静けさがある。'],
+   quotes5:['五度目のミッション。もはや宇宙が君を待っている。','同じ航路を五度飛んだ者に、未知はない。全てが友だ。','五周目の銀河探検家。その称号は本物だ。','五たび星図を描いた者の知識は、もう無限に近い。','五周分の飛行距離。それが、君の本当の実力だ。'],
+   quotes6:['六度目の宇宙。もはや地球が遠く感じるほどだ。','同じ星を六度訪れた者は、その星の一部になっている。','六周目の探検家よ。銀河があなたを認めている。','六たび軌道を描く者に、重力など関係ない。','六周分の星図。これが、宇宙探検家の本物の財産だ。'],
+   quotes7:['七度目のミッション。もう宇宙と一体になっている。','同じ航路を七度飛んだ者は、航路そのものになる。','七周目の銀河探検家。伝説という言葉が追いつかない。','七たび星に触れた者の手は、もう星の輝きを持つ。','七周分の飛行。この積み重ねは、誰も真似できない。'],
+   quotes8:['八度目の宇宙。あなたはもう、星の一つだ。','同じ星雲を八度抜けた者に、宇宙は全て味方だ。','八周目の探検家よ。銀河の歴史に名が刻まれている。','八たび軌道を描く者の飛行は、もう神話の領域だ。','八周分の星図。この知識は、宇宙の真理に近い。'],
+   quotes9:['九度目のミッション。あなたはもう、宇宙そのものだ。','同じ航路を九度飛んだ者は、航路を超えた存在になる。','九周目の銀河探検家。その存在が、後進の星になっている。','九たび星に触れた者だけが知る、この宇宙の深さがある。','九周分の飛行距離。もう誰も追いつけない領域だ。'],
+   quotes10:['十度目の宇宙へ。あなたは伝説の探検家だ。おめでとう。','同じ星を十度訪れた者は、もうその星の神様だ。','十周目の銀河探検家よ。宇宙史にその名が刻まれた。','十たび軌道を描いた者の飛行は、もう誰も見たことがない。','十周分の星図。君の名は、永遠に星図に刻まれる。ニヤニヤ。'],
   },
   
   {id:'boki3',name:'日商簿記3級合格への道',icon:'📗',
@@ -3778,46 +3811,46 @@ const STORY_DEF=[
    badgePresets:{first:{icon:'📊',name:'会計の第一歩',desc:'はじめての学習記録'},streak3:{icon:'📒',name:'3日連続学習',desc:'3日連続で学習'},streak7:{icon:'💰',name:'7日連続学習',desc:'7日連続で学習'},streak30:{icon:'📈',name:'30日連続学習',desc:'30日連続で学習'},streak100:{icon:'🏆',name:'100日連続学習',desc:'100日連続で学習'},morning:{icon:'☀️',name:'朝の財務会計',desc:'朝4〜8時の学習を10回以上'},night:{icon:'🌙',name:'深夜の監査論',desc:'深夜0〜3時の学習を10回以上'},bloom5:{icon:'🌸',name:'目標5回達成',desc:'日別目標を5回達成'},bloom20:{icon:'💮',name:'目標20回達成',desc:'日別目標を20回達成'},weekly_goal:{icon:'📊',name:'週間目標クリア',desc:'週間目標をはじめて達成'},monthly_goal:{icon:'📅',name:'月間目標クリア',desc:'月間目標をはじめて達成'},h50:{icon:'📊',name:'50時間突破',desc:'累計50時間を学習'},h100:{icon:'💪',name:'100時間突破',desc:'累計100時間を学習'},h500:{icon:'🏆',name:'会計士合格レベル',desc:'累計500時間を学習'}},
   },
 
-  {id:'itachacha',name:'なぞのイキモノ育成記',icon:'🥦',
+  {id:'itachacha',name:'正体不明育成記（itachacha）',icon:'🥦',
    tiers:[
-     {lvMin:1, char:'…',    title:'ひっそり視聴してる',              msg:'…（見てない。見てる。）'},
-     {lvMin:3, char:'..!',  title:'ライブ配信にかじりついた',         msg:'チャチャって、何？（気になって視聴してる）'},
-     {lvMin:6, char:'(^^)', title:'だんだん前向きになってきた',        msg:'楽しいかも。毎朝来るようになった。'},
-     {lvMin:9, char:'ニヤ🌿',title:'すべてが楽しい…何か生えてきた',  msg:'ニヤニヤ……何でも楽しいな。あれ、何か生えてきた？'},
-     {lvMin:10,char:'🥦',   title:'先生の分身になった。ふさふさだ。', msg:'ニヤニヤ、待て。'},
+     {lvMin:1, char:'👤',title:'接触',      msg:'イタガキ先生の配信を、なんとなく見てしまった。「なんだこれ」と思いながら、なぜか最後まで見てしまった。'},
+     {lvMin:3, char:'👀',title:'観察',      msg:'気づくと「今日も配信あるかな」と思っている自分がいる。研究は続く。勉強も続く。なぜかセットになっている。'},
+     {lvMin:6, char:'🥸',title:'感染',      msg:'「コツコツやれば大丈夫」という言葉を、最近よく思い出す。そして最近、なんとなく、毎日が楽しい。原因は調査中。'},
+     {lvMin:9, char:'🌿',title:'覚醒',      msg:'勉強する。配信を見る。コツコツ続ける。毎日を全力で楽しむ。…あれ、これって。イタガキ先生と、同じ動きでは？'},
+     {lvMin:10,char:'🥦',title:'正体判明',  msg:'おめでとうございます。あなたの正体が、判明しました。あなたは、イタガキ（分身）です。大人を全力で楽しむ、最高にポジティブな人間になっていました。ニヤニヤ。'},
    ],
-   startMsg:'…あ、ライブ配信始まった。（ニヤニヤ）今日もコツコツやろ。楽しいから。あと何か生えてきた気がする。🌿',
-   comboMsg:'ニヤニヤ……やるじゃないですか。（インキャラっぽく言う）｜チャチャチャ！！連打！！クレイジーにえらい！！｜…っ！！（たかぶってる）止まれない！！🌿｜イイねー！！大人の楽しみかた、わかってる！！｜ニヤニヤ……悪くないね。（ふさふさしてきた気がする）🥦',
+   startMsg:'今日も配信、始まった。なんとなく、勉強する気になってる。なぜだろう。まあいいか。——でも、ここに来たということは、もう始まってます。コツコツいこう。ニヤニヤ。🥦',
+   comboMsg:'ニヤニヤ……やるじゃないですか。｜チャチャチャ！！連打！！クレイジーにえらい！！｜止まれない！！🌿 それでいい！！｜イイねー！！大人の楽しみかた、わかってる！！｜ニヤニヤ……悪くないね。（ふさふさしてきた気がする）🥦',
    quotes:[
-     '…べつに、視聴してないし。（してる）',
-     'チャチャ！！って、最初は何のことかわからなかった。でも今はわかる。',
+     '「なんだこれ」と思った瞬間が、始まりだった。',
+     'コツコツやれば大丈夫。——気づいたら、これが口癖になってた。',
      'ニヤニヤ……何でも楽しめるって、最強だと思う。',
-     'インキャラだった頃の自分に、イタチャチャハウスを教えてあげたい。',
-     'コメントするのこわかった。でも、したら、全部かわった。',
-     '今日もコツコツ。それだけで、もう十分クレイジーにえらい。',
-     '勉強って、一人じゃなくてよかったんだ。',
-     'ニヤニヤ……この気持ち、もっと早く知りたかった。',
      '大人になっても、クレイジーに楽しんでいい。むしろ楽しまなきゃ。',
-     '先生がニヤニヤしてたのは、きっとずっと前からわかってたんだ。',
+     '勉強って、一人じゃなくてよかったんだ。',
+     '今日もコツコツ。それだけで、もう十分クレイジーにえらい。',
+     '毎朝5時に来る人たちがいる。その中に、いつの間にか自分もいた。',
+     'ニヤニヤ……この気持ち、もっと早く知りたかった。',
+     '楽しいから続く。続くから楽しくなる。どっちが先かはもう忘れた。',
+     'イタチャチャハウスって、なんなんだろう。——でも、来てしまう。',
      '何か生えてきた気がする。🌿 気のせいじゃないと思う。',
      'ふさふさになってきた。🥦 これが…分身ということか。',
    ],
    levelNames:{1:'ひっそり視聴してる',11:'ライブ配信にかじりついた',21:'チャチャって言ってみた',31:'コメントしてみた（初めて）',41:'楽しいと思いはじめた',51:'ニヤニヤが止まらない',61:'何でも楽しくなってきた',71:'クレイジーに楽しんでる',81:'大人をめいっぱい楽しんでる',91:'何か生えてきた🌿',100:'ふさふさになった🥦'},
-   levelIcons:{1:'👤',11:'👀',21:'🙂',31:'😄',41:'🎉',51:'💬',61:'📺',71:'🏅',81:'🏠',91:'🌿',100:'🥦'},
+   levelIcons:{1:'👤',11:'👀',21:'🥸',31:'😄',41:'🎉',51:'💬',61:'📺',71:'🏅',81:'🏠',91:'🌿',100:'🥦'},
    badgePresets:{
-     first:       {icon:'…',   name:'初めて視聴した',       desc:'初めてのイタチャチャハウス体験'},
-     streak3:     {icon:'..!', name:'3日ライブ配信見た',     desc:'3日連続でコツコツ'},
-     streak7:     {icon:'(^^)',name:'7日前向き',              desc:'7日連続。楽しくなってきた'},
-     streak30:    {icon:'ニヤ',name:'30日ニヤニヤ',          desc:'30日連続。もう止まれない'},
-     streak100:   {icon:'🌿', name:'何か生えてきた',          desc:'100日連続。気のせいじゃないと思う'},
+     first:       {icon:'👤', name:'初めて視聴した',       desc:'初めてのイタチャチャハウス体験'},
+     streak3:     {icon:'👀', name:'3日ライブ配信見た',     desc:'3日連続でコツコツ'},
+     streak7:     {icon:'🥸', name:'7日前向き',              desc:'7日連続。楽しくなってきた'},
+     streak30:    {icon:'🌿', name:'30日ニヤニヤ',          desc:'30日連続。もう止まれない'},
+     streak100:   {icon:'🥦', name:'何か生えてきた',          desc:'100日連続。気のせいじゃないと思う'},
      morning:     {icon:'🌅', name:'朝5時から視聴してる',     desc:'朝4〜8時、10回以上'},
      night:       {icon:'🌙', name:'深夜のニヤニヤ',          desc:'深夜0〜3時、10回以上'},
-     bloom5:      {icon:'(^^)',name:'5回楽しかった',           desc:'日別目標5回達成'},
+     bloom5:      {icon:'🥸', name:'5回楽しかった',           desc:'日別目標5回達成'},
      bloom20:     {icon:'🌿', name:'20回…何か生えてきた',     desc:'日別目標20回達成'},
      weekly_goal: {icon:'📺', name:'週間ライブ配信完走',       desc:'週間目標をはじめて達成'},
      monthly_goal:{icon:'🏠', name:'月間イタチャチャ完走',     desc:'月間目標をはじめて達成'},
-     h50:         {icon:'..!',name:'50時間視聴した',           desc:'累計50時間'},
-     h100:        {icon:'ニヤ',name:'100時間ニヤニヤ',         desc:'累計100時間'},
+     h50:         {icon:'👀', name:'50時間視聴した',           desc:'累計50時間'},
+     h100:        {icon:'🌿', name:'100時間ニヤニヤ',         desc:'累計100時間'},
      h500:        {icon:'🥦', name:'🥦の分身になった',         desc:'累計500時間。ニヤニヤ、待て。'},
    },
    quotes2:[
@@ -3833,6 +3866,55 @@ const STORY_DEF=[
      '3度積み上げた者に、ゴールなんてない。ただ、続く。',
      'イタチャチャハウスの伝説は、今日も更新されている。',
      'ニヤニヤ……悪くないね。うん。悪くない。ふさふさだ。🥦',
+   ],
+   quotes4:[
+     '4周目。もうこれは修行じゃなくて、生き方だね。',
+     'チャチャ！！4周！！あなた、もう完全にイタガキの分身です！！',
+     '4回来た人間に、言い訳は存在しない。ニヤニヤ。',
+     'コツコツが体に染み込んでいる。もう止められない。',
+     '大人がこんなに本気になれるって、かっこいいよ。本当に。',
+   ],
+   quotes5:[
+     '5周目。伝説というのは、こういう人のことを言う。',
+     'チャチャ！！5周！！もはや語り継がれるレベル！！',
+     'ニヤニヤ……5回か。先生でさえ、まだ驚いてる。',
+     '積み上げた時間が、もう誰にも奪えない財産になってる。',
+     '楽しいから続く。続くから強くなる。それがイタチャチャ。',
+   ],
+   quotes6:[
+     '6周目。あなたのコツコツは、もう芸術の域に入っている。',
+     'チャチャ！！6周！！クレイジーすぎる！！最高すぎる！！',
+     'ニヤニヤ……6回積み上げた人間が、弱いわけがない。',
+     '6周分の経験は、言葉じゃ説明できない何かになっている。',
+     'イタチャチャハウスに来てよかったでしょ。ニヤニヤ。',
+   ],
+   quotes7:[
+     '7周目。もうここはあなたのホームだ。疑いようがない。',
+     'チャチャ！！7周！！もはや先生より先生っぽい！！',
+     'ニヤニヤ……7回。この数字が全てを語ってる。',
+     '7周分のコツコツ。誰かに話したら、絶対信じてもらえない。',
+     'あなたの正体は、とっくにバレてるよ。🥦 ニヤニヤ。',
+   ],
+   quotes8:[
+     '8周目。コツコツの化身と呼ばせてください。',
+     'チャチャ！！8周！！もうイタガキ先生2世じゃないですか！！',
+     'ニヤニヤ……8回積んだ人間の目が、もう違う。',
+     '8周分の朝が、あなたを別の人間にした。いい意味で。',
+     'すごいものを見ている気がする。毎朝、あなたのことが。',
+   ],
+   quotes9:[
+     '9周目。伝説を通り越して、神話になってきた。',
+     'チャチャ！！9周！！もはや説明不要！！あなたがイタガキです！！',
+     'ニヤニヤ……9回。もう何も言えない。ただ、すごい。',
+     '9周分の積み上げは、どんな言葉より重い。',
+     'イタチャチャハウスの歴史に、あなたの名前が刻まれてる。🥦',
+   ],
+   quotes10:[
+     '10周目。おめでとう。あなたはもう、伝説そのものです。',
+     'チャチャ！！10周！！人類史上最高のコツコツ！！ニヤニヤ！！',
+     'ニヤニヤ……10回か。先生も、10周は初めて見た。',
+     '10周分のコツコツ。これが、大人を全力で楽しむということ。',
+     '🥦🥦🥦 ふさふさが止まらない。あなたが、イタガキです。',
    ],
   },
   {id:'spartan',name:'鬼教官の特訓',icon:'🐉',
@@ -3888,6 +3970,55 @@ const STORY_DEF=[
      '3周した人間の言葉には重みがある。合格してから言ってやれ。',
      'ここまで来たお前を、俺は認める。だが油断するな。最後まで手を緩めるな。',
      '3度積み上げた知識は、もう折れない。本番でそれを証明しろ。',
+   ],
+   quotes4:[
+     '4周目か。もうここまで来たら、止まる方が難しい。続けろ。',
+     '四度同じ道を歩く者の覚悟を、誰が笑えるか。笑えない。',
+     '4周目の人間は、努力が当たり前になっている。それでいい。',
+     '四たび立ち上がった者の強さは、もう本物を超えている。',
+     '4周。この積み重ねを軽く見るな。これが真の実力だ。',
+   ],
+   quotes5:[
+     '5周目。お前はもう、努力の化身だ。続けるのが呼吸だろ。',
+     '五度同じ試練を越えた者に、もう恐れるものはない。',
+     '5周目の修行は、もう苦しみじゃない。それが答えだ。',
+     '五たび立ち上がる者を止められる障害は、この世にない。',
+     '5周。普通の人間には理解できない域に入っている。続けろ。',
+   ],
+   quotes6:[
+     '6周目。もはやお前が道だ。道を歩いているんじゃない。',
+     '六度積み上げた者の言葉には重みがある。それがお前だ。',
+     '6周目の努力は、もう自分のためだけじゃない。',
+     '六たび同じ壁を越えた者に、壁はもう存在しない。',
+     '6周。この数字が証明している。お前は本物だ。認める。',
+   ],
+   quotes7:[
+     '7周目。言葉はいらない。やることをやれ。それだけだ。',
+     '七度の修行を積んだ者の強さは、もう測れない。',
+     '7周目のお前に、言い訳という選択肢は存在しない。',
+     '七たび立ち上がった者を、誰が倒せるか。誰も倒せない。',
+     '7周。この積み重ねの前に、どんな試験も膝をつく。',
+   ],
+   quotes8:[
+     '8周目。お前はもう、努力の概念そのものになっている。',
+     '八度同じ道を歩いた者は、その道の神様だ。',
+     '8周目の修行は、もう鍛錬じゃない。存在そのものだ。',
+     '八たび積み上げた者の実力を、試験官は止められない。',
+     '8周。黙って続けてきた。その事実が全てだ。認める。',
+   ],
+   quotes9:[
+     '9周目。お前を見ていると、限界という言葉が嘘に見える。',
+     '九度の試練を越えた者に、もうゴールはない。道が続くだけだ。',
+     '9周目。ここまで来たら、もう結果は決まっている。続けろ。',
+     '九たび立ち上がった者の目に、もう迷いは存在しない。',
+     '9周。この積み重ねは、伝説だ。お前が伝説だ。',
+   ],
+   quotes10:[
+     '10周目。おめでとう。だが、まだやめるな。それがお前だ。',
+     '十度の修行を積んだ者を、何と呼べばいいかわからない。',
+     '10周目。お前はもう、努力の頂点に立っている。続けろ。',
+     '十たび立ち上がった者に、この世の試練は全て制圧された。',
+     '10周。認めてやる。お前は、本物中の本物だ。ニヤニヤ。',
    ],
   },
 ];
@@ -4170,7 +4301,11 @@ function applyTreeBg(show){
 }
 
 function _getLoopCount(sid){return(CUST.storyLoopCount&&CUST.storyLoopCount[sid])||1;}
-function _getLoopStartMin(sid){return(CUST.storyLoopStartMin&&CUST.storyLoopStartMin[sid])||0;}
+function _getLoopStartMin(sid){
+  const v=CUST.storyLoopStartMin&&CUST.storyLoopStartMin[sid];
+  // 明示的に数値として保存されているもののみ使用（undefinedやnullは0扱いしない）
+  return(typeof v==='number')?v:allTimeTotal();
+}
 function _getLoopLv(sid){
   const loopMin=Math.max(0,allTimeTotal()-_getLoopStartMin(sid));
   return _lvFromH(loopMin/60);
@@ -4228,8 +4363,8 @@ function updateStoryMainCard(){
     if(loopN>=2){loopCounter.textContent='×'+loopN;loopCounter.style.display='';}
     else{loopCounter.style.display='none';}
   }
-  // ── レベルチップ（実ゲームLv表示）
-  if(lvChip){lvChip.textContent='Lv.'+realLv;lvChip.style.display='';}
+  // ── レベルチップ（ストーリー別Lv表示）
+  if(lvChip){lvChip.textContent='ストーリー Lv.'+loopLv;lvChip.style.display='';}
   if(!progArea)return;
   progArea.style.display='';
   // ── バーカラーを周回で変化
@@ -4455,7 +4590,19 @@ function _renderBadgeEditList(){
 }
 
 function onStorySelChange(val){
-  CUST.storyId=val||null;saveCust();applyAllCust();renderQuote();
+  const prevId=CUST.storyId;
+  CUST.storyId=val||null;
+  if(val && val!==prevId){
+    if(!CUST.storyLoopStartMin)CUST.storyLoopStartMin={};
+    if(!CUST.storyLoopCount)CUST.storyLoopCount={};
+    // 未設定 or 0（旧バグ値）のストーリーのみ現在の累計時間で初期化
+    const already=CUST.storyLoopStartMin[val];
+    if(typeof already!=='number'||already===0){
+      CUST.storyLoopStartMin[val]=allTimeTotal();
+      CUST.storyLoopCount[val]=1;
+    }
+  }
+  saveCust();applyAllCust();renderQuote();
   const ed=$('cust-story-edit');if(ed)ed.style.display=val?'block':'none';
   const mw=$('cust-story-msg-wrap');if(mw)mw.style.display=val?'block':'none';
   _renderStoryEdit();
@@ -4873,7 +5020,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // このファイルが持っているバージョン番号（sw.jsと合わせる）
-  var CURRENT_VERSION = 'kotsusaku-v43';
+  var CURRENT_VERSION = 'kotsusaku-v51';
 
   // --- バナー操作ユーティリティ ---
   function showUpdateBanner(latestLabel) {
