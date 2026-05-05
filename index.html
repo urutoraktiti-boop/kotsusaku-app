@@ -2747,6 +2747,8 @@ function onHourBtn(h){
     checkMilestoneToast();
     checkChachaToast();
   }
+}
+function onBlock(e){
   const div=e.currentTarget;
   const h=+div.dataset.h,m=+div.dataset.m;
   const wasChecked=isChecked(currentDate,h,m);
