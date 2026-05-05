@@ -46,7 +46,7 @@
     .countdown-clear{background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:.75rem;padding:2px 4px;transition:color .15s;}
     .countdown-clear:hover{color:#f87171;}
     
-    .level-bar{display:flex;align-items:center;gap:8px;padding:5px 0 6px;border-top:1px solid var(--border);}
+    .level-bar{display:flex;align-items:center;gap:8px;padding:4px 0 2px;}
     .level-badge{background:var(--accent);color:var(--bg);font-size:.62rem;font-weight:800;padding:2px 7px;border-radius:99px;white-space:nowrap;flex-shrink:0;}
     .level-title-text{font-size:.68rem;font-weight:700;color:var(--text);white-space:nowrap;flex-shrink:0;}
     .level-xp-wrap{flex:1;display:flex;flex-direction:column;gap:2px;}
@@ -88,9 +88,6 @@
     .challenge-fab:hover{transform:scale(1.1);box-shadow:0 4px 12px rgba(0,0,0,.25);}
     .challenge-fab.has-badge::after{content:'';position:absolute;top:0;right:0;width:10px;height:10px;background:#f59e0b;border-radius:50%;border:2px solid var(--bg);}
     
-    .challenge-popup{display:none;margin-top:8px;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;animation:slideDown .2s ease;}
-    .challenge-popup.open{display:block;}
-    @keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
     .challenge-popup-header{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--surface2);border-bottom:1px solid var(--border);font-size:.72rem;font-weight:700;color:var(--text-muted);}
     .challenge-popup-close{background:none;border:none;cursor:pointer;font-size:.85rem;color:var(--text-muted);padding:2px 4px;border-radius:4px;}
     .challenge-popup-close:hover{background:var(--border);}
@@ -112,6 +109,9 @@
     .badge-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
     .badge-panel-title{font-size:1rem;font-weight:800;color:var(--text);}
     .badge-panel-close{background:transparent;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;padding:4px;}
+    .badge-tab-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-size:.72rem;font-weight:700;padding:5px 12px;border-radius:7px;cursor:pointer;transition:background .15s,color .15s;}
+    .badge-tab-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+    .badge-tab-btn:hover:not(.active){background:var(--border);}
     .badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;}
     .badge-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 10px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;transition:border-color .2s,background .2s;}
     .badge-item.earned{border-color:var(--checked);background:rgba(62,207,142,.08);}
@@ -183,7 +183,26 @@
     .forecast-body{display:flex;flex-direction:column;gap:3px;}
     .forecast-num{font-size:1.55rem;font-weight:800;color:var(--checked);line-height:1.15;}
     .forecast-sub{font-size:.62rem;color:var(--text-muted);}
-    .forecast-pace{font-size:.65rem;color:var(--text-muted);margin-top:1px;}
+    .forecast-pace{font-size:.62rem;color:var(--text-muted);margin-top:1px;}
+    .forecast-cols{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+    .forecast-col{background:var(--surface2);border-radius:8px;padding:10px;text-align:center;}
+    .forecast-col-target{border:1px solid var(--accent);}
+    .forecast-col-lbl{font-size:.55rem;color:var(--text-muted);margin-bottom:4px;}
+    .forecast-target-num{font-size:1.3rem;font-weight:800;color:var(--accent);line-height:1.15;}
+    .forecast-target-diff{font-size:.58rem;margin-top:3px;font-weight:700;}
+    .forecast-target-diff.ok{color:var(--checked);}
+    .forecast-target-diff.ng{color:#f87171;}
+    .forecast-target-diff.close{color:#f59e0b;}
+    .forecast-gauge-wrap{margin-top:4px;}
+    .forecast-gauge-bg{background:var(--surface2);border-radius:99px;height:8px;overflow:hidden;margin-bottom:4px;}
+    .forecast-gauge-fill{height:100%;border-radius:99px;transition:width .5s;}
+    .forecast-gauge-fill.ok{background:linear-gradient(90deg,var(--checked),#7ee8a2);}
+    .forecast-gauge-fill.ng{background:linear-gradient(90deg,#f87171,#fb923c);}
+    .forecast-gauge-fill.close{background:linear-gradient(90deg,#f59e0b,#fbbf24);}
+    .forecast-gauge-labels{display:flex;justify-content:flex-end;font-size:.55rem;color:var(--text-muted);margin-bottom:5px;}
+    .forecast-advice{background:var(--surface2);border-radius:6px;padding:7px 10px;}
+    .forecast-advice-main{font-size:.68rem;font-weight:700;margin-bottom:2px;}
+    .forecast-advice-sub{font-size:.6rem;color:var(--text-muted);}
     
     .weekly-report-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-size:.65rem;font-weight:700;padding:4px 10px;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:background .15s,color .15s;margin-left:auto;}
     .weekly-report-btn:hover{background:var(--border);color:var(--text);}
@@ -358,9 +377,15 @@
     .goal-input-custom::-webkit-outer-spin-button,.goal-input-custom::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
     .goal-input-custom::placeholder{color:var(--text-muted);font-size:.6rem;}
     .sw-wrap{width:100%;max-width:700px;margin:0 auto;padding:6px 14px 4px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:var(--header-h,0px);z-index:99;}
-    .sw-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 16px;display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;transition:background .3s,border-color .3s;}
+    .sw-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 16px;display:flex;flex-direction:column;gap:6px;transition:background .3s,border-color .3s;}
+    .sw-top-row{display:flex;align-items:center;gap:8px;}
     .sw-icon{font-size:1.2rem;flex-shrink:0;}
     .sw-body{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0;}
+    .sw-icon-btns{display:flex;gap:6px;flex-shrink:0;}
+    .sw-icon-btn{width:40px;height:40px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0;}
+    .sw-icon-btn:hover{background:var(--border);}
+    .sw-btns-main{display:flex;gap:6px;}
+    .sw-btns-main .sw-btn{flex:1;}
     .sw-label{font-size:.62rem;color:var(--text-muted);font-weight:700;letter-spacing:.04em;}
     .sw-display{font-size:1.9rem;font-weight:800;color:var(--text);letter-spacing:.04em;font-variant-numeric:tabular-nums;line-height:1.1;transition:color .4s;}
     .sw-display.running{color:var(--checked);}
@@ -370,16 +395,15 @@
     .sw-next-lbl{font-size:.55rem;color:var(--text-muted);white-space:nowrap;}
     .sw-next-time{font-size:1.05rem;font-weight:800;color:var(--text-muted);font-variant-numeric:tabular-nums;line-height:1.1;transition:color .4s;}
     .sw-next-time.soon{color:#fb7185;}
-    .sw-btns{display:flex;flex-direction:column;gap:4px;flex-shrink:0;}
-    .sw-btns-main{display:flex;gap:6px;}
     .sw-btn{padding:7px 16px;border-radius:8px;border:none;font-size:.78rem;font-weight:700;cursor:pointer;transition:filter .15s,opacity .15s,background .15s;white-space:nowrap;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;}
     .sw-btn:disabled{opacity:.35;cursor:default;}
     .sw-btn.start{background:var(--checked);color:#fff;}
     .sw-btn.start:not(:disabled):hover{filter:brightness(1.12);}
     .sw-btn.stop{background:#f87171;color:#fff;}
     .sw-btn.stop:not(:disabled):hover{filter:brightness(1.1);}
-    .sw-btn.reset{background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-size:.72rem;padding:3px 8px;width:100%;}
+    .sw-btn.reset{background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-size:.72rem;padding:4px 8px;width:100%;}
     .sw-btn.reset:not(:disabled):hover{background:var(--border);color:var(--text);}
+
     @media (max-width:520px){
       .stat-row{gap:4px;padding:0 8px;margin-top:10px;}
       .stat-card{padding:7px 7px;gap:2px;}
@@ -400,9 +424,9 @@
       .sw-label{font-size:.58rem;}
       .sw-next-time{font-size:.85rem;}
       .sw-next-lbl{font-size:.5rem;}
-      .sw-btns{width:100%;flex-shrink:1;}
       .sw-btns-main{width:100%;}
       .sw-btns-main .sw-btn{flex:1;}
+      .sw-icon-btn{width:36px;height:36px;font-size:1rem;}
       .badge-grid{grid-template-columns:repeat(auto-fill,minmax(100px,1fr));}
       .level-title-text{display:none;}
     }
@@ -522,6 +546,13 @@
       <span class="badge-panel-title">🏅 バッジコレクション</span>
       <button class="badge-panel-close" onclick="closeBadgePanel()">✕</button>
     </div>
+    <div id="badge-fiction-tabs" style="display:none;border-bottom:1px solid var(--border);margin-bottom:10px;">
+      <div style="display:flex;gap:4px;padding:0 4px 8px;">
+        <button class="badge-tab-btn active" data-story="gorilla" onclick="switchBadgeTab('gorilla')">🦍 ゴリラ</button>
+        <button class="badge-tab-btn" data-story="samurai" onclick="switchBadgeTab('samurai')">⚔️ 剣士</button>
+        <button class="badge-tab-btn" data-story="space" onclick="switchBadgeTab('space')">🚀 宇宙</button>
+      </div>
+    </div>
     <div class="badge-grid" id="badge-grid"></div>
   </div>
 </div>
@@ -549,6 +580,14 @@
         </div>
       </div>
       <div style="font-size:.6rem;color:var(--text-muted);margin-top:4px;">「開花するまであと何日」カウントダウンに連動します</div>
+      <div class="cust-row" style="margin-top:10px;">
+        <label class="cust-lbl">目標総学習時間</label>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="number" id="cust-target-h" class="cust-input" min="1" max="9999" placeholder="例：300" style="width:80px;text-align:center;">
+          <span style="font-size:.72rem;color:var(--text-muted);">時間</span>
+        </div>
+      </div>
+      <div style="font-size:.6rem;color:var(--text-muted);margin-top:4px;">設定するとLv.100がその時間に合わせて調整されます（未設定時は1000時間）</div>
     </div>
     <div class="cust-sec">
       <div class="cust-sec-title">🎯 学習目標</div>
@@ -623,12 +662,26 @@
           </optgroup>
         </select>
       </div>
+      <!-- コンボテキスト（テーマ選択直下） -->
+      <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);">
+        <div class="cust-row">
+          <label class="cust-lbl">コンボ文字</label>
+          <input type="text" id="cust-combo-text" class="cust-input" maxlength="20" placeholder="コンボ！">
+        </div>
+        <div class="cust-row">
+          <label class="cust-lbl">10連続の後</label>
+          <input type="text" id="cust-combo-high" class="cust-input" maxlength="20" placeholder="すごい！">
+        </div>
+        <div style="font-size:.6rem;color:var(--text-muted);margin-top:-2px;">「コンボ！」→「ゴリラ連打！」のように自由に変更できます</div>
+        <div id="cust-story-msg-wrap" style="display:none;margin-top:10px;padding-top:8px;border-top:1px solid var(--border);">
+          <div style="font-size:.65rem;font-weight:700;color:var(--text-muted);margin-bottom:4px;">▸ 開始メッセージ（ストーリー選択時）</div>
+          <input type="text" id="cust-story-start" class="cust-input" maxlength="60" style="margin-bottom:8px;" placeholder="タイマー開始時のメッセージ">
+          <div style="font-size:.65rem;font-weight:700;color:var(--text-muted);margin-bottom:4px;">▸ コンボ台詞（10連続時）</div>
+          <input type="text" id="cust-story-combo" class="cust-input" maxlength="40" placeholder="コンボ時の台詞">
+        </div>
+      </div>
       <div id="cust-story-edit" style="display:none;margin-top:6px;">
         <div style="font-size:.6rem;color:var(--text-muted);margin-bottom:6px;">文章を編集（空欄でデフォルトに戻る）</div>
-        <div style="font-size:.65rem;font-weight:700;color:var(--text-muted);margin-bottom:3px;">▸ 開始メッセージ</div>
-        <input type="text" id="cust-story-start" class="cust-input" maxlength="60" style="margin-bottom:8px;" placeholder="タイマー開始時のメッセージ">
-        <div style="font-size:.65rem;font-weight:700;color:var(--text-muted);margin-bottom:3px;">▸ コンボ台詞（10連続時）</div>
-        <input type="text" id="cust-story-combo" class="cust-input" maxlength="40" style="margin-bottom:8px;" placeholder="コンボ時の台詞">
         <div style="font-size:.65rem;font-weight:700;color:var(--text-muted);margin-bottom:4px;">▸ 成長段階メッセージ（Lv別）</div>
         <div id="cust-story-tiers"></div>
         <div style="font-size:.65rem;font-weight:700;color:var(--text-muted);margin:6px 0 4px;">▸ 名言（1行1個）</div>
@@ -670,18 +723,6 @@
         <input type="text" id="cust-q-inp" class="cust-input" maxlength="80" placeholder="新しい名言を入力…">
         <button class="cust-btn ok" id="cust-q-add">＋追加</button>
       </div>
-    </div>
-    <div class="cust-sec">
-      <div class="cust-sec-title">🔤 コンボテキスト</div>
-      <div class="cust-row">
-        <label class="cust-lbl">コンボ文字</label>
-        <input type="text" id="cust-combo-text" class="cust-input" maxlength="20" placeholder="コンボ！">
-      </div>
-      <div class="cust-row">
-        <label class="cust-lbl">10連続の後</label>
-        <input type="text" id="cust-combo-high" class="cust-input" maxlength="20" placeholder="すごい！">
-      </div>
-      <div style="font-size:.6rem;color:var(--text-muted);margin-top:-2px;">「コンボ！」→「ゴリラ連打！」のように自由に変更できます</div>
     </div>
     <div class="cust-sec">
       <div class="cust-sec-title">📊 レベル名称・アイコン</div>
@@ -761,7 +802,6 @@
   <div class="header-title">コツコツ✏️サクサク🌸</div>
   <div class="quote-bar" id="quote-bar"></div>
   <div class="header-controls">
-    <button class="badge-open-btn" id="badge-open-btn" onclick="openBadgePanel()" title="バッジコレクション">🏅 <span class="badge-count" id="badge-count">0</span></button>
     <button class="cust-gear-btn" id="cust-gear-btn" onclick="openCustPanel()" title="設定">設定</button>
     <div class="date-nav">
       <button class="nav-btn" id="prev-btn">&#8249;</button>
@@ -782,15 +822,7 @@
       <button class="countdown-clear" id="cd-clear" title="クリア">✕</button>
     </div>
   </div>
-  <div class="level-bar" id="level-bar">
-    <span class="level-icon" id="level-icon">📖</span>
-    <span class="level-badge" id="level-badge">Lv.1</span>
-    <span class="level-title-text" id="level-title-text">見習い受験生</span>
-    <div class="level-xp-wrap">
-      <div class="level-xp-bg"><div class="level-xp-fill" id="level-xp-fill" style="width:0%"></div></div>
-      <div class="level-xp-info" id="level-xp-info"></div>
-    </div>
-  </div>
+
   
 
   <div class="tabs">
@@ -801,27 +833,53 @@
 </header>
 <div class="sw-wrap">
     <div class="sw-card">
-      <div class="sw-icon">⏱</div>
-      <div class="sw-body">
-        <div class="sw-label">ストップウォッチ</div>
-        <div class="sw-time-row">
-          <div id="sw-display" class="sw-display">00:00</div>
-          <div class="sw-next-wrap">
-            <div class="sw-next-lbl">🌸まであと</div>
-            <div id="sw-next-time" class="sw-next-time">--:--</div>
+      <div class="sw-top-row">
+        <div class="sw-icon">⏱</div>
+        <div class="sw-body">
+          <div class="sw-label">ストップウォッチ</div>
+          <div class="sw-time-row">
+            <div id="sw-display" class="sw-display">00:00</div>
+            <div class="sw-next-wrap">
+              <div class="sw-next-lbl">🌸まであと</div>
+              <div id="sw-next-time" class="sw-next-time">--:--</div>
+            </div>
           </div>
+          <div class="sw-hint" id="sw-hint">10分ごとに 🌸</div>
         </div>
-        <div class="sw-hint" id="sw-hint">10分ごとに 🌸</div>
-      </div>
-      <div class="sw-btns">
-        <div class="sw-btns-main">
-          <button class="sw-btn start" id="sw-start-btn">▶ スタート</button>
-          <button class="sw-btn stop" id="sw-stop-btn" disabled>■ ストップ</button>
+        <div class="sw-icon-btns">
+          <button class="sw-icon-btn" id="sw-screenshot-btn" onclick="exportDailyReport()" title="今日のスクショ">📸</button>
+          <button class="sw-icon-btn" id="challenge-fab" onclick="toggleChallengePopup()" title="今週のチャレンジ">🎯</button>
+          <button class="sw-icon-btn" id="badge-open-btn" onclick="openBadgePanel()" title="バッジコレクション">🏅<span class="badge-count" id="badge-count" style="font-size:.55rem;vertical-align:super;"></span></button>
         </div>
-        <button class="sw-btn reset" id="sw-reset-btn" title="リセット">↺ リセット</button>
       </div>
+      <div class="sw-btns-main">
+        <button class="sw-btn start" id="sw-start-btn">▶ スタート</button>
+        <button class="sw-btn stop" id="sw-stop-btn" disabled>■ ストップ</button>
+      </div>
+      <button class="sw-btn reset" id="sw-reset-btn" title="リセット">↺ リセット</button>
     </div>
   </div>
+<!-- 今週のチャレンジ オーバーレイ -->
+<div id="challenge-overlay" class="badge-overlay" onclick="if(event.target===this)toggleChallengePopup()">
+  <div class="badge-panel">
+    <div class="badge-panel-header">
+      <span class="badge-panel-title">🎯 今週のチャレンジ</span>
+      <button class="badge-panel-close" onclick="toggleChallengePopup()">✕</button>
+    </div>
+    <div class="challenge-card" id="challenge-card">
+      <div class="challenge-icon" id="challenge-icon">🎯</div>
+      <div class="challenge-body">
+        <div class="challenge-title" id="challenge-title">読み込み中...</div>
+        <div class="challenge-desc" id="challenge-desc"></div>
+        <div class="challenge-prog">
+          <div class="challenge-prog-bg"><div class="challenge-prog-fill" id="challenge-prog-fill" style="width:0%"></div></div>
+          <div class="challenge-prog-txt" id="challenge-prog-txt"></div>
+        </div>
+      </div>
+      <div class="challenge-status" id="challenge-status"></div>
+    </div>
+  </div>
+</div>
 
 <div class="stat-row">
   <div class="stat-card">
@@ -829,36 +887,21 @@
     <span class="stat-value" id="stat-daily">0 h 0 m</span>
     <div class="prog-bg"><div class="prog-fill" id="daily-prog" style="width:0%"></div></div>
     <div class="prog-info" id="daily-prog-info">目標 2h まで 0%</div>
-    <div class="goal-row">
-      <span class="goal-lbl">目標：</span>
-      <button class="goal-btn active" data-type="daily" data-h="2">2h</button>
-      <button class="goal-btn" data-type="daily" data-h="4">4h</button>
-      <button class="goal-btn" data-type="daily" data-custom="true" id="daily-custom-btn">✏</button>
-    </div>
+
   </div>
   <div class="stat-card">
     <span class="stat-label">今週の合計</span>
     <span class="stat-value" id="stat-weekly">0 h 0 m</span>
     <div class="prog-bg"><div class="prog-fill" id="weekly-prog" style="width:0%"></div></div>
     <div class="prog-info" id="weekly-prog-info">目標 10h まで 0%</div>
-    <div class="goal-row">
-      <span class="goal-lbl">目標：</span>
-      <button class="goal-btn active" data-type="weekly" data-h="10">10h</button>
-      <button class="goal-btn" data-type="weekly" data-h="20">20h</button>
-      <button class="goal-btn" data-type="weekly" data-custom="true" id="weekly-custom-btn">✏ カスタム</button>
-    </div>
+
   </div>
   <div class="stat-card">
     <span class="stat-label">今月の合計</span>
     <span class="stat-value" id="stat-monthly">0 h 0 m</span>
     <div class="prog-bg"><div class="prog-fill" id="monthly-prog" style="width:0%"></div></div>
     <div class="prog-info" id="monthly-prog-info">目標 30h まで 0%</div>
-    <div class="goal-row">
-      <span class="goal-lbl">目標：</span>
-      <button class="goal-btn active" data-type="monthly" data-h="30">30h</button>
-      <button class="goal-btn" data-type="monthly" data-h="60">60h</button>
-      <button class="goal-btn" data-type="monthly" data-custom="true" id="monthly-custom-btn">✏ カスタム</button>
-    </div>
+
   </div>
 </div>
 
@@ -866,6 +909,17 @@
 <div class="challenge-wrap">
   <!-- Story main card D案 (always visible) -->
   <div class="story-main-card" id="story-main-card">
+    <!-- レベルセクション -->
+    <div class="level-bar" id="level-bar">
+      <span class="level-icon" id="level-icon">📖</span>
+      <span class="level-badge" id="level-badge">Lv.1</span>
+      <span class="level-title-text" id="level-title-text">見習い受験生</span>
+      <div class="level-xp-wrap">
+        <div class="level-xp-bg"><div class="level-xp-fill" id="level-xp-fill" style="width:0%"></div></div>
+        <div class="level-xp-info" id="level-xp-info"></div>
+      </div>
+    </div>
+    <div class="story-divider"></div>
     <div class="story-top-row">
       <div class="story-char-wrap">
         <div class="story-main-char" id="story-main-char">📖</div>
@@ -879,7 +933,6 @@
         <div class="story-main-msg" id="story-main-msg">設定でストーリーを選択できます</div>
       </div>
       <div class="story-lv-chip" id="story-lv-chip" style="display:none">Lv.1</div>
-      <button class="challenge-fab" id="challenge-fab" onclick="toggleChallengePopup()" title="今週のチャレンジ">🎯</button>
     </div>
     <div id="story-prog-area" style="display:none">
       <div class="story-divider"></div>
@@ -890,27 +943,6 @@
       <div id="story-loop-complete" style="display:none;text-align:center;margin-top:8px;">
         <button class="story-next-loop-btn" onclick="startNextStoryLoop()">🎉 ストーリークリア！　次の周回へ →</button>
         <div class="story-countdown-row" id="story-countdown-row"><span id="story-countdown">10</span>秒後に自動で次の周回へ…</div>
-      </div>
-    </div>
-  </div>
-  <!-- 今週のチャレンジ popup (collapsible) -->
-  <div class="challenge-popup" id="challenge-popup">
-    <div class="challenge-popup-header">
-      <span>🎯 今週のチャレンジ</span>
-      <button class="challenge-popup-close" onclick="toggleChallengePopup()">✕</button>
-    </div>
-    <div class="challenge-popup-body">
-      <div class="challenge-card" id="challenge-card">
-        <div class="challenge-icon" id="challenge-icon">🎯</div>
-        <div class="challenge-body">
-          <div class="challenge-title" id="challenge-title">読み込み中...</div>
-          <div class="challenge-desc" id="challenge-desc"></div>
-          <div class="challenge-prog">
-            <div class="challenge-prog-bg"><div class="challenge-prog-fill" id="challenge-prog-fill" style="width:0%"></div></div>
-            <div class="challenge-prog-txt" id="challenge-prog-txt"></div>
-          </div>
-        </div>
-        <div class="challenge-status" id="challenge-status"></div>
       </div>
     </div>
   </div>
@@ -1036,10 +1068,24 @@
   </div>
   <div class="forecast-section" style="display:none">
     <div class="forecast-title">📈 試験日までの学習予測</div>
-    <div class="forecast-body">
-      <div class="forecast-num">--</div>
-      <div class="forecast-sub">試験日までに積み上がる予測時間</div>
-      <div class="forecast-pace"></div>
+    <div class="forecast-cols">
+      <div class="forecast-col">
+        <div class="forecast-col-lbl">📊 予測到達</div>
+        <div class="forecast-num">--</div>
+        <div class="forecast-pace"></div>
+      </div>
+      <div class="forecast-col forecast-col-target" id="">
+        <div class="forecast-col-lbl">🎯 目標総時間</div>
+        <div class="forecast-target-num">--</div>
+        <div class="forecast-target-diff"></div>
+      </div>
+    </div>
+    <div class="forecast-gauge-wrap" style="display:none">
+      <div class="forecast-gauge-bg"><div class="forecast-gauge-fill"></div></div>
+      <div class="forecast-gauge-labels">
+        <span class="forecast-gauge-pct"></span>
+      </div>
+      <div class="forecast-advice"></div>
     </div>
   </div>
 </div>
@@ -1065,10 +1111,24 @@
   <div class="bar-bottom"></div>
   <div class="forecast-section" style="display:none">
     <div class="forecast-title">📈 試験日までの学習予測</div>
-    <div class="forecast-body">
-      <div class="forecast-num">--</div>
-      <div class="forecast-sub">試験日までに積み上がる予測時間</div>
-      <div class="forecast-pace"></div>
+    <div class="forecast-cols">
+      <div class="forecast-col">
+        <div class="forecast-col-lbl">📊 予測到達</div>
+        <div class="forecast-num">--</div>
+        <div class="forecast-pace"></div>
+      </div>
+      <div class="forecast-col forecast-col-target">
+        <div class="forecast-col-lbl">🎯 目標総時間</div>
+        <div class="forecast-target-num">--</div>
+        <div class="forecast-target-diff"></div>
+      </div>
+    </div>
+    <div class="forecast-gauge-wrap" style="display:none">
+      <div class="forecast-gauge-bg"><div class="forecast-gauge-fill"></div></div>
+      <div class="forecast-gauge-labels">
+        <span class="forecast-gauge-pct"></span>
+      </div>
+      <div class="forecast-advice"></div>
     </div>
   </div>
 </div>
@@ -1116,10 +1176,24 @@
   <!-- 予測セクション -->
   <div class="forecast-section" id="forecast-section" style="display:none">
     <div class="forecast-title">📈 試験日までの学習予測</div>
-    <div class="forecast-body">
-      <div class="forecast-num" id="forecast-num">--</div>
-      <div class="forecast-sub">試験日までに積み上がる予測時間</div>
-      <div class="forecast-pace" id="forecast-pace"></div>
+    <div class="forecast-cols">
+      <div class="forecast-col">
+        <div class="forecast-col-lbl">📊 予測到達</div>
+        <div class="forecast-num" id="forecast-num">--</div>
+        <div class="forecast-pace" id="forecast-pace"></div>
+      </div>
+      <div class="forecast-col forecast-col-target">
+        <div class="forecast-col-lbl">🎯 目標総時間</div>
+        <div class="forecast-target-num">--</div>
+        <div class="forecast-target-diff"></div>
+      </div>
+    </div>
+    <div class="forecast-gauge-wrap" style="display:none">
+      <div class="forecast-gauge-bg"><div class="forecast-gauge-fill"></div></div>
+      <div class="forecast-gauge-labels">
+        <span class="forecast-gauge-pct"></span>
+      </div>
+      <div class="forecast-advice"></div>
     </div>
   </div>
 </div>
@@ -1544,8 +1618,9 @@ function renderQuote(){
   el.textContent=(s?s.icon+' ':'💬 ')+pool[idx];
 }
 
-function _lvFormula(lv){return lv<=1?0:Math.round(Math.pow(lv/100,1.7)*1000);}
-function _lvFromH(h){if(h<=0)return 1;if(h>=1000)return 100;return Math.min(100,Math.max(1,Math.floor(Math.pow(h/1000,1/1.7)*100+0.999)));}
+function _getTargetH(){return (CUST.targetTotalH&&CUST.targetTotalH>0)?CUST.targetTotalH:1000;}
+function _lvFormula(lv){const t=_getTargetH();return lv<=1?0:Math.round(Math.pow(lv/100,1.7)*t);}
+function _lvFromH(h){const t=_getTargetH();if(h<=0)return 1;if(h>=t)return 100;return Math.min(100,Math.max(1,Math.floor(Math.pow(h/t,1/1.7)*100+0.999)));}
 function getLevelData(totalMin){
   const totalH=totalMin/60;
   const lv=_lvFromH(totalH);
@@ -1555,8 +1630,9 @@ function getLevelData(totalMin){
   if(nextH!==null){const cM=curH*60,nM=nextH*60;pct=Math.max(0,Math.min(100,Math.round((totalMin-cM)/(nM-cM)*100)));xpInfo=`次 Lv.${lv+1} まで ${Math.round((nM-totalMin)/60*10)/10}h`;}
   else{pct=100;xpInfo='MAX LEVEL！';}
   const _storyLvNames=(typeof getActiveStory==='function'&&getActiveStory()?.levelNames)||{};
+  const _storyLvIcons=(typeof getActiveStory==='function'&&getActiveStory()?.levelIcons)||{};
   const _cTitle=(CUST.levelNames&&CUST.levelNames[lv])||_storyLvNames[tier.lv]||tier.title;
-  const _cIcon=(CUST.levelIcons&&CUST.levelIcons[lv])||tier.icon;
+  const _cIcon=(CUST.levelIcons&&CUST.levelIcons[lv])||_storyLvIcons[tier.lv]||tier.icon;
   return{lv,title:_cTitle,icon:_cIcon,pct,xpInfo,nextLv:lv<100?lv+1:null};
 }
 let lastLv=0;
@@ -1627,15 +1703,141 @@ function showMilestoneBanner(m){
 }
 
 let earnedBadges={};
-function loadBadges(){try{earnedBadges=JSON.parse(LS.get('study-badges','{}'));}catch{earnedBadges={};}}
-function saveBadges(){LS.set('study-badges',JSON.stringify(earnedBadges));}
+const FICTION_STORY_IDS=['gorilla','samurai','space'];
+function isFictionStory(id){return FICTION_STORY_IDS.includes(id);}
+
+// ── 節目トースト ──────────────────────────────────────────
+// 節目（今日の累計）の定義：分単位
+const MILESTONE_MINS=[30,60,120,180,240,300,360,480];
+
+// グループ判定
+function _milestoneGroup(storyId){
+  if(!storyId)return'default';
+  if(storyId==='gorilla')return'gorilla';
+  if(storyId==='samurai')return'samurai';
+  if(storyId==='space')return'space';
+  // 資格系
+  const SHIKAKU=['boki3','boki2','takken','sharoshi','zeirishi','fp2','koumuin','shindanshi','kaikeishi'];
+  if(SHIKAKU.includes(storyId))return'shikaku';
+  return'default';
+}
+
+// 時間帯サフィックス
+function _timeSuffix(){
+  const h=new Date().getHours();
+  if(h>=4&&h<7) return{tag:'dawn', sfx:'早朝から🌅 尊い。'};
+  if(h>=7&&h<12)return{tag:'morning',sfx:''};
+  if(h>=12&&h<17)return{tag:'afternoon',sfx:''};
+  if(h>=17&&h<21)return{tag:'evening',sfx:''};
+  if(h>=21&&h<24)return{tag:'night',sfx:'夜遅くまでお疲れ様🌙'};
+  return{tag:'midnight',sfx:'深夜の学習、身体も大事に🌙'};
+}
+
+// メッセージ定義
+const MILESTONE_MSG={
+  gorilla:{
+    30: '30分修行したゴリ！🦍 この調子でどんどん積み上げるゴリ！',
+    60: '1時間突破ゴリ——！💪 ゴリラも驚く集中力ゴリ！',
+   120: '2時間だゴリ！🔥 これはもう本物のゴリラゴリ！',
+   180: '3時間ゴリ…👑 ジャングルの主に近づいているゴリ！',
+   240: '4時間！もはやバナナより勉強が好きなゴリ🍌',
+   300: '5時間ゴリ！！伝説のゴリラ誕生の予感がするゴリ！！',
+   360: '6時間…静かに恐ろしいゴリラに育っているゴリ。',
+   480: '8時間ゴリ。今日だけで1冊分の脳みそを使ったゴリ🏆',
+  },
+  samurai:{
+    30: '三十分——刃を研ぐように、着実に前へ⚔️',
+    60: '一刻（1時間）積み上げた。これが剣士の積み重ねだ🔥',
+   120: '二刻（2時間）の鍛錬。もはや迷いはない⚡',
+   180: '三刻（3時間）。この剣、今日も折れることはない🌙',
+   240: '四刻（4時間）。問題を前に、気後れする理由が見当たらない。',
+   300: '五刻（5時間）。強さとは、こういう一日の積み重ねだ💥',
+   360: '六刻（6時間）。静かに、確実に、頂点へ向かっている。',
+   480: '八刻（8時間）。この日を、剣聖は忘れない🏆',
+  },
+  space:{
+    30: '第1チェックポイント通過🚀 30分の航行、記録完了！',
+    60: '1時間飛行达成！🌌 宇宙探検家、軌道に乗ったな。',
+   120: '2時間飛行——深宇宙への入口だ⭐ 素晴らしい航行記録！',
+   180: '3時間！🪐 この調子で銀河の果てを目指せ！',
+   240: '4時間飛行🌠 探検家の本領発揮。宇宙は広い、でも君はもっと広い。',
+   300: '5時間——もはや伝説の宇宙探検家の領域だ🛸',
+   360: '6時間！星の数ほどの可能性が見えてきた✨',
+   480: '8時間飛行🏆 この探検記録は宇宙史に刻まれた！',
+  },
+  shikaku:{
+    30: '今日も30分、着実に積み上げた📚 合格への道は続く。',
+    60: '1時間突破！📖 この積み重ねが必ず結果になる。',
+   120: '2時間！💡 今日の2時間は、未来の自分への贈り物だ。',
+   180: '3時間達成🎯 ここまで来たら、あとは続けるだけ。',
+   240: '4時間！本気の人間の4時間は、誰にも真似できない。',
+   300: '5時間✨ 今日だけで試験対策が大きく前進した。',
+   360: '6時間。この集中力、試験当日もそのまま持っていけ🔥',
+   480: '8時間🏆 今日だけで合格に、ぐっと近づいた一日だった。',
+  },
+  default:{
+    30: '今日も30分コツコツ積んだ✨ いいペースだよ！',
+    60: '1時間達成！⏱️ コツコツが確実に積み上がっている。',
+   120: '2時間！🎉 今日は本当によく頑張っている。',
+   180: '3時間達成🔥 ここまで来たらもう本物だ。',
+   240: '4時間！集中力が武器になってきた✨',
+   300: '5時間——今日はちょっとすごい日かもしれない。',
+   360: '6時間。静かに、でも確実に、力がついている。',
+   480: '8時間🏆 今日は伝説的な一日になった。お疲れ様！',
+  },
+};
+
+// 節目トーストのlocalStorageキー（日付ベース）
+function _milestoneLsKey(){
+  return'milestone-toast-'+toStudyDateStr(new Date());
+}
+function _getShownMilestones(){
+  try{return JSON.parse(localStorage.getItem(_milestoneLsKey())||'[]');}catch{return[];}
+}
+function _markMilestoneShown(mins){
+  const shown=_getShownMilestones();
+  if(!shown.includes(mins)){shown.push(mins);localStorage.setItem(_milestoneLsKey(),JSON.stringify(shown));}
+}
+function clearMilestoneToastFlags(){
+  // 今日分をクリア（リセット時に呼ぶ）
+  localStorage.removeItem(_milestoneLsKey());
+}
+
+// チェック後に呼び出す節目判定
+function checkMilestoneToast(){
+  const todayMin=dayTotal(toStudyDateStr(new Date()));
+  const shown=_getShownMilestones();
+  const group=_milestoneGroup(CUST.storyId);
+  const msgs=MILESTONE_MSG[group]||MILESTONE_MSG.default;
+  for(const m of MILESTONE_MINS){
+    if(todayMin>=m&&!shown.includes(m)&&msgs[m]){
+      _markMilestoneShown(m);
+      const ts=_timeSuffix();
+      let msg=msgs[m];
+      if(ts.sfx) msg=msg+' '+ts.sfx;
+      setTimeout(()=>showEasterToast('🎯 '+msg),400);
+      break; // 1回に1節目だけ表示
+    }
+  }
+}
+// ────────────────────────────────────────────────────────
+function badgeKey(badgeId,storyId){
+  return (storyId&&isFictionStory(storyId))?storyId+'_'+badgeId:badgeId;
+}
+function currentBadgeKey(badgeId){
+  return badgeKey(badgeId,CUST.storyId);
+}
+
+function loadBadges(){try{earnedBadges=JSON.parse(LS.get('study-badges','{}'));}catch{earnedBadges={};}}function saveBadges(){LS.set('study-badges',JSON.stringify(earnedBadges));}
 function checkBadges(){
   let newBadge=false;
   BADGE_DEF.forEach(b=>{
-    if(!earnedBadges[b.id]&&b.check()){
-      earnedBadges[b.id]=new Date().toISOString().slice(0,10);
+    const key=currentBadgeKey(b.id);
+    if(!earnedBadges[key]&&b.check()){
+      earnedBadges[key]=new Date().toISOString().slice(0,10);
       saveBadges();
-      showBadgePopup(b);
+      const disp=_getBadgeDispForStory(b,CUST.storyId);
+      showBadgePopup(disp);
       newBadge=true;
     }
   });
@@ -1652,8 +1854,16 @@ function checkBadges(){
   if(newBadge)renderBadgeGrid();
 }
 function updateBadgeCount(){
-  const cnt=Object.keys(earnedBadges).length;
-  $('badge-count').textContent=cnt;
+  let cnt=0;
+  if(CUST.storyId&&isFictionStory(CUST.storyId)){
+    // フィクション：現在のストーリーのバッジ数のみカウント
+    BADGE_DEF.forEach(b=>{if(earnedBadges[CUST.storyId+'_'+b.id])cnt++;});
+  }else{
+    // 資格系・未選択：共通バッジのみカウント
+    BADGE_DEF.forEach(b=>{if(earnedBadges[b.id])cnt++;});
+  }
+  if(CUST.customBadges)CUST.customBadges.forEach(cb=>{if(earnedBadges[cb.id])cnt++;});
+  const el=$('badge-count');if(el)el.textContent=cnt||'';
 }
 function showBadgePopup(b){
   _queuePopup(()=>{
@@ -1666,29 +1876,85 @@ function showBadgePopup(b){
 }
 function openBadgePanel(){renderBadgeGrid();$('badge-overlay').classList.add('show');}
 function closeBadgePanel(){$('badge-overlay').classList.remove('show');}
-function renderBadgeGrid(){
-  const grid=$('badge-grid');
-  grid.innerHTML='';
-  function _getBadgeDisp(b){const ov=CUST.badgeOverrides&&CUST.badgeOverrides[b.id]||{};return{icon:b.icon,name:ov.name||b.name,desc:ov.desc||b.desc};}
+let _badgeTabStory=null; // タブで選択中のフィクションストーリーID
+
+function _getBadgeDispForStory(b,storyId){
+  const ov=CUST.badgeOverrides&&CUST.badgeOverrides[b.id]||{};
+  const s=STORY_DEF.find(s=>s.id===storyId);
+  const sp=(s?.badgePresets&&s.badgePresets[b.id])||{};
+  return{
+    icon:ov.icon||sp.icon||b.icon,
+    name:ov.name||sp.name||b.name,
+    desc:ov.desc||sp.desc||b.desc
+  };
+}
+
+function switchBadgeTab(storyId){
+  _badgeTabStory=storyId;
+  document.querySelectorAll('.badge-tab-btn').forEach(btn=>{
+    btn.classList.toggle('active',btn.dataset.story===storyId);
+  });
+  _renderBadgeGridForStory(storyId);
+}
+
+function _renderBadgeGridForStory(storyId){
+  const grid=$('badge-grid');grid.innerHTML='';
   BADGE_DEF.forEach(b=>{
-    const earned=!!earnedBadges[b.id];
-    const {icon,name,desc}=_getBadgeDisp(b);
+    const key=badgeKey(b.id,storyId);
+    const earned=!!earnedBadges[key];
+    const {icon,name,desc}=_getBadgeDispForStory(b,storyId);
     const el=document.createElement('div');
     el.className='badge-item'+(earned?' earned':' locked');
     el.title=desc;
-    el.innerHTML=`<div class="badge-icon">${icon}</div><div class="badge-name">${name}</div><div class="badge-desc">${desc}</div>${earned?`<div class="badge-date">${earnedBadges[b.id]} 達成</div>`:'<div class="badge-desc">未達成</div>'}`;
+    el.innerHTML=`<div class="badge-icon">${icon}</div><div class="badge-name">${name}</div><div class="badge-desc">${desc}</div>${earned?`<div class="badge-date">${earnedBadges[key]} 達成</div>`:'<div class="badge-desc">未達成</div>'}`;
     grid.appendChild(el);
   });
-  if(CUST.customBadges&&CUST.customBadges.length>0){
-    CUST.customBadges.forEach(cb=>{
-      const earned=!!earnedBadges[cb.id];
+}
+
+function renderBadgeGrid(){
+  const grid=$('badge-grid');
+  const tabsEl=$('badge-fiction-tabs');
+  const isFiction=CUST.storyId&&isFictionStory(CUST.storyId);
+
+  // タブの表示/非表示
+  if(tabsEl)tabsEl.style.display=isFiction?'block':'none';
+
+  if(isFiction){
+    // フィクション選択中：タブを現在のストーリーに合わせる
+    _badgeTabStory=_badgeTabStory&&isFictionStory(_badgeTabStory)?_badgeTabStory:CUST.storyId;
+    document.querySelectorAll('.badge-tab-btn').forEach(btn=>{
+      btn.classList.toggle('active',btn.dataset.story===_badgeTabStory);
+    });
+    _renderBadgeGridForStory(_badgeTabStory);
+  }else{
+    // 資格系・未選択：共通バッジ表示
+    _badgeTabStory=null;
+    grid.innerHTML='';
+    function _getBadgeDisp(b){
+      const ov=CUST.badgeOverrides&&CUST.badgeOverrides[b.id]||{};
+      const sp=(getActiveStory()?.badgePresets&&getActiveStory().badgePresets[b.id])||{};
+      return{icon:ov.icon||sp.icon||b.icon,name:ov.name||sp.name||b.name,desc:ov.desc||sp.desc||b.desc};
+    }
+    BADGE_DEF.forEach(b=>{
+      const earned=!!earnedBadges[b.id];
+      const {icon,name,desc}=_getBadgeDisp(b);
       const el=document.createElement('div');
       el.className='badge-item'+(earned?' earned':' locked');
-      el.title=cb.desc||'';
-      const manualBtn=(!earned&&cb.trigger==='manual')?`<button style="background:var(--accent);color:#fff;border:none;border-radius:5px;padding:3px 8px;font-size:.6rem;font-weight:700;cursor:pointer;margin-top:3px;" onclick="manualUnlockBadge('${cb.id}')">✓ 達成！</button>`:'';
-      el.innerHTML=`<div class="badge-icon">${cb.icon}</div><div class="badge-name">${cb.name}</div><div class="badge-desc">${cb.desc||''}</div>${earned?`<div class="badge-date">${earnedBadges[cb.id]} 達成</div>`:manualBtn||'<div class="badge-desc">未達成</div>'}`;
+      el.title=desc;
+      el.innerHTML=`<div class="badge-icon">${icon}</div><div class="badge-name">${name}</div><div class="badge-desc">${desc}</div>${earned?`<div class="badge-date">${earnedBadges[b.id]} 達成</div>`:'<div class="badge-desc">未達成</div>'}`;
       grid.appendChild(el);
     });
+    if(CUST.customBadges&&CUST.customBadges.length>0){
+      CUST.customBadges.forEach(cb=>{
+        const earned=!!earnedBadges[cb.id];
+        const el=document.createElement('div');
+        el.className='badge-item'+(earned?' earned':' locked');
+        el.title=cb.desc||'';
+        const manualBtn=(!earned&&cb.trigger==='manual')?`<button style="background:var(--accent);color:#fff;border:none;border-radius:5px;padding:3px 8px;font-size:.6rem;font-weight:700;cursor:pointer;margin-top:3px;" onclick="manualUnlockBadge('${cb.id}')">✓ 達成！</button>`:'';
+        el.innerHTML=`<div class="badge-icon">${cb.icon}</div><div class="badge-name">${cb.name}</div><div class="badge-desc">${cb.desc||''}</div>${earned?`<div class="badge-date">${earnedBadges[cb.id]} 達成</div>`:manualBtn||'<div class="badge-desc">未達成</div>'}`;
+        grid.appendChild(el);
+      });
+    }
   }
 }
 function manualUnlockBadge(id){
@@ -1798,11 +2064,12 @@ function checkEasterEggs(){
   if(msgs.length)setTimeout(()=>showEasterToast(msgs[0]),500);
 }
 function showEasterToast(msg){
+  const dur=Math.min(3000+msg.length*80, 7000);
   _queuePopup(()=>{
     const el=$('easter-toast');
     el.textContent=msg;el.classList.add('show');
-    setTimeout(()=>el.classList.remove('show'),4500);
-  },4500);
+    setTimeout(()=>el.classList.remove('show'),dur);
+  },dur);
 }
 
 function getWeekChallengeIdx(){
@@ -1887,16 +2154,105 @@ function renderAnnualHeatmap(){
     col.appendChild(weekDiv);
     grid.appendChild(col);
   });
+  // 最新（右端）へ自動スクロール
+  const scrollWrap=grid.closest('.heatmap-scroll');
+  if(scrollWrap)requestAnimationFrame(()=>{scrollWrap.scrollLeft=scrollWrap.scrollWidth;});
 }
 
 function renderForecast(){
   const sections=document.querySelectorAll('.forecast-section');
   const cdVal=$('cd-input').value;
+  const targetH=_getTargetH()>0&&CUST.targetTotalH>0?CUST.targetTotalH:0;
+
+  function _setSection(s,predictedMin,avgH,avgM,msg){
+    s.style.display='block';
+    const numEl=s.querySelector('.forecast-num');
+    const paceEl=s.querySelector('.forecast-pace');
+    if(numEl)numEl.innerHTML=predictedMin!=null?fmtLongHtml(predictedMin):'--';
+    if(paceEl)paceEl.textContent=msg||'';
+    // 目標列
+    const targetNumEl=s.querySelector('.forecast-target-num');
+    const targetDiffEl=s.querySelector('.forecast-target-diff');
+    const gaugeWrap=s.querySelector('.forecast-gauge-wrap');
+    const gaugeFill=s.querySelector('.forecast-gauge-fill');
+    const gaugePct=s.querySelector('.forecast-gauge-pct');
+    const adviceEl=s.querySelector('.forecast-advice');
+    if(!targetH||predictedMin==null){
+      if(targetNumEl)targetNumEl.textContent='未設定';
+      if(targetDiffEl){targetDiffEl.textContent='設定 → 目標総学習時間を入力';targetDiffEl.className='forecast-target-diff';}
+      if(gaugeWrap)gaugeWrap.style.display='none';
+      return;
+    }
+    const predictedH=predictedMin/60;
+    const pct=Math.min(Math.round(predictedH/targetH*100),999);
+    const diffH=predictedH-targetH;
+    const status=pct>=100?'ok':pct>=95?'close':'ng';
+    if(targetNumEl)targetNumEl.textContent=targetH+'h';
+    if(targetDiffEl){
+      targetDiffEl.className='forecast-target-diff '+status;
+      if(status==='ok'){
+        const overH=Math.floor(diffH),overM=Math.round((diffH-overH)*60);
+        targetDiffEl.textContent=`✅ +${overH>0?overH+'h':''}${overM>0?overM+'m':''}の余裕`;
+      }else{
+        const shortH=Math.abs(diffH),sh=Math.floor(shortH),sm=Math.round((shortH-sh)*60);
+        targetDiffEl.textContent=status==='close'?`⚠️ あと${sh>0?sh+'h':''}${sm>0?sm+'m':''}`:
+          `❌ ${sh>0?sh+'h':''}${sm>0?sm+'m':''}不足`;
+      }
+    }
+    if(gaugeWrap)gaugeWrap.style.display='block';
+    if(gaugeFill){
+      // A案：1本のバーで予測＋不足を色分け
+      const gaugeBg=s.querySelector('.forecast-gauge-bg');
+      if(gaugeBg){
+        if(status==='ok'){
+          // 達成：緑100%
+          gaugeBg.innerHTML=`<div style="height:100%;width:100%;border-radius:99px;background:linear-gradient(90deg,#3ecf8e,#7ee8a2);transition:width .5s;"></div>`;
+        }else{
+          // 未達成：緑（予測分）＋黄/赤（不足分）を1本で表現
+          const shortColor=status==='close'?'#f59e0b':'#f87171';
+          const okPct=Math.min(pct,100);
+          const ngPct=100-okPct;
+          gaugeBg.style.overflow='hidden';
+          gaugeBg.style.borderRadius='99px';
+          gaugeBg.style.display='flex';
+          gaugeBg.innerHTML=`<div style="flex:${okPct};background:linear-gradient(90deg,#3ecf8e,#7ee8a2);height:100%;transition:flex .5s;"></div><div style="flex:${ngPct};background:${shortColor};height:100%;opacity:.85;transition:flex .5s;"></div>`;
+        }
+      }
+    }
+    if(gaugePct){
+      if(status==='ok'){
+        gaugePct.innerHTML=`<span style="display:inline-flex;align-items:center;gap:3px;font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:99px;border:1px solid #3ecf8e;color:#3ecf8e;background:rgba(62,207,142,.1);">✅ 達成見込み ${pct}%</span>`;
+      }else{
+        const badgeColor=status==='close'?'#f59e0b':'#f87171';
+        const badgeBg=status==='close'?'rgba(245,158,11,.1)':'rgba(248,113,113,.1)';
+        gaugePct.innerHTML=`<span style="display:inline-flex;align-items:center;gap:3px;font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:99px;border:1px solid ${badgeColor};color:${badgeColor};background:${badgeBg};">${status==='close'?'⚠️':'❌'} 達成率 ${pct}%</span>`;
+      }
+    }
+    if(adviceEl){
+      const adv=_getForecastAdvice();
+      if(status==='ok'){
+        const totalNow=allTimeTotal()/60;
+        const overH=diffH,oh=Math.floor(overH),om=Math.round((overH-oh)*60);
+        const overStr=oh>0?`${oh}h${om>0?om+'m':''}`:om+'m';
+        adviceEl.innerHTML=`<div class="advice-main" style="color:#3ecf8e;">${adv.ok_main()}</div><div class="advice-sub">${adv.ok_sub(overStr)}</div>`;
+      }else{
+        const daysLeft=Math.round((new Date(cdVal)-new Date())/86400000);
+        const shortMin=(targetH-predictedH)*60;
+        const addPerDay=daysLeft>0?Math.ceil(shortMin/daysLeft):0;
+        const addH=Math.floor(addPerDay/60),addM=addPerDay%60;
+        const addStr=addH>0?`${addH}h${addM>0?addM+'m':''}`:addM+'分';
+        const mainColor=status==='close'?'#f59e0b':'#f87171';
+        const mainTxt=status==='close'?adv.close_main(addStr):adv.ng_main(addStr);
+        const subTxt=status==='close'?adv.close_sub(addStr):adv.ng_sub(addStr);
+        adviceEl.innerHTML=`<div class="advice-main" style="color:${mainColor};">${mainTxt}</div><div class="advice-sub">${subTxt}</div>`;
+      }
+    }
+  }
+
   if(!cdVal){
     sections.forEach(s=>{
       s.style.display='block';
-      s.querySelector('.forecast-num').innerHTML='--';
-      s.querySelector('.forecast-pace').textContent='設定 → 試験日を入力してください';
+      _setSection(s,null,0,0,'設定 → 試験日を入力してください');
     });
     return;
   }
@@ -1906,21 +2262,16 @@ function renderForecast(){
   if(daysLeft<=0){
     sections.forEach(s=>{
       s.style.display='block';
-      s.querySelector('.forecast-num').innerHTML='--';
-      s.querySelector('.forecast-pace').textContent='試験日が過去の日付です。設定を更新してください。';
+      _setSection(s,null,0,0,'試験日が過去の日付です。設定を更新してください。');
     });
     return;
   }
-  // 過去14日の平均
-  const past14=[];const cur=new Date(today);
-  for(let i=0;i<14;i++){cur.setDate(cur.getDate()-1);past14.push(dayTotal(toDateStr(new Date(cur))));}
-  const avgPerDay=past14.reduce((s,v)=>s+v,0)/14;
+  const totalMin=allTimeTotal(),studyDays=allTimeDays();
+  const avgPerDay=studyDays>0?totalMin/studyDays:0;
   const predicted=Math.round(avgPerDay*daysLeft);
   const avgRounded=Math.round(avgPerDay),avgH=Math.floor(avgRounded/60),avgM=avgRounded%60;
   sections.forEach(s=>{
-    s.style.display='block';
-    s.querySelector('.forecast-num').innerHTML=fmtLongHtml(predicted);
-    s.querySelector('.forecast-pace').textContent=`1日平均 ${avgH}h${avgM}m（過去14日実績）`;
+    _setSection(s,predicted,avgH,avgM,`1日平均 ${avgH}h${avgM}m（累計実績ベース）`);
   });
 }
 
@@ -1977,6 +2328,250 @@ function exportWeeklyReport(){
     const a=document.createElement('a');
     a.download=fname;a.href=dataUrl;a.click();
     showToast('📸 週報を保存しました！');
+  }
+}
+
+function exportDailyReport(){
+  // ── カラー設定
+  const isDark=(LS.get('study-theme','dark'))!=='light';
+  const bg=isDark?'#0f1117':'#f0f4f8';
+  const surface=isDark?'#1a1d27':'#ffffff';
+  const surface2=isDark?'#22263a':'#e8edf3';
+  const border=isDark?'#2d3148':'#cbd5e0';
+  const accent='#4f8ef7';
+  const checked='#3ecf8e';
+  const purple='#a78bfa';
+  const textColor=isDark?'#e8eaf6':'#1a202c';
+  const mutedColor=isDark?'#6b7280':'#718096';
+
+  // ── データ取得
+  const todayMin=dayTotal(currentDate);
+  const todayH=Math.floor(todayMin/60),todayM=todayMin%60;
+  const total=allTimeTotal(),days=allTimeDays(),streak=currentStreak();
+  const avgMin=days>0?Math.round(total/days):0;
+  const ld=getLevelData(total);
+
+  // ストーリーデータ
+  const s=getActiveStory();
+  const storyChar=s?($('story-main-char')?$('story-main-char').textContent:'📖'):'📖';
+  const storyTitle=s?($('story-main-title')?$('story-main-title').textContent:'ストーリーなし'):'ストーリーなし';
+  const storyMsg=s?($('story-main-msg')?$('story-main-msg').textContent:''):'設定でストーリーを選択できます';
+  const storyBarPct=s?parseFloat(($('story-bar-fill')||{style:{width:'0%'}}).style.width)||0:0;
+  const storyBarInfo=s?($('story-bar-row')?$('story-bar-row').textContent:''):'';
+  const storyDots=s?Array.from(document.querySelectorAll('#story-dots-row .story-dot')).map(d=>d.classList.contains('done')?'done':d.classList.contains('active')?'active':'empty'):[];
+
+  // 10分ブロックデータ（時間帯別・正しいキー形式で取得）
+  const ds=currentDate;
+  const dayData=data[ds]||{};
+  const amBlocks=[],pmBlocks=[],evBlocks=[];
+  // 午前：4〜11時
+  for(let h=4;h<12;h++){
+    for(const m of [10,20,30,40,50,60]){
+      const key=`${h}:${m}`;
+      amBlocks.push(!!dayData[key]);
+    }
+  }
+  // 午後：12〜17時
+  for(let h=12;h<18;h++){
+    for(const m of [10,20,30,40,50,60]){
+      const key=`${h}:${m}`;
+      pmBlocks.push(!!dayData[key]);
+    }
+  }
+  // 夜：18〜23時 + 0〜3時
+  for(let h=18;h<24;h++){
+    for(const m of [10,20,30,40,50,60]){
+      const key=`${h}:${m}`;
+      evBlocks.push(!!dayData[key]);
+    }
+  }
+  for(let h=0;h<4;h++){
+    for(const m of [10,20,30,40,50,60]){
+      const key=`${h}:${m}`;
+      evBlocks.push(!!dayData[key]);
+    }
+  }
+
+  // ── キャンバスサイズ計算
+  const W=700;
+  const headerH=64;
+  const bigTimeH=100;
+  const blocksH=100;
+  const divH=1;
+  const lvH=40;
+  const storyH=130;
+  const kpiH=70;
+  const wmH=24;
+  const H=headerH+bigTimeH+blocksH+divH+lvH+divH+storyH+divH+kpiH+wmH;
+
+  const canvas=document.createElement('canvas');
+  canvas.width=W;canvas.height=H;
+  const ctx=canvas.getContext('2d');
+
+  let y=0;
+
+  // ── ① ヘッダー
+  ctx.fillStyle=surface;ctx.fillRect(0,y,W,headerH);
+  ctx.font='bold 20px sans-serif';ctx.fillStyle=accent;ctx.textAlign='center';
+  ctx.fillText('コツコツ✏️サクサク🌸',W/2,y+26);
+  const d=new Date();
+  ctx.font='13px sans-serif';ctx.fillStyle=mutedColor;
+  ctx.fillText(`${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${['日','月','火','水','木','金','土'][d.getDay()]}）`,W/2,y+48);
+  ctx.strokeStyle=border;ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(0,headerH);ctx.lineTo(W,headerH);ctx.stroke();
+  y+=headerH;
+
+  // ── ② 今日の学習時間（大）
+  ctx.fillStyle=bg;ctx.fillRect(0,y,W,bigTimeH);
+  ctx.font='bold 52px sans-serif';ctx.fillStyle=checked;ctx.textAlign='center';
+  ctx.fillText(`${todayH}h ${todayM}m`,W/2,y+62);
+  ctx.font='13px sans-serif';ctx.fillStyle=mutedColor;
+  ctx.fillText('今日の学習時間',W/2,y+84);
+  y+=bigTimeH;
+
+  // ── ③ 10分ブロック
+  ctx.fillStyle=surface;ctx.fillRect(0,y,W,blocksH);
+  ctx.strokeStyle=border;ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
+  const bPad=20,bTop=y+14;
+  // タイトル
+  ctx.font='bold 11px sans-serif';ctx.fillStyle=mutedColor;ctx.textAlign='left';
+  ctx.fillText('⏱ 今日の10分ブロック',bPad,bTop);
+  // タイトル行に色付きラベル
+  const rows=[
+    {blocks:amBlocks,color:accent,label:'午前'},
+    {blocks:pmBlocks,color:checked,label:'午後'},
+    {blocks:evBlocks,color:purple,label:'夜'},
+  ];
+  let lx=bPad+155;
+  rows.forEach(row=>{
+    // 色付き丸
+    ctx.fillStyle=row.color;
+    ctx.beginPath();ctx.arc(lx+4,bTop-4,4,0,Math.PI*2);ctx.fill();
+    ctx.font='bold 10px sans-serif';ctx.fillStyle=row.color;ctx.textAlign='left';
+    ctx.fillText(row.label,lx+12,bTop);
+    lx+=ctx.measureText(row.label).width+28;
+  });
+  // 3行ブロック（ラベルなし・小さめ）
+  const bH=12,bGap=2,rowGap=8;
+  const bW=Math.floor((W-bPad*2)/Math.max(amBlocks.length,pmBlocks.length,evBlocks.length,1)-bGap);
+  rows.forEach((row,ri)=>{
+    const ry=bTop+20+ri*(bH+rowGap);
+    row.blocks.forEach((on,bi)=>{
+      const bx=bPad+bi*(bW+bGap);
+      ctx.fillStyle=on?row.color:surface2;
+      ctx.beginPath();ctx.roundRect?ctx.roundRect(bx,ry,bW,bH,2):ctx.rect(bx,ry,bW,bH);
+      ctx.fill();
+    });
+    // 合計（右端）
+    const cnt=row.blocks.filter(Boolean).length;
+    ctx.font='9px sans-serif';ctx.fillStyle=cnt>0?row.color:mutedColor;ctx.textAlign='right';
+    ctx.fillText(cnt>0?fmt(cnt*10):'─',W-bPad,ry+10);
+  });
+  y+=blocksH;
+
+  // ── 仕切り線
+  ctx.fillStyle=border;ctx.fillRect(0,y,W,1);y+=1;
+
+  // ── ④ レベルバー
+  ctx.fillStyle=bg;ctx.fillRect(0,y,W,lvH);
+  const lvPad=20,lvY=y+10;
+  // バッジ
+  ctx.fillStyle=accent;
+  ctx.beginPath();ctx.roundRect?ctx.roundRect(lvPad,lvY,52,20,99):ctx.rect(lvPad,lvY,52,20);
+  ctx.fill();
+  ctx.font='bold 11px sans-serif';ctx.fillStyle='#0f1117';ctx.textAlign='center';
+  ctx.fillText('Lv.'+ld.lv,lvPad+26,lvY+14);
+  // アイコン・称号
+  ctx.font='14px sans-serif';ctx.fillStyle=textColor;ctx.textAlign='left';
+  ctx.fillText(ld.icon+' '+ld.title,lvPad+62,lvY+14);
+  // XPバー
+  const xpBarX=lvPad+62+ctx.measureText(ld.icon+' '+ld.title).width+12;
+  const xpBarW=W-xpBarX-lvPad;
+  ctx.fillStyle=surface2;
+  ctx.beginPath();ctx.roundRect?ctx.roundRect(xpBarX,lvY+7,xpBarW,6,99):ctx.rect(xpBarX,lvY+7,xpBarW,6);
+  ctx.fill();
+  ctx.fillStyle=accent;
+  ctx.beginPath();ctx.roundRect?ctx.roundRect(xpBarX,lvY+7,xpBarW*ld.pct/100,6,99):ctx.rect(xpBarX,lvY+7,xpBarW*ld.pct/100,6);
+  ctx.fill();
+  ctx.font='9px sans-serif';ctx.fillStyle=mutedColor;ctx.textAlign='right';
+  ctx.fillText(ld.xpInfo,W-lvPad,lvY+28);
+  y+=lvH;
+
+  // ── 仕切り線
+  ctx.fillStyle=border;ctx.fillRect(0,y,W,1);y+=1;
+
+  // ── ⑤ ストーリー
+  ctx.fillStyle=surface;ctx.fillRect(0,y,W,storyH);
+  const sPad=20,sY=y+14;
+  ctx.font='bold 11px sans-serif';ctx.fillStyle=mutedColor;ctx.textAlign='left';
+  ctx.fillText('📖 ストーリー',sPad,sY);
+  // キャラ
+  ctx.font='36px sans-serif';ctx.textAlign='left';
+  ctx.fillText(storyChar,sPad,sY+46);
+  // タイトル・メッセージ
+  ctx.font='bold 15px sans-serif';ctx.fillStyle=textColor;ctx.textAlign='left';
+  ctx.fillText(storyTitle,sPad+50,sY+28);
+  ctx.font='11px sans-serif';ctx.fillStyle=mutedColor;
+  ctx.fillText(storyMsg,sPad+50,sY+46);
+  // プログレスバー
+  const sbY=sY+60,sbW=W-sPad*2;
+  ctx.fillStyle=surface2;
+  ctx.beginPath();ctx.roundRect?ctx.roundRect(sPad,sbY,sbW,5,99):ctx.rect(sPad,sbY,sbW,5);
+  ctx.fill();
+  ctx.fillStyle=checked;
+  ctx.beginPath();ctx.roundRect?ctx.roundRect(sPad,sbY,sbW*storyBarPct/100,5,99):ctx.rect(sPad,sbY,sbW*storyBarPct/100,5);
+  ctx.fill();
+  ctx.font='10px sans-serif';ctx.fillStyle=mutedColor;ctx.textAlign='left';
+  ctx.fillText(storyBarInfo,sPad,sbY+18);
+  // ドット
+  if(storyDots.length>0){
+    const dotW=Math.min(24,Math.floor((sbW-(storyDots.length-1)*4)/storyDots.length));
+    storyDots.forEach((st,i)=>{
+      const dx=sPad+i*(dotW+4),dy=sbY+26;
+      ctx.fillStyle=st==='done'?checked:st==='active'?'#f59e0b':surface2;
+      ctx.beginPath();ctx.roundRect?ctx.roundRect(dx,dy,dotW,6,99):ctx.rect(dx,dy,dotW,6);
+      ctx.fill();
+    });
+  }
+  y+=storyH;
+
+  // ── 仕切り線
+  ctx.fillStyle=border;ctx.fillRect(0,y,W,1);y+=1;
+
+  // ── ⑥ KPI（累計・1日平均・連続・学習日数）
+  ctx.fillStyle=bg;ctx.fillRect(0,y,W,kpiH);
+  const kpiItems=[
+    {label:'累計学習',val:fmt(total)},
+    {label:'1日平均',val:fmt(avgMin)},
+    {label:'連続学習',val:streak+'日'},
+    {label:'学習日数',val:days+'日'},
+  ];
+  const colW=W/kpiItems.length;
+  kpiItems.forEach((item,i)=>{
+    const cx=colW*i+colW/2;
+    ctx.font='bold 16px sans-serif';ctx.fillStyle=textColor;ctx.textAlign='center';
+    ctx.fillText(item.val,cx,y+30);
+    ctx.font='10px sans-serif';ctx.fillStyle=mutedColor;
+    ctx.fillText(item.label,cx,y+48);
+  });
+  y+=kpiH;
+
+  // ── ウォーターマーク
+  ctx.fillStyle=bg;ctx.fillRect(0,y,W,wmH);
+  ctx.font='10px sans-serif';ctx.fillStyle=border;ctx.textAlign='right';
+  ctx.fillText('コツコツサクサク',W-16,y+16);
+
+  // ── ダウンロード
+  const dataUrl=canvas.toDataURL('image/png');
+  const now=new Date();
+  const fname=`日報_${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}.png`;
+  if(isIOS()){
+    window.open(dataUrl,'_blank');
+    showToast('📸 開いた画像を長押し→「イメージを保存」で保存できます');
+  }else{
+    const a=document.createElement('a');a.download=fname;a.href=dataUrl;a.click();
+    showToast('📸 今日の記録を保存しました！');
   }
 }
 
@@ -2072,6 +2667,7 @@ function onHourBtn(h){
     comboTimer=setTimeout(()=>comboCount=0,2000);
     showComboText(comboCount,cx,cy);
     playComboSound(comboCount);
+    checkMilestoneToast();
   }
 }
 function onBlock(e){
@@ -2084,6 +2680,8 @@ function onBlock(e){
   if(!wasChecked)onLuckyCheck(h,m);
   // コンボ
   if(!wasChecked){const rect=div.getBoundingClientRect();onCombo(rect.left+rect.width/2,rect.top+rect.height/2);}
+  // 節目トースト
+  if(!wasChecked) checkMilestoneToast();
   // サウンド
   if(!wasChecked)playCheckSound();
   const hBtn=document.querySelector('.hour-btn[data-h="'+h+'"]');
@@ -2161,11 +2759,14 @@ function renderAllTimeCard(){
 }
 
 function isIOS(){return /iP(ad|hone|od)/.test(navigator.userAgent)&&!!navigator.maxTouchPoints;}
+function _toastDuration(msg){
+  return Math.min(2000+msg.length*80, 6000);
+}
 function showToast(msg,isError=false){
   const t=$('backup-toast');
   t.textContent=msg;t.className='backup-toast'+(isError?' error':'');
   void t.offsetWidth;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3000);
+  setTimeout(()=>t.classList.remove('show'),_toastDuration(msg));
 }
 $('export-btn').addEventListener('click',()=>{
   const backup={version:1,exportedAt:new Date().toISOString(),studyData:JSON.parse(LS.get('study-data','{}')),studyNotes:JSON.parse(LS.get('study-notes','{}')),studyGoal:localStorage.getItem('study-goal'),studyWeekGoal:localStorage.getItem('study-week-goal'),studyMonthGoal:localStorage.getItem('study-month-goal'),examDate:LS.get('exam-date'),theme:LS.get('study-theme'),badges:localStorage.getItem('study-badges'),milestones:localStorage.getItem('study-milestones'),customizations:LS.get('study-cust')};
@@ -2217,9 +2818,13 @@ $('clear-all-btn').addEventListener('click',()=>{
   if(!confirm('すべての学習データ・設定をクリアします。\nこの操作は元に戻せません。よろしいですか？'))return;
   if(!confirm('本当にすべて削除してよろしいですか？'))return;
   ['study-data','study-notes','study-goal','study-week-goal','study-month-goal','exam-date','study-theme','study-badges','study-milestones','weekly-goal-achieved','monthly-goal-achieved','study-cust'].forEach(k=>LS.del(k));
+  clearMilestoneToastFlags();
   data={};notes={};earnedBadges={};achievedMs={};GOAL=120;WEEK_GOAL=600;MONTH_GOAL=1800;CUST={...CUST_DEFAULTS};
   lastBloomPct=-1;lastWeeklyPct=-1;lastMonthlyPct=-1;lastLv=0;
-  loadGoal();loadCountdown();applyTheme('dark');applyAllCust();switchView('daily');
+  currentDate=toStudyDateStr(new Date());
+  loadGoal();loadCountdown();applyTheme('dark');applyAllCust();
+  refreshGrid();updateStats();renderAllTimeCard();renderForecast();
+  switchView('daily');
   showToast('🗑 すべてのデータをクリアしました');
 });
 
@@ -2426,6 +3031,14 @@ if(_custCdClear){
     renderForecast();
   });
 }
+const _targetHInp=$('cust-target-h');
+if(_targetHInp){
+  _targetHInp.addEventListener('input',function(){
+    const v=parseInt(this.value);
+    CUST.targetTotalH=(v>0&&v<=9999)?v:0;
+    saveCust();renderLevelBar();renderForecast();
+  });
+}
 
 function applyTheme(theme){
   if(theme==='dark')document.documentElement.removeAttribute('data-theme');
@@ -2530,6 +3143,23 @@ const STORY_DEF=[
    comboMsg:'ウホウホ連打！ゴリラは止まらないゴリ！',
    quotes:['バナナより大事なのは合格ゴリ！','ゴリラも積み上げれば伝説になるゴリ！','今日も修行ゴリ。昨日より賢いゴリ。','ゴリラが頑張るなら人間も頑張れるゴリ！','諦めたらそこで終わりゴリ。'],
    levelNames:{1:'子ゴリラ',11:'若ゴリラ',21:'仲間ゴリラ',31:'リーダーゴリラ',41:'威厳ゴリラ',51:'山の王ゴリラ',61:'最強ゴリラ',71:'神ゴリラ',81:'帝王ゴリラ',91:'ゴリラ帝王',100:'伝説のゴリラ'},
+   levelIcons:{1:'🐣',11:'🦍',21:'🦍',31:'💪',41:'👊',51:'🌿',61:'🏔️',71:'⚡',81:'👑',91:'🔱',100:'🏆'},
+   badgePresets:{
+     first:      {icon:'🍌',name:'はじめの一歩ゴリ',    desc:'はじめての学習記録ゴリ'},
+     streak3:    {icon:'🦍',name:'3日連続ゴリ',          desc:'3日連続で修行したゴリ'},
+     streak7:    {icon:'🔥',name:'7日連続ゴリ',          desc:'7日連続で修行したゴリ'},
+     streak30:   {icon:'💪',name:'30日連続ゴリ',         desc:'30日連続で修行したゴリ'},
+     streak100:  {icon:'👑',name:'100日連続ゴリ',        desc:'100日連続で修行したゴリ'},
+     morning:    {icon:'🌅',name:'朝型ゴリラ',           desc:'朝4〜8時の修行を10回以上ゴリ'},
+     night:      {icon:'🌙',name:'夜型ゴリラ',           desc:'深夜0〜3時の修行を10回以上ゴリ'},
+     bloom5:     {icon:'🍌',name:'バナナ5本',            desc:'日別目標を5回達成ゴリ'},
+     bloom20:    {icon:'🎋',name:'バナナ20本',           desc:'日別目標を20回達成ゴリ'},
+     weekly_goal:{icon:'🌿',name:'週間ノルマ達成ゴリ',  desc:'週間目標をはじめて達成ゴリ'},
+     monthly_goal:{icon:'🏔️',name:'月間ノルマ達成ゴリ', desc:'月間目標をはじめて達成ゴリ'},
+     h50:        {icon:'🦧',name:'50時間ゴリラ',         desc:'累計50時間を修行したゴリ'},
+     h100:       {icon:'🦍',name:'100時間ゴリラ',        desc:'累計100時間を修行したゴリ'},
+     h500:       {icon:'🏆',name:'伝説のゴリラ',         desc:'累計500時間を修行したゴリ'},
+   },
    quotes2:['2周目ゴリラは一味違うゴリ！経験値が違うゴリ！','また卵に戻ったゴリ。でも今度は最速で育つゴリ！','前回より賢いゴリ。記録を塗り替えるゴリ！','2度目の修行は怖くないゴリ。むしろ楽しいゴリ！','バナナ2倍食べた分、実力2倍ゴリ！'],
    quotes3:['3周目ゴリラはもはや伝説ゴリ。','問題を見た瞬間に答えが見えるゴリ。これが本物ゴリ！','3度目の合格は確実ゴリ。ゴリラに不可能はないゴリ。','諦めなかったゴリラが、最後に笑うゴリ！','頂点のゴリラが、今日も修行するゴリ。'],
   },
@@ -2545,6 +3175,23 @@ const STORY_DEF=[
    comboMsg:'連撃！止まるな——これが剣士の怒涛だ！',
    quotes:['迷いは剣を鈍らせる。ただ、前へ。','今日の努力が、明日の刃になる。','一問を制する者が、試験を制す。','休むな。ただし、折れるな。','強さとは、諦めない意志だ。'],
    levelNames:{1:'見習い剣士',11:'修行中の剣士',21:'一人前の剣士',31:'猛者',41:'剣豪',51:'達人剣士',61:'剣聖',71:'無敵の剣士',81:'最強の剣士',91:'伝説の剣士',100:'試験完全制覇'},
+   levelIcons:{1:'🌱',11:'🗡️',21:'⚔️',31:'🔥',41:'💥',51:'🌪️',61:'⚡',71:'🌙',81:'☀️',91:'🌟',100:'🏆'},
+   badgePresets:{
+     first:      {icon:'🌱',name:'入門の一歩',      desc:'はじめての修行記録'},
+     streak3:    {icon:'🗡️',name:'3日の鍛錬',       desc:'3日連続で剣を磨いた'},
+     streak7:    {icon:'⚔️',name:'7日の連撃',        desc:'7日連続で修行を重ねた'},
+     streak30:   {icon:'🔥',name:'30日の炎',         desc:'30日連続で鍛え続けた'},
+     streak100:  {icon:'👑',name:'百日の剣聖',       desc:'100日連続で修行した'},
+     morning:    {icon:'🌅',name:'暁の剣士',         desc:'夜明けの修行を10回以上'},
+     night:      {icon:'🌙',name:'夜の遣い手',       desc:'深夜の修行を10回以上'},
+     bloom5:     {icon:'🌸',name:'五本の刃',         desc:'日別目標を5回達成'},
+     bloom20:    {icon:'💮',name:'二十連の太刀',     desc:'日別目標を20回達成'},
+     weekly_goal:{icon:'🏯',name:'週の勝利',         desc:'週間目標をはじめて達成'},
+     monthly_goal:{icon:'⛩️',name:'月の達成',        desc:'月間目標をはじめて達成'},
+     h50:        {icon:'🗡️',name:'五十時間の剣士',  desc:'累計50時間を修行'},
+     h100:       {icon:'⚔️',name:'百時間の猛者',     desc:'累計100時間を修行'},
+     h500:       {icon:'🏆',name:'伝説の剣聖',       desc:'累計500時間を修行'},
+   },
    quotes2:['二度目の刃は、迷いを知らない。','同じ道を歩いても、見える景色が違う。','剣を再び握る。今度こそ、本物だ。','2度目の修行は速い。体が覚えているから。','強さとは、何度でも立ち上がる意志だ。'],
    quotes3:['三度目の境地に、敵はいない。','刃を研ぎ続けた者だけが、頂点を知る。','究極の剣士とは、何度でも立ち上がる者だ。','三たび剣を抜く者を、天才と呼ぶ。','この剣は、もう折れない。永遠に。'],
   },
@@ -2560,6 +3207,23 @@ const STORY_DEF=[
    comboMsg:'ワープ連続発動！このスピード、誰も追いつけない！',
    quotes:['宇宙は広い。でも諦めなければ端まで行ける。','一つの星を知ることが、銀河を知る一歩。','ミッションに失敗はない。あるのは学習だけだ。','星は毎日、少しずつ近づいてくる。','今日の一時間が、明日の軌道を変える。'],
    levelNames:{1:'訓練生',11:'飛行士候補',21:'初期パイロット',31:'宇宙飛行士',41:'探検家',51:'銀河探検家',61:'星の発見者',71:'銀河の英雄候補',81:'宇宙の伝説',91:'銀河の英雄',100:'伝説の宇宙人'},
+   levelIcons:{1:'👶',11:'🚀',21:'🛸',31:'🌍',41:'🌙',51:'⭐',61:'🌌',71:'🌠',81:'🪐',91:'🌌',100:'🏆'},
+   badgePresets:{
+     first:      {icon:'🚀',name:'初フライト',        desc:'はじめての学習記録'},
+     streak3:    {icon:'🌍',name:'3日の軌道',          desc:'3日連続で学習'},
+     streak7:    {icon:'🌙',name:'7日の航行',          desc:'7日連続で学習'},
+     streak30:   {icon:'⭐',name:'30日の星旅',         desc:'30日連続で学習'},
+     streak100:  {icon:'🌌',name:'100日の銀河旅行',    desc:'100日連続で学習'},
+     morning:    {icon:'🌅',name:'早朝発射',           desc:'朝4〜8時の学習を10回以上'},
+     night:      {icon:'🌙',name:'深夜ミッション',     desc:'深夜0〜3時の学習を10回以上'},
+     bloom5:     {icon:'💫',name:'5つの星',            desc:'日別目標を5回達成'},
+     bloom20:    {icon:'🌟',name:'20の星座',           desc:'日別目標を20回達成'},
+     weekly_goal:{icon:'🛸',name:'週間ミッション完了', desc:'週間目標をはじめて達成'},
+     monthly_goal:{icon:'🪐',name:'月面着陸',          desc:'月間目標をはじめて達成'},
+     h50:        {icon:'🌍',name:'50時間パイロット',   desc:'累計50時間を学習'},
+     h100:       {icon:'🌌',name:'100時間宇宙飛行士', desc:'累計100時間を学習'},
+     h500:       {icon:'🏆',name:'銀河の英雄',         desc:'累計500時間を学習'},
+   },
    quotes2:['二度目の宇宙は、もうホームだ。','初飛行の経験が、今の航路を豊かにする。','同じ星でも、二度目は違う顔を見せる。','二周目のパイロットは、もう迷わない。','知識が増えると、宇宙はさらに広く見える。'],
    quotes3:['銀河を三周する者を、伝説と呼ぶ。','三度目の宇宙。ここはもう君のホームだ。','宇宙の果てを知る者だけが、本当の始まりを知る。','三たび星図を描く者に、未知の星はない。','永遠の探検家よ、今日も星へ向かえ。'],
   },
@@ -2578,6 +3242,23 @@ const STORY_DEF=[
    quotes2:['2周目の仕訳は反射で解ける。','試算表の作り方が自然と身についてきた。','同じ問題でも、2度目は理解の深さが違う。','基礎に戻ることで、本質がより見えてくる。','3級の全体像が完璧に頭に入っている。'],
    quotes3:['3周で簿記3級は完全にマスターした。','問題を見た瞬間に解法が浮かぶ境地。','この積み重ねが2級・1級への土台になる。','仕訳に一切の迷いがない。これが本物の力。','3級を3周した者は、もう怖いものはない。'],
    levelNames:{1:'簿記の入口',11:'勘定科目覚え中',21:'仕訳の基礎習得',31:'現金・預金科目完璧',41:'試算表作成習得',51:'精算表マスター',61:'財務諸表作成習得',71:'過去問演習中',81:'弱点克服完了',91:'合格圏内',100:'3級合格'},
+   levelIcons:{1:'📗',11:'✏️',21:'📝',31:'💴',41:'📋',51:'🧮',61:'📊',71:'📚',81:'💪',91:'🎯',100:'🎓'},
+   badgePresets:{
+     first:      {icon:'📗',name:'テキスト開いた',    desc:'はじめての学習記録'},
+     streak3:    {icon:'✏️',name:'3日連続学習',        desc:'3日連続で学習'},
+     streak7:    {icon:'📝',name:'7日連続学習',        desc:'7日連続で学習'},
+     streak30:   {icon:'📋',name:'30日連続学習',       desc:'30日連続で学習'},
+     streak100:  {icon:'🏆',name:'100日連続学習',      desc:'100日連続で学習'},
+     morning:    {icon:'☀️',name:'朝の仕訳タイム',    desc:'朝4〜8時の学習を10回以上'},
+     night:      {icon:'🌙',name:'深夜の帳簿',         desc:'深夜0〜3時の学習を10回以上'},
+     bloom5:     {icon:'🌸',name:'目標5回達成',        desc:'日別目標を5回達成'},
+     bloom20:    {icon:'💮',name:'目標20回達成',       desc:'日別目標を20回達成'},
+     weekly_goal:{icon:'📒',name:'週間目標クリア',     desc:'週間目標をはじめて達成'},
+     monthly_goal:{icon:'📊',name:'月間目標クリア',    desc:'月間目標をはじめて達成'},
+     h50:        {icon:'📗',name:'50時間突破',         desc:'累計50時間を学習'},
+     h100:       {icon:'🧮',name:'100時間突破',        desc:'累計100時間を学習'},
+     h500:       {icon:'🎓',name:'合格レベル到達',     desc:'累計500時間を学習'},
+   },
   },
   
   {id:'boki2',name:'日商簿記2級合格への道',icon:'📒',
@@ -2594,6 +3275,8 @@ const STORY_DEF=[
    quotes2:['2周目の仕訳は指が覚えている。','商業簿記の深みが見えてきた。','同じ問題でも、2度目は解き方が洗練されている。','2度目の工業簿記は全く違う景色だ。','基礎を固め直すと、また新たな発見がある。'],
    quotes3:['3周で簿記の本質が見えてきた。','仕訳に迷いがなくなった。これが本物の実力だ。','3度磨いた知識は、もう錆びない。','問題を見た瞬間に答えが見える境地。','合格は当然の結果。それがこの積み重ねだ。'],
    levelNames:{1:'仕訳見習い',11:'帳簿記録者',21:'勘定科目マスター',31:'商業簿記習得',41:'工業簿記入門',51:'原価計算修得',61:'精算表の達人',71:'財務諸表の使い手',81:'試験対策完了',91:'合格圏内',100:'2級合格'},
+   levelIcons:{1:'📒',11:'✏️',21:'📝',31:'🏪',41:'🏭',51:'⚙️',61:'📋',71:'📊',81:'💪',91:'🎯',100:'🎓'},
+   badgePresets:{first:{icon:'📒',name:'テキスト開いた',desc:'はじめての学習記録'},streak3:{icon:'✏️',name:'3日連続学習',desc:'3日連続で学習'},streak7:{icon:'📝',name:'7日連続学習',desc:'7日連続で学習'},streak30:{icon:'📊',name:'30日連続学習',desc:'30日連続で学習'},streak100:{icon:'🏆',name:'100日連続学習',desc:'100日連続で学習'},morning:{icon:'☀️',name:'朝の仕訳タイム',desc:'朝4〜8時の学習を10回以上'},night:{icon:'🌙',name:'深夜の帳簿',desc:'深夜0〜3時の学習を10回以上'},bloom5:{icon:'🌸',name:'目標5回達成',desc:'日別目標を5回達成'},bloom20:{icon:'💮',name:'目標20回達成',desc:'日別目標を20回達成'},weekly_goal:{icon:'📒',name:'週間目標クリア',desc:'週間目標をはじめて達成'},monthly_goal:{icon:'📅',name:'月間目標クリア',desc:'月間目標をはじめて達成'},h50:{icon:'📒',name:'50時間突破',desc:'累計50時間を学習'},h100:{icon:'💪',name:'100時間突破',desc:'累計100時間を学習'},h500:{icon:'🎓',name:'2級合格レベル',desc:'累計500時間を学習'}},
   },
   
   {id:'takken',name:'宅建合格への道',icon:'🏠',
@@ -2610,6 +3293,8 @@ const STORY_DEF=[
    quotes2:['2周目の権利関係は別物に見える。','業法の細かいルールが自然と出てくるようになった。','同じ過去問でも、2度目は本質が見える。','法令制限の暗記が格段に速くなった。','宅建の全体像が見えてきた。'],
    quotes3:['3周で宅建の全てが腑に落ちた。','問題を見た瞬間に論点が分かる。これが真の実力。','3度積み上げた知識は本物だ。','合格は当然の結果。この積み重ねがそれを保証する。','宅建のプロフェッショナルへの道を歩んでいる。'],
    levelNames:{1:'不動産初心者',11:'権利関係学習中',21:'民法の基礎習得',31:'宅建業法マスター',41:'法令制限習得',51:'税務知識習得',61:'全分野カバー',71:'過去問演習中',81:'弱点克服完了',91:'合格圏内',100:'宅建合格'},
+   levelIcons:{1:'🏠',11:'📋',21:'⚖️',31:'🏢',41:'🗺️',51:'💴',61:'📚',71:'📝',81:'💪',91:'🎯',100:'🔑'},
+   badgePresets:{first:{icon:'🏠',name:'不動産の第一歩',desc:'はじめての学習記録'},streak3:{icon:'📋',name:'3日連続学習',desc:'3日連続で学習'},streak7:{icon:'⚖️',name:'7日連続学習',desc:'7日連続で学習'},streak30:{icon:'🏢',name:'30日連続学習',desc:'30日連続で学習'},streak100:{icon:'🔑',name:'100日連続学習',desc:'100日連続で学習'},morning:{icon:'☀️',name:'朝の権利学習',desc:'朝4〜8時の学習を10回以上'},night:{icon:'🌙',name:'深夜の業法',desc:'深夜0〜3時の学習を10回以上'},bloom5:{icon:'🌸',name:'目標5回達成',desc:'日別目標を5回達成'},bloom20:{icon:'💮',name:'目標20回達成',desc:'日別目標を20回達成'},weekly_goal:{icon:'🏠',name:'週間目標クリア',desc:'週間目標をはじめて達成'},monthly_goal:{icon:'📅',name:'月間目標クリア',desc:'月間目標をはじめて達成'},h50:{icon:'🏠',name:'50時間突破',desc:'累計50時間を学習'},h100:{icon:'💪',name:'100時間突破',desc:'累計100時間を学習'},h500:{icon:'🔑',name:'宅建合格レベル',desc:'累計500時間を学習'}},
   },
   
   {id:'sharoshi',name:'社労士合格への道',icon:'⚖️',
@@ -2626,6 +3311,8 @@ const STORY_DEF=[
    quotes2:['2周目の社労士は横断理解が深まる。','条文の意味がより鮮明に見えてきた。','2度目の択一式は選択肢の誤りが瞬時に分かる。','労働と社会保険の全体像が腑に落ちてきた。','基礎を固め直すと、応用問題が怖くなくなる。'],
    quotes3:['3周で社労士の全科目が体に入った。','選択式の罠が見えるようになった。これが本物の実力。','3度積み上げた知識は本試験でも揺るがない。','社労士の全体像を俯瞰できる境地に達した。','合格は確実。あとは本番で力を出すだけ。'],
    levelNames:{1:'労働法初学者',11:'労基法習得',21:'安衛法・労災習得',31:'雇用保険習得',41:'健康保険習得',51:'年金科目習得',61:'労一・社一習得',71:'全科目横断整理',81:'過去問演習完了',91:'合格圏内',100:'社労士合格'},
+   levelIcons:{1:'📚',11:'🏗️',21:'🏥',31:'💼',41:'💊',51:'🧓',61:'⚖️',71:'🔗',81:'📝',91:'🎯',100:'🎓'},
+   badgePresets:{first:{icon:'📚',name:'労働法の第一歩',desc:'はじめての学習記録'},streak3:{icon:'🏗️',name:'3日連続学習',desc:'3日連続で学習'},streak7:{icon:'🏥',name:'7日連続学習',desc:'7日連続で学習'},streak30:{icon:'💼',name:'30日連続学習',desc:'30日連続で学習'},streak100:{icon:'🎓',name:'100日連続学習',desc:'100日連続で学習'},morning:{icon:'☀️',name:'朝の労働法',desc:'朝4〜8時の学習を10回以上'},night:{icon:'🌙',name:'深夜の社会保険',desc:'深夜0〜3時の学習を10回以上'},bloom5:{icon:'🌸',name:'目標5回達成',desc:'日別目標を5回達成'},bloom20:{icon:'💮',name:'目標20回達成',desc:'日別目標を20回達成'},weekly_goal:{icon:'📚',name:'週間目標クリア',desc:'週間目標をはじめて達成'},monthly_goal:{icon:'📅',name:'月間目標クリア',desc:'月間目標をはじめて達成'},h50:{icon:'📚',name:'50時間突破',desc:'累計50時間を学習'},h100:{icon:'💪',name:'100時間突破',desc:'累計100時間を学習'},h500:{icon:'🎓',name:'社労士合格レベル',desc:'累計500時間を学習'}},
   },
   
   {id:'zeirishi',name:'税理士試験 1科目完全攻略',icon:'🧮',
@@ -2642,6 +3329,8 @@ const STORY_DEF=[
    quotes2:['2周目の理論暗記は速い。体が覚えているから。','同じ計算問題でも、2度目は本質が見える。','条文の意味がより深く理解できるようになった。','2度目の答練は解法のキレが違う。','基礎に戻ることで、また新たな気づきがある。'],
    quotes3:['3周で理論が完全に体に入った。','計算問題を見た瞬間に解法が浮かぶ境地。','3度磨いた知識は本試験でも揺るがない。','この1科目を3周した者は、本物の税理士候補だ。','積み重ねが確かな合格への道になっている。'],
    levelNames:{1:'税法ゼロスタート',11:'基礎理論把握',21:'計算基礎習得',31:'理論暗記開始',41:'計算応用習得',51:'理論完成',61:'答練演習中',71:'模試対応力完成',81:'弱点克服完了',91:'合格圏内',100:'1科目合格'},
+   levelIcons:{1:'📝',11:'📖',21:'🧮',31:'💭',41:'⚡',51:'🔑',61:'📋',71:'🎯',81:'💪',91:'🌟',100:'🏆'},
+   badgePresets:{first:{icon:'📝',name:'理論の第一歩',desc:'はじめての学習記録'},streak3:{icon:'📖',name:'3日連続学習',desc:'3日連続で学習'},streak7:{icon:'🧮',name:'7日連続学習',desc:'7日連続で学習'},streak30:{icon:'📋',name:'30日連続学習',desc:'30日連続で学習'},streak100:{icon:'🏆',name:'100日連続学習',desc:'100日連続で学習'},morning:{icon:'☀️',name:'朝の理論暗記',desc:'朝4〜8時の学習を10回以上'},night:{icon:'🌙',name:'深夜の計算',desc:'深夜0〜3時の学習を10回以上'},bloom5:{icon:'🌸',name:'目標5回達成',desc:'日別目標を5回達成'},bloom20:{icon:'💮',name:'目標20回達成',desc:'日別目標を20回達成'},weekly_goal:{icon:'🧮',name:'週間目標クリア',desc:'週間目標をはじめて達成'},monthly_goal:{icon:'📅',name:'月間目標クリア',desc:'月間目標をはじめて達成'},h50:{icon:'📝',name:'50時間突破',desc:'累計50時間を学習'},h100:{icon:'💪',name:'100時間突破',desc:'累計100時間を学習'},h500:{icon:'🏆',name:'科目合格レベル',desc:'累計500時間を学習'}},
   },
   
   {id:'fp2',name:'FP2級合格への道',icon:'💰',
@@ -2658,6 +3347,8 @@ const STORY_DEF=[
    quotes2:['2周目のFP学習は6分野の繋がりが見えてくる。','同じ問題でも、2度目は深い理解で解ける。','2度目の計算問題は手が自動的に動く。','人生設計に必要な知識が確実に身についている。','6分野の関連性が理解できると、学習効率が上がる。'],
    quotes3:['3周でFPの全分野が完全にマスターできた。','問題を見た瞬間に解法が浮かぶ境地。','3度積み上げた知識は実生活でも活かせる本物だ。','FPの知識は一生使える財産になった。','合格は当然の結果。この積み重ねが証明している。'],
    levelNames:{1:'マネー初心者',11:'ライフプラン習得',21:'金融資産習得',31:'不動産知識習得',41:'保険知識習得',51:'タックス習得',61:'相続・事業習得',71:'全分野カバー',81:'過去問演習完了',91:'合格圏内',100:'FP2級合格'},
+   levelIcons:{1:'💰',11:'📅',21:'📈',31:'🏡',41:'🛡️',51:'🧾',61:'👨‍👩‍👧',71:'📚',81:'💪',91:'🎯',100:'🎓'},
+   badgePresets:{first:{icon:'💰',name:'FPの第一歩',desc:'はじめての学習記録'},streak3:{icon:'📅',name:'3日連続学習',desc:'3日連続で学習'},streak7:{icon:'📈',name:'7日連続学習',desc:'7日連続で学習'},streak30:{icon:'🏡',name:'30日連続学習',desc:'30日連続で学習'},streak100:{icon:'🎓',name:'100日連続学習',desc:'100日連続で学習'},morning:{icon:'☀️',name:'朝のライフプラン',desc:'朝4〜8時の学習を10回以上'},night:{icon:'🌙',name:'深夜の資産運用',desc:'深夜0〜3時の学習を10回以上'},bloom5:{icon:'🌸',name:'目標5回達成',desc:'日別目標を5回達成'},bloom20:{icon:'💮',name:'目標20回達成',desc:'日別目標を20回達成'},weekly_goal:{icon:'💰',name:'週間目標クリア',desc:'週間目標をはじめて達成'},monthly_goal:{icon:'📅',name:'月間目標クリア',desc:'月間目標をはじめて達成'},h50:{icon:'💰',name:'50時間突破',desc:'累計50時間を学習'},h100:{icon:'💪',name:'100時間突破',desc:'累計100時間を学習'},h500:{icon:'🎓',name:'FP2級合格レベル',desc:'累計500時間を学習'}},
   },
   
   {id:'koumuin',name:'公務員試験合格への道',icon:'🏛️',
@@ -2674,6 +3365,8 @@ const STORY_DEF=[
    quotes2:['2周目の数的推理は解法が自然と浮かぶ。','行政法の条文が頭に入ってきた。','2度目は解くスピードが段違いだ。','2度目の学習で全体像がより鮮明になった。','繰り返すことで、確実な実力が積み上がっている。'],
    quotes3:['3周で公務員試験の全科目が体に入った。','過去問を見た瞬間に答えが浮かぶ境地。','3度積み上げた実力は本番でも絶対に揺るがない。','筆記も面接も、もう怖いものはない。','この積み重ねが合格という形で実を結ぶ。'],
    levelNames:{1:'受験生スタート',11:'教養科目基礎習得',21:'数的推理習得',31:'行政法習得',41:'憲法・民法習得',51:'専門科目全般習得',61:'論文対策完了',71:'面接対策開始',81:'模擬面接完了',91:'合格圏内',100:'公務員合格'},
+   levelIcons:{1:'📚',11:'📖',21:'🧩',31:'⚖️',41:'🏛️',51:'🎓',61:'✍️',71:'🎤',81:'💼',91:'🎯',100:'🎌'},
+   badgePresets:{first:{icon:'📚',name:'公務員への第一歩',desc:'はじめての学習記録'},streak3:{icon:'📖',name:'3日連続学習',desc:'3日連続で学習'},streak7:{icon:'🧩',name:'7日連続学習',desc:'7日連続で学習'},streak30:{icon:'🏛️',name:'30日連続学習',desc:'30日連続で学習'},streak100:{icon:'🎌',name:'100日連続学習',desc:'100日連続で学習'},morning:{icon:'☀️',name:'朝の数的推理',desc:'朝4〜8時の学習を10回以上'},night:{icon:'🌙',name:'深夜の専門科目',desc:'深夜0〜3時の学習を10回以上'},bloom5:{icon:'🌸',name:'目標5回達成',desc:'日別目標を5回達成'},bloom20:{icon:'💮',name:'目標20回達成',desc:'日別目標を20回達成'},weekly_goal:{icon:'🏛️',name:'週間目標クリア',desc:'週間目標をはじめて達成'},monthly_goal:{icon:'📅',name:'月間目標クリア',desc:'月間目標をはじめて達成'},h50:{icon:'📚',name:'50時間突破',desc:'累計50時間を学習'},h100:{icon:'💪',name:'100時間突破',desc:'累計100時間を学習'},h500:{icon:'🎌',name:'公務員合格レベル',desc:'累計500時間を学習'}},
   },
   
   {id:'shindanshi',name:'中小企業診断士合格への道',icon:'💼',
@@ -2690,6 +3383,8 @@ const STORY_DEF=[
    quotes2:['2周目の1次は科目間のつながりが見えてくる。','同じ事例問題でも、2度目は解答の質が上がる。','財務分析のスピードが段違いになってきた。','2度目の学習で思考の型が確立されてきた。','また基礎に戻ることで、新たな発見がある。'],
    quotes3:['3周で1次7科目が完全に体に入った。','事例を見た瞬間に解答骨子が浮かぶ境地。','3度積み上げた思考力は本試験でも絶対揺るがない。','診断士の視点で物事を見られるようになった。','合格は確実。この積み重ねがそれを証明している。'],
    levelNames:{1:'経営ゼロスタート',11:'経済学習得',21:'財務会計習得',31:'企業経営習得',41:'運営管理習得',51:'法務・情報習得',61:'中小企業政策習得',71:'2次事例対策開始',81:'事例演習完了',91:'合格圏内',100:'診断士合格'},
+   levelIcons:{1:'📋',11:'📉',21:'💹',31:'🏢',41:'⚙️',51:'📜',61:'🏭',71:'💡',81:'🔍',91:'🎯',100:'🎓'},
+   badgePresets:{first:{icon:'📋',name:'経営の第一歩',desc:'はじめての学習記録'},streak3:{icon:'📉',name:'3日連続学習',desc:'3日連続で学習'},streak7:{icon:'💹',name:'7日連続学習',desc:'7日連続で学習'},streak30:{icon:'🏢',name:'30日連続学習',desc:'30日連続で学習'},streak100:{icon:'🎓',name:'100日連続学習',desc:'100日連続で学習'},morning:{icon:'☀️',name:'朝の経済学',desc:'朝4〜8時の学習を10回以上'},night:{icon:'🌙',name:'深夜の事例演習',desc:'深夜0〜3時の学習を10回以上'},bloom5:{icon:'🌸',name:'目標5回達成',desc:'日別目標を5回達成'},bloom20:{icon:'💮',name:'目標20回達成',desc:'日別目標を20回達成'},weekly_goal:{icon:'🏢',name:'週間目標クリア',desc:'週間目標をはじめて達成'},monthly_goal:{icon:'📅',name:'月間目標クリア',desc:'月間目標をはじめて達成'},h50:{icon:'📋',name:'50時間突破',desc:'累計50時間を学習'},h100:{icon:'💪',name:'100時間突破',desc:'累計100時間を学習'},h500:{icon:'🎓',name:'診断士合格レベル',desc:'累計500時間を学習'}},
   },
   
   {id:'kaikeishi',name:'公認会計士試験への挑戦',icon:'🔍',
@@ -2706,8 +3401,122 @@ const STORY_DEF=[
    quotes2:['2周目の財務会計は理解の深さが違う。','同じ論文問題でも、2度目は記述の質が上がる。','監査の思考が自然と身についてきた。','2度目の企業法は論理構造がより鮮明だ。','繰り返すことで確実な実力が積み上がっている。'],
    quotes3:['3周で会計士試験の全分野が体に入った。','問題を見た瞬間に解法が浮かぶ境地。','3度磨いた知識は本試験でも絶対揺るがない。','この積み重ねが、最難関資格の合格へとつながる。','会計士の称号は、この努力の結晶だ。'],
    levelNames:{1:'会計ゼロスタート',11:'簿記論習得',21:'財務会計習得',31:'管理会計習得',41:'監査論習得',51:'企業法習得',61:'租税法習得',71:'短答式対応完了',81:'論文式演習中',91:'合格圏内',100:'公認会計士合格'},
+   levelIcons:{1:'📊',11:'📒',21:'💰',31:'📈',41:'🔍',51:'⚖️',61:'💴',71:'✅',81:'✍️',91:'🌟',100:'🏆'},
+   badgePresets:{first:{icon:'📊',name:'会計の第一歩',desc:'はじめての学習記録'},streak3:{icon:'📒',name:'3日連続学習',desc:'3日連続で学習'},streak7:{icon:'💰',name:'7日連続学習',desc:'7日連続で学習'},streak30:{icon:'📈',name:'30日連続学習',desc:'30日連続で学習'},streak100:{icon:'🏆',name:'100日連続学習',desc:'100日連続で学習'},morning:{icon:'☀️',name:'朝の財務会計',desc:'朝4〜8時の学習を10回以上'},night:{icon:'🌙',name:'深夜の監査論',desc:'深夜0〜3時の学習を10回以上'},bloom5:{icon:'🌸',name:'目標5回達成',desc:'日別目標を5回達成'},bloom20:{icon:'💮',name:'目標20回達成',desc:'日別目標を20回達成'},weekly_goal:{icon:'📊',name:'週間目標クリア',desc:'週間目標をはじめて達成'},monthly_goal:{icon:'📅',name:'月間目標クリア',desc:'月間目標をはじめて達成'},h50:{icon:'📊',name:'50時間突破',desc:'累計50時間を学習'},h100:{icon:'💪',name:'100時間突破',desc:'累計100時間を学習'},h500:{icon:'🏆',name:'会計士合格レベル',desc:'累計500時間を学習'}},
   },
 ];
+// ── 学習予測アドバイス文（テーマ別） ──
+const FORECAST_ADVICE={
+  gorilla:{
+    close_main:(add)=>`ウホ！あと1日${add}多く修行すれば目標達成ゴリ！`,
+    close_sub:()=>`もうちょっとだゴリ。バナナ食べてもう一踏ん張りゴリ！`,
+    ng_main:(add)=>`ゴリラは諦めないゴリ！1日${add}追加で目標に届くゴリ！`,
+    ng_sub:()=>`今のペースだと悲しいゴリラになってしまうゴリ…でも大丈夫ゴリ！`,
+    ok_main:()=>`ウホウホ！このペースで目標時間クリア確実ゴリ！！`,
+    ok_sub:(over)=>`余裕の${over}！ゴリラは止まらないゴリ！最高ゴリ！`,
+  },
+  samurai:{
+    close_main:(add)=>`刃を研げ。あと${add}が目標への一太刀だ。`,
+    close_sub:()=>`迷いを捨てよ。わずかな差が、勝敗を分ける。`,
+    ng_main:(add)=>`1日${add}の鍛錬を積め。それが目標達成への道だ。`,
+    ng_sub:()=>`剣士は折れない。ペースを上げよ。勝機はまだある。`,
+    ok_main:()=>`見事。このまま進めば目標時間を制する。`,
+    ok_sub:(over)=>`${over}の余裕。だが油断するな。最後まで刃を研ぎ続けよ。`,
+  },
+  space:{
+    close_main:(add)=>`推進力が足りない！あと${add}で軌道修正できる！`,
+    close_sub:()=>`もう少しでワープ成功だ。エンジン全開で行け！`,
+    ng_main:(add)=>`1日${add}の燃料を追加すれば、目標の星に届くぞ！`,
+    ng_sub:()=>`ミッション放棄は許されない。今すぐ軌道を修正せよ！`,
+    ok_main:()=>`🎉 目標の星に到達できる！ミッション成功だ！`,
+    ok_sub:(over)=>`${over}の余裕で安全圏内。このまま全速前進だ！`,
+  },
+  boki3:{
+    close_main:(add)=>`目標まであと少し！1日${add}追加でクリアできる！`,
+    close_sub:()=>`仕訳1問分の時間を足すだけ。もうすぐ試算表が合う！`,
+    ng_main:(add)=>`毎日${add}の積み上げで目標時間に届く！諦めないで！`,
+    ng_sub:()=>`基礎を固めれば必ず積み上がる。ペースを少し上げてみよう！`,
+    ok_main:()=>`🎉 このペースで目標時間をクリアできる！`,
+    ok_sub:(over)=>`${over}の余裕。しっかり積み上げていこう！`,
+  },
+  boki2:{
+    close_main:(add)=>`目標まであと一歩！1日${add}追加でクリアできる！`,
+    close_sub:()=>`商業簿記の積み上げが活きる時が来る。もう少しだ！`,
+    ng_main:(add)=>`1日${add}の積み上げで目標時間に届く！継続が力だ！`,
+    ng_sub:()=>`2級の壁は高い。でも毎日続ければ必ず積み上がる！`,
+    ok_main:()=>`🎉 このペースで目標時間をクリアできる！`,
+    ok_sub:(over)=>`${over}の余裕。工業簿記も盤石だ！`,
+  },
+  takken:{
+    close_main:(add)=>`目標まであと少し！1日${add}で権利関係を制覇！`,
+    close_sub:()=>`過去問1問分の時間を足すだけ。業法完成が見えてくる！`,
+    ng_main:(add)=>`1日${add}の積み上げで目標時間が現実になる！`,
+    ng_sub:()=>`法令制限も怖くない。ペースを上げれば必ず届く！`,
+    ok_main:()=>`🎉 このペースで目標時間をクリアできる！`,
+    ok_sub:(over)=>`${over}の余裕。全分野しっかり積み上げられる！`,
+  },
+  sharoshi:{
+    close_main:(add)=>`全科目制覇まであと少し！1日${add}で目標時間へ！`,
+    close_sub:()=>`選択式対策も怖くない。もう少しペースを上げよう！`,
+    ng_main:(add)=>`1日${add}の横断整理で目標時間に近づく！`,
+    ng_sub:()=>`範囲は広い。でも積み上げれば必ず道は開ける！`,
+    ok_main:()=>`🎉 このペースで目標時間をクリアできる！`,
+    ok_sub:(over)=>`${over}の余裕。選択式も択一式も盤石だ！`,
+  },
+  zeirishi:{
+    close_main:(add)=>`理論暗記まであと少し！1日${add}で目標時間クリア！`,
+    close_sub:()=>`計算問題1問分の時間を足すだけ。答練で実力が出せる！`,
+    ng_main:(add)=>`1日${add}の理論と計算で目標時間への道が開ける！`,
+    ng_sub:()=>`ライバルより1日多く積み上げた者が頂点に立つ！`,
+    ok_main:()=>`🎉 このペースで目標時間をクリアできる！`,
+    ok_sub:(over)=>`${over}の余裕。理論も計算も完璧に積み上がる！`,
+  },
+  fp2:{
+    close_main:(add)=>`6分野制覇まであと少し！1日${add}で目標時間クリア！`,
+    close_sub:()=>`計算問題1問分の時間を足すだけ。目標は手が届く！`,
+    ng_main:(add)=>`1日${add}の積み上げで目標時間が現実になる！`,
+    ng_sub:()=>`学んだ知識は一生使える。ペースを上げて目標をつかもう！`,
+    ok_main:()=>`🎉 このペースで目標時間をクリアできる！`,
+    ok_sub:(over)=>`${over}の余裕。6分野すべて積み上げられる！`,
+  },
+  koumuin:{
+    close_main:(add)=>`筆記対策まであと少し！1日${add}で目標時間へ！`,
+    close_sub:()=>`数的推理1問分の時間を足すだけ。目標が見えてくる！`,
+    ng_main:(add)=>`1日${add}の積み上げで目標時間が現実になる！`,
+    ng_sub:()=>`諦めなかった人が目標を達成する。ペースを上げよう！`,
+    ok_main:()=>`🎉 このペースで目標時間をクリアできる！`,
+    ok_sub:(over)=>`${over}の余裕。筆記対策も面接対策も万全だ！`,
+  },
+  shindanshi:{
+    close_main:(add)=>`7科目制覇まであと少し！1日${add}で目標時間へ！`,
+    close_sub:()=>`事例問題1問分の時間を足すだけ。目標への道が開ける！`,
+    ng_main:(add)=>`1日${add}の積み上げで目標時間が現実になる！`,
+    ng_sub:()=>`思考力は積み上げで磨かれる。ペースを上げよう！`,
+    ok_main:()=>`🎉 このペースで目標時間をクリアできる！`,
+    ok_sub:(over)=>`${over}の余裕。1次も2次もしっかり積み上げられる！`,
+  },
+  kaikeishi:{
+    close_main:(add)=>`最難関の壁まであと少し！1日${add}で目標時間クリア！`,
+    close_sub:()=>`論文1問分の時間を足すだけ。目標への道が開ける！`,
+    ng_main:(add)=>`1日${add}の積み上げで目標時間が現実になる！`,
+    ng_sub:()=>`難しいほど価値がある。ペースを上げて頂点を目指せ！`,
+    ok_main:()=>`🎉 このペースで目標時間をクリアできる！`,
+    ok_sub:(over)=>`${over}の余裕。短答も論文もしっかり積み上がる！`,
+  },
+  default:{
+    close_main:(add)=>`あと${add}で目標達成！もう少しだけペースを上げよう！`,
+    close_sub:()=>`ゴールは目の前。小さな積み上げが大きな差を生む！`,
+    ng_main:(add)=>`1日${add}の積み上げで目標時間に届く！継続が力だ！`,
+    ng_sub:()=>`今のペースより少し多く。それだけで未来が変わる！`,
+    ok_main:()=>`🎉 このペースで目標時間をクリアできます！`,
+    ok_sub:(over)=>`${over}の余裕。このまま続けよう！`,
+  },
+};
+function _getForecastAdvice(){
+  const id=CUST.storyId&&FORECAST_ADVICE[CUST.storyId]?CUST.storyId:'default';
+  return FORECAST_ADVICE[id];
+}
+
 function getActiveStory(){return CUST.storyId?STORY_DEF.find(s=>s.id===CUST.storyId)||null:null;}
 function getStoryTier(lv){
   const s=getActiveStory();if(!s)return null;
@@ -2726,7 +3535,7 @@ function getStoryTierMsg(tierIdx){
   return (ov['tierMsg'+tierIdx]!==undefined&&ov['tierMsg'+tierIdx]!=='')?ov['tierMsg'+tierIdx]:s.tiers[tierIdx]?.msg||'';
 }
 
-const CUST_DEFAULTS={appName:'コツコツ✏️サクサク🌸',checkEmoji:'🌸',comboEmoji:'✨',comboText:'コンボ！',comboHighText:'すごい！',showTreeBg:true,customQuotes:[],useCustomQuotesOnly:false,levelNames:{},levelIcons:{},badgeOverrides:{},customBadges:[],storyId:'samurai',storyOverrides:{},storyLoopCount:{},storyLoopStartMin:{}};
+const CUST_DEFAULTS={appName:'コツコツ✏️サクサク🌸',checkEmoji:'🌸',comboEmoji:'✨',comboText:'コンボ！',comboHighText:'すごい！',showTreeBg:true,customQuotes:[],useCustomQuotesOnly:false,levelNames:{},levelIcons:{},badgeOverrides:{},customBadges:[],storyId:'samurai',storyOverrides:{},storyLoopCount:{},storyLoopStartMin:{},targetTotalH:0};
 let CUST={...CUST_DEFAULTS};
 
 const CHECK_EMOJI_LIST=['🌸','🦍','🔥','⭐','💪','🎯','📚','✅','🌟','💎','🎉','🌈','🐉','🦊','🤖','👾','🍕','🧠','🚀','💐','🐧','🐸','🎸','🍎'];
@@ -2883,9 +3692,9 @@ function updateStoryMainCard(){
 }
 
 function toggleChallengePopup(){
-  const popup=$('challenge-popup');
-  if(!popup)return;
-  popup.classList.toggle('open');
+  const overlay=$('challenge-overlay');
+  if(!overlay)return;
+  overlay.classList.toggle('show');
 }
 
 function applyAllCust(){
@@ -2912,11 +3721,23 @@ function closeCustPanel(){$('cust-overlay').classList.remove('show');}
 
 function _renderLevelList(){
   const list=$('cust-level-list');if(!list)return;list.innerHTML='';
+  const s=getActiveStory();
+  const storyNames=s?.levelNames||{};
+  const storyIcons=s?.levelIcons||{};
+  // ストーリー選択中はプリセット適用ボタンを表示
+  if(s){
+    const hint=document.createElement('div');
+    hint.style.cssText='font-size:.6rem;color:var(--text-muted);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;';
+    hint.innerHTML=`<span>空欄はストーリー「${s.name}」のプリセットを使用</span><button class="cust-btn ok" style="font-size:.6rem;padding:2px 8px;" onclick="applyStoryLevelPreset()">プリセットを入力</button>`;
+    list.appendChild(hint);
+  }
   LEVEL_DEF.forEach(ld=>{
     const row=document.createElement('div');row.className='cust-lvl-row';
     const iconInp=document.createElement('input');
     iconInp.type='text';iconInp.className='cust-lvl-icon';iconInp.maxLength='4';
-    iconInp.placeholder=ld.icon;iconInp.title='アイコン';
+    // ストーリーのプリセットアイコンをplaceholderに表示
+    iconInp.placeholder=storyIcons[ld.lv]||ld.icon;
+    iconInp.title='アイコン';
     iconInp.value=(CUST.levelIcons&&CUST.levelIcons[ld.lv])||'';
     iconInp.addEventListener('input',function(){
       if(!CUST.levelIcons)CUST.levelIcons={};
@@ -2925,7 +3746,9 @@ function _renderLevelList(){
     const lbl=document.createElement('span');lbl.className='cust-lvl-lbl';lbl.textContent='Lv.'+ld.lv;
     const nameInp=document.createElement('input');
     nameInp.type='text';nameInp.className='cust-lvl-name';nameInp.maxLength='20';
-    nameInp.placeholder=ld.title;nameInp.title='レベル名称';
+    // ストーリーのプリセット名称をplaceholderに表示
+    nameInp.placeholder=storyNames[ld.lv]||ld.title;
+    nameInp.title='レベル名称';
     nameInp.value=(CUST.levelNames&&CUST.levelNames[ld.lv])||'';
     nameInp.addEventListener('input',function(){
       if(!CUST.levelNames)CUST.levelNames={};
@@ -2935,21 +3758,55 @@ function _renderLevelList(){
     list.appendChild(row);
   });
 }
+// ストーリーのプリセットをレベル設定欄に一括入力する関数
+function applyStoryLevelPreset(){
+  const s=getActiveStory();if(!s)return;
+  if(!CUST.levelNames)CUST.levelNames={};
+  if(!CUST.levelIcons)CUST.levelIcons={};
+  LEVEL_DEF.forEach(ld=>{
+    if(s.levelNames&&s.levelNames[ld.lv])CUST.levelNames[ld.lv]=s.levelNames[ld.lv];
+    if(s.levelIcons&&s.levelIcons[ld.lv])CUST.levelIcons[ld.lv]=s.levelIcons[ld.lv];
+  });
+  saveCust();renderLevelBar();_renderLevelList();
+  showToast('✅ ストーリーのプリセットを適用しました！');
+}
+function applyStoryBadgePreset(){
+  const s=getActiveStory();if(!s||!s.badgePresets)return;
+  if(!CUST.badgeOverrides)CUST.badgeOverrides={};
+  Object.entries(s.badgePresets).forEach(([id,preset])=>{
+    if(!CUST.badgeOverrides[id])CUST.badgeOverrides[id]={};
+    if(preset.name)CUST.badgeOverrides[id].name=preset.name;
+    if(preset.desc)CUST.badgeOverrides[id].desc=preset.desc;
+    if(preset.icon)CUST.badgeOverrides[id].icon=preset.icon;
+  });
+  saveCust();_renderBadgeEditList();renderBadgeGrid();
+  showToast('✅ バッジのプリセットを適用しました！');
+}
 function _renderBadgeEditList(){
   const list=$('cust-badge-edit-list');if(!list)return;list.innerHTML='';
+  const s=getActiveStory();
+  const storyBadges=s?.badgePresets||{};
+  // ストーリー選択中はプリセット適用ボタンを表示
+  if(s){
+    const hint=document.createElement('div');
+    hint.style.cssText='font-size:.6rem;color:var(--text-muted);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;';
+    hint.innerHTML=`<span>空欄はストーリーのバッジプリセットを使用</span><button class="cust-btn ok" style="font-size:.6rem;padding:2px 8px;" onclick="applyStoryBadgePreset()">プリセットを入力</button>`;
+    list.appendChild(hint);
+  }
   BADGE_DEF.forEach(b=>{
     const ov=(CUST.badgeOverrides&&CUST.badgeOverrides[b.id])||{};
+    const sp=storyBadges[b.id]||{};
     const row=document.createElement('div');row.className='cust-badge-row';
-    const ic=document.createElement('span');ic.className='cust-badge-icon-lbl';ic.textContent=b.icon;
+    const ic=document.createElement('span');ic.className='cust-badge-icon-lbl';ic.textContent=ov.icon||sp.icon||b.icon;
     const ni=document.createElement('input');ni.type='text';ni.className='cust-badge-ninp';
-    ni.maxLength='20';ni.placeholder=b.name;ni.title='名前';ni.value=ov.name||'';
+    ni.maxLength='20';ni.placeholder=sp.name||b.name;ni.title='名前';ni.value=ov.name||'';
     ni.addEventListener('input',function(){
       if(!CUST.badgeOverrides)CUST.badgeOverrides={};
       if(!CUST.badgeOverrides[b.id])CUST.badgeOverrides[b.id]={};
       CUST.badgeOverrides[b.id].name=this.value.trim();saveCust();
     });
     const di=document.createElement('input');di.type='text';di.className='cust-badge-dinp';
-    di.maxLength='40';di.placeholder=b.desc;di.title='説明';di.value=ov.desc||'';
+    di.maxLength='40';di.placeholder=sp.desc||b.desc;di.title='説明';di.value=ov.desc||'';
     di.addEventListener('input',function(){
       if(!CUST.badgeOverrides)CUST.badgeOverrides={};
       if(!CUST.badgeOverrides[b.id])CUST.badgeOverrides[b.id]={};
@@ -2984,7 +3841,11 @@ function _renderBadgeEditList(){
 function onStorySelChange(val){
   CUST.storyId=val||null;saveCust();applyAllCust();renderQuote();
   const ed=$('cust-story-edit');if(ed)ed.style.display=val?'block':'none';
+  const mw=$('cust-story-msg-wrap');if(mw)mw.style.display=val?'block':'none';
   _renderStoryEdit();
+  _renderLevelList();
+  _renderBadgeEditList();
+  renderBadgeGrid();
 }
 function _renderStoryEdit(){
   const s=getActiveStory();if(!s)return;
@@ -3032,8 +3893,10 @@ function _syncCustPanel(){
   const ct=$('cust-combo-text');if(ct)ct.value=CUST.comboText&&CUST.comboText!=='コンボ！'?CUST.comboText:'';
   const cht=$('cust-combo-high');if(cht)cht.value=CUST.comboHighText&&CUST.comboHighText!=='すごい！'?CUST.comboHighText:'';
   const cdInp=$('cust-cd-input');if(cdInp)cdInp.value=LS.get('exam-date')||'';
+  const tgtInp=$('cust-target-h');if(tgtInp)tgtInp.value=CUST.targetTotalH>0?CUST.targetTotalH:'';
   const ss=$('cust-story-sel');if(ss)ss.value=CUST.storyId||'';
   const sed=$('cust-story-edit');if(sed)sed.style.display=CUST.storyId?'block':'none';
+  const smw=$('cust-story-msg-wrap');if(smw)smw.style.display=CUST.storyId?'block':'none';
   if(CUST.storyId)_renderStoryEdit();
 }
 function _renderCheckGrid(){
@@ -3133,10 +3996,19 @@ function _renderQuotesList(){
   // リセット
   const rstBtn=$('cust-reset-btn');
   if(rstBtn)rstBtn.addEventListener('click',()=>{
-    if(!confirm('設定をすべてリセットします。よろしいですか？'))return;
-    CUST={...CUST_DEFAULTS};saveCust();applyAllCust();
+    if(!confirm('設定と学習データをすべてリセットします。\n日々の入力記録も含めてすべて初期状態に戻ります。\nよろしいですか？'))return;
+    if(!confirm('本当にすべてリセットしてよろしいですか？\nこの操作は元に戻せません。'))return;
+    ['study-data','study-notes','study-goal','study-week-goal','study-month-goal','exam-date','study-theme','study-badges','study-milestones','weekly-goal-achieved','monthly-goal-achieved','study-cust'].forEach(k=>LS.del(k));
+    clearMilestoneToastFlags();
+    data={};notes={};earnedBadges={};achievedMs={};GOAL=120;WEEK_GOAL=600;MONTH_GOAL=1800;CUST={...CUST_DEFAULTS};
+    lastBloomPct=-1;lastWeeklyPct=-1;lastMonthlyPct=-1;lastLv=0;
+    currentDate=toStudyDateStr(new Date());
+    loadGoal();loadCountdown();applyTheme('dark');applyAllCust();
     document.querySelectorAll('.hour-btn').forEach(hb=>hb.textContent=CUST_DEFAULTS.checkEmoji);
     _syncCustPanel();renderLevelBar();renderBadgeGrid();
+    refreshGrid();updateStats();renderAllTimeCard();renderForecast();
+    switchView('daily');
+    showToast('🗑 すべてリセットしました');
   });
 })();
 
