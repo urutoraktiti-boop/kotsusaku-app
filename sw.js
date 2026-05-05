@@ -1,9 +1,12 @@
 // sw.js - コツコツサクサク Service Worker
-const CACHE_VERSION = 'kotsusaku-v22';
+const CACHE_VERSION = 'kotsusaku-v25';
 const CACHE_FILES = [
   './',
   './index.html',
   './manifest.json',
+  './icon.svg',
+  './icon-192.png',
+  './icon-512.png',
 ];
 
 // インストール時：必要なファイルをキャッシュ
