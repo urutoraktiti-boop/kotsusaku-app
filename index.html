@@ -483,8 +483,8 @@
     .cust-gear-btn:hover{opacity:.85;}
     .cust-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10001;align-items:flex-end;justify-content:center;}
     .cust-overlay.show{display:flex;}
-    .cust-panel{background:var(--surface);border-radius:16px 16px 0 0;width:100%;max-width:700px;max-height:85vh;overflow-y:auto;padding:20px;animation:slideUp .3s ease;}
-    .cust-panel-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .cust-panel{background:var(--surface);border-radius:16px 16px 0 0;width:100%;max-width:700px;max-height:85vh;display:flex;flex-direction:column;animation:slideUp .3s ease;}
+    .cust-panel-hd{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;padding:16px 20px 10px;border-bottom:1px solid var(--border);margin-bottom:0;background:var(--surface);border-radius:16px 16px 0 0;}
     .cust-panel-title{font-size:1rem;font-weight:800;color:var(--text);}
     .cust-panel-close{background:transparent;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;padding:4px;}
     .cust-sec{margin-bottom:18px;}
@@ -675,10 +675,15 @@
 
 <div id="cust-overlay" class="cust-overlay" onclick="if(event.target===this)closeCustPanel()">
   <div class="cust-panel">
-    <div class="cust-panel-hd">
-      <span class="cust-panel-title">🛠 設定</span><span id="ver-badge">(v35)</span>
-      <button class="cust-panel-close" onclick="closeCustPanel()">✕</button>
+    <div class="cust-panel-hd" style="margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+      <span class="cust-panel-title">🛠 設定</span>
+      <button class="cust-btn ok" onclick="saveCustAndClose()" style="font-size:.75rem;padding:5px 14px;">💾 保存して閉じる</button>
+      <div style="display:flex;align-items:center;gap:4px;">
+        <span id="ver-badge" style="font-size:.62rem;">(v43)</span>
+        <button class="cust-panel-close" onclick="closeCustPanel()">✕</button>
+      </div>
     </div>
+    <div style="overflow-y:auto;flex:1;padding:16px 20px 20px;">
     <div class="cust-sec">
       <div class="cust-sec-title">🏷 アプリ名</div>
       <div class="cust-row">
@@ -732,19 +737,7 @@
         </div>
       </div>
     </div>
-    <div class="cust-sec">
-      <div class="cust-sec-title">🖼 アプリアイコン</div>
-      <div style="font-size:.6rem;color:var(--text-muted);margin-bottom:4px;">好きなアイコンを選んでください</div>
-      <div style="font-size:.6rem;color:#f59e0b;margin-bottom:6px;line-height:1.7;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:8px 10px;">
-        ⚠️ <b>ホーム画面のアイコンは自動では変わりません</b><br>
-        変更を反映するには…<br>
-        ① 下の「📥 ダウンロード」でアイコン画像を保存<br>
-        ② アプリを一度削除して再インストール<br>
-        <span style="color:var(--text-muted);">または iPhoneは「ショートカット」アプリ、Androidは「ランチャーアプリ」でアイコンを手動設定できます</span>
-      </div>
-      <div id="icon-sel-grid" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-start;"></div>
-      <div id="icon-dl-area" style="margin-top:12px;"></div>
-    </div>
+
     <div class="cust-sec">
       <div class="cust-sec-title">🎨 背景テーマ</div>
       <div class="cust-row" style="gap:10px;">
@@ -765,164 +758,166 @@
         <button class="sound-btn" id="sound-btn" title="サウンドON/OFF">🔊</button>
       </div>
     </div>
-    <div class="cust-sec">
-      <div class="cust-sec-title">📖 ストーリー</div>
-      <div class="cust-row">
-        <label class="cust-lbl">テーマ</label>
-        <select id="cust-story-sel" class="cust-input" onchange="onStorySelChange(this.value)">
-          <option value="">なし</option>
-          <optgroup label="🎮 フィクション">
-            <option value="gorilla">🦍 ゴリラ成長記</option>
-            <option value="samurai">⚔️ 受験剣士の道</option>
-            <option value="space">🚀 宇宙探検家の旅</option>
-            <option value="itachacha">🥦 正体不明育成記</option>
-            <option value="spartan">🐉 鬼教官の特訓</option>
-          </optgroup>
-          <optgroup label="📝 会計・FP系">
-            <option value="boki3">📗 日商簿記3級合格への道</option>
-            <option value="boki2">📒 日商簿記2級合格への道</option>
-            <option value="fp2">💰 FP2級合格への道</option>
-            <option value="zeirishi">🧮 税理士試験 1科目完全攻略</option>
-            <option value="kaikeishi">🔍 公認会計士試験への挑戦</option>
-          </optgroup>
-          <optgroup label="⚖️ 法律・ビジネス系">
-            <option value="takken">🏠 宅建合格への道</option>
-            <option value="sharoshi">⚖️ 社労士合格への道</option>
-            <option value="shindanshi">💼 中小企業診断士合格への道</option>
-            <option value="koumuin">🏛️ 公務員試験合格への道</option>
-          </optgroup>
-        </select>
-      </div>
-      <!-- コンボテキスト（テーマ選択直下） -->
-      <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border);">
+    <div style="border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:var(--surface2);margin-bottom:18px;">
+      <div style="font-size:.8rem;font-weight:800;color:var(--text);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">📖 ストーリー</div>
+      <div class="cust-sec" style="margin-bottom:0;padding-bottom:10px;border-bottom:1px solid var(--border);">
+        <div class="cust-sec-title" style="font-size:.95rem;color:var(--accent);background:rgba(var(--accent-rgb,.5,.8,1),.08);padding:8px 10px;border-radius:8px;border-left:3px solid var(--accent);margin-bottom:8px;">テーマ</div>
         <div class="cust-row">
-          <label class="cust-lbl">コンボ文字</label>
-          <input type="text" id="cust-combo-text" class="cust-input" maxlength="20" placeholder="コンボ！">
+          <label class="cust-lbl">ストーリー</label>
+          <select id="cust-story-sel" class="cust-input" onchange="onStorySelChange(this.value)">
+            <option value="">なし</option>
+            <optgroup label="🎮 フィクション">
+              <option value="gorilla">🦍 ゴリラ成長記</option>
+              <option value="samurai">⚔️ 受験剣士の道</option>
+              <option value="space">🚀 宇宙探検家の旅</option>
+              <option value="itachacha">🥦 正体不明育成記</option>
+              <option value="spartan">🐉 鬼教官の特訓</option>
+            </optgroup>
+            <optgroup label="📝 会計・FP系">
+              <option value="boki3">📗 日商簿記3級合格への道</option>
+              <option value="boki2">📒 日商簿記2級合格への道</option>
+              <option value="fp2">💰 FP2級合格への道</option>
+              <option value="zeirishi">🧮 税理士試験 1科目完全攻略</option>
+              <option value="kaikeishi">🔍 公認会計士試験への挑戦</option>
+            </optgroup>
+            <optgroup label="⚖️ 法律・ビジネス系">
+              <option value="takken">🏠 宅建合格への道</option>
+              <option value="sharoshi">⚖️ 社労士合格への道</option>
+              <option value="shindanshi">💼 中小企業診断士合格への道</option>
+              <option value="koumuin">🏛️ 公務員試験合格への道</option>
+            </optgroup>
+          </select>
         </div>
+        <!-- コンボテキスト・開始メッセージ（非表示） -->
+        <div style="display:none;">
+          <div class="cust-row">
+            <label class="cust-lbl">コンボ文字</label>
+            <input type="text" id="cust-combo-text" class="cust-input" maxlength="20" placeholder="コンボ！">
+          </div>
+          <div class="cust-row">
+            <label class="cust-lbl">10連続の後</label>
+            <input type="text" id="cust-combo-high" class="cust-input" maxlength="20" placeholder="すごい！">
+          </div>
+          <div id="cust-story-msg-wrap" style="display:none;">
+            <input type="text" id="cust-story-start" class="cust-input" maxlength="60" placeholder="タイマー開始時のメッセージ">
+            <input type="text" id="cust-story-combo" class="cust-input" maxlength="40" placeholder="コンボ時の台詞">
+          </div>
+        </div>
+        <div id="cust-story-edit" style="display:none;margin-top:6px;">
+          <div style="font-size:.6rem;color:var(--text-muted);margin-bottom:6px;">文章を編集（空欄でデフォルトに戻る）</div>
+          <div style="font-size:.65rem;font-weight:700;color:var(--text-muted);margin-bottom:4px;">▸ 成長段階メッセージ（Lv別）</div>
+          <div id="cust-story-tiers"></div>
+          <div style="display:none;">
+            <div style="font-size:.65rem;font-weight:700;color:var(--text-muted);margin:6px 0 4px;">▸ 名言（1行1個）</div>
+            <div id="cust-story-quotes"></div>
+          </div>
+        </div>
+      </div>
+      <div class="cust-sec" style="margin-bottom:0;">
+        <div class="cust-sec-title">✅ チェック絵文字（ブロック達成時）</div>
         <div class="cust-row">
-          <label class="cust-lbl">10連続の後</label>
-          <input type="text" id="cust-combo-high" class="cust-input" maxlength="20" placeholder="すごい！">
+          <label class="cust-lbl">絵文字</label>
+          <input type="text" id="cust-check-inp" class="cust-input" maxlength="4" placeholder="🌸" style="width:64px;flex:none;">
+          <span style="font-size:.62rem;color:var(--text-muted)">← 直接入力も可</span>
         </div>
-        <div style="font-size:.6rem;color:var(--text-muted);margin-top:-2px;">「コンボ！」→「ゴリラ連打！」のように自由に変更できます</div>
-        <div id="cust-story-msg-wrap" style="display:none;margin-top:10px;padding-top:8px;border-top:1px solid var(--border);">
-          <div style="font-size:.65rem;font-weight:700;color:var(--text-muted);margin-bottom:4px;">▸ 開始メッセージ（ストーリー選択時）</div>
-          <input type="text" id="cust-story-start" class="cust-input" maxlength="60" style="margin-bottom:8px;" placeholder="タイマー開始時のメッセージ">
-          <div style="font-size:.65rem;font-weight:700;color:var(--text-muted);margin-bottom:4px;">▸ コンボ台詞（10連続時）</div>
-          <input type="text" id="cust-story-combo" class="cust-input" maxlength="40" placeholder="コンボ時の台詞">
-        </div>
+        <div class="cust-emoji-grid" id="cust-check-grid"></div>
       </div>
-      <div id="cust-story-edit" style="display:none;margin-top:6px;">
-        <div style="font-size:.6rem;color:var(--text-muted);margin-bottom:6px;">文章を編集（空欄でデフォルトに戻る）</div>
-        <div style="font-size:.65rem;font-weight:700;color:var(--text-muted);margin-bottom:4px;">▸ 成長段階メッセージ（Lv別）</div>
-        <div id="cust-story-tiers"></div>
-        <div style="font-size:.65rem;font-weight:700;color:var(--text-muted);margin:6px 0 4px;">▸ 名言（1行1個）</div>
-        <div id="cust-story-quotes"></div>
-      </div>
-    <div class="cust-sec">
-      <div class="cust-sec-title">✅ チェック絵文字（ブロック達成時）</div>
-      <div class="cust-row">
-        <label class="cust-lbl">絵文字</label>
-        <input type="text" id="cust-check-inp" class="cust-input" maxlength="4" placeholder="🌸" style="width:64px;flex:none;">
-        <span style="font-size:.62rem;color:var(--text-muted)">← 直接入力も可</span>
-      </div>
-      <div class="cust-emoji-grid" id="cust-check-grid"></div>
     </div>
-    <div class="cust-sec">
-      <div class="cust-sec-title">⚡ コンボ絵文字</div>
-      <div class="cust-row">
-        <label class="cust-lbl">絵文字</label>
-        <input type="text" id="cust-combo-inp" class="cust-input" maxlength="4" placeholder="✨" style="width:64px;flex:none;">
-        <span style="font-size:.62rem;color:var(--text-muted)">← コンボ時に表示</span>
-      </div>
+    <!-- コンボ絵文字：非表示（チェック絵文字と共通） -->
+    <div style="display:none;">
+      <input type="text" id="cust-combo-inp" class="cust-input" maxlength="4" placeholder="✨" style="width:64px;flex:none;">
       <div class="cust-emoji-grid" id="cust-combo-grid"></div>
     </div>
-    <div class="cust-sec">
-      <div class="cust-sec-title">🌳 背景ビジュアル</div>
-      <div class="cust-tog-row">
-        <span style="font-size:.75rem;color:var(--text)">桜の木のアニメーション</span>
-        <label class="tog-sw"><input type="checkbox" id="cust-tree-tog" checked><span class="tog-slider"></span></label>
+    <div style="border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:var(--surface2);display:flex;flex-direction:column;gap:0;">
+      <div style="font-size:.8rem;font-weight:800;color:var(--text);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">🎛 カスタマイズ</div>
+      <div class="cust-sec" style="margin-bottom:0;padding-bottom:10px;border-bottom:1px solid var(--border);">
+        <div class="cust-sec-title">🌳 背景ビジュアル</div>
+        <div class="cust-tog-row">
+          <span style="font-size:.75rem;color:var(--text)">桜の木のアニメーション</span>
+          <label class="tog-sw"><input type="checkbox" id="cust-tree-tog" checked><span class="tog-slider"></span></label>
+        </div>
+      </div>
+      <div class="cust-sec" style="margin-bottom:0;padding-bottom:10px;border-bottom:1px solid var(--border);">
+        <div class="cust-sec-title">💬 モチベーション名言</div>
+        <div class="cust-tog-row" style="margin-bottom:8px;">
+          <span style="font-size:.75rem;color:var(--text)">カスタム名言のみ使用</span>
+          <label class="tog-sw"><input type="checkbox" id="cust-qonly"><span class="tog-slider"></span></label>
+        </div>
+        <div class="cust-quotes-list" id="cust-q-list"></div>
+        <div class="cust-add-row">
+          <input type="text" id="cust-q-inp" class="cust-input" maxlength="80" placeholder="新しい名言を入力…">
+          <button class="cust-btn ok" id="cust-q-add">＋追加</button>
+        </div>
+      </div>
+      <div class="cust-sec" style="margin-bottom:0;padding-bottom:10px;border-bottom:1px solid var(--border);">
+        <div class="cust-sec-title">📊 レベル名称・アイコン</div>
+        <div id="cust-level-list" style="display:flex;flex-direction:column;max-height:240px;overflow-y:auto;padding-right:2px;"></div>
+      </div>
+      <div class="cust-sec" style="margin-bottom:0;">
+        <div class="cust-sec-title">🏅 バッジの設定</div>
+        <div style="font-size:.62rem;color:var(--text-muted);margin-bottom:6px;">名前・説明を編集できます（空欄でデフォルトに戻る）</div>
+        <div id="cust-badge-edit-list" style="display:flex;flex-direction:column;gap:3px;max-height:210px;overflow-y:auto;margin-bottom:10px;"></div>
+        <div style="font-size:.68rem;font-weight:700;color:var(--text-muted);margin-bottom:6px;padding-top:8px;border-top:1px solid var(--border);">＋ カスタムバッジを追加</div>
+        <div class="cust-row" style="gap:5px;">
+          <input type="text" id="cust-nb-icon" class="cust-input" maxlength="4" placeholder="🏆" style="width:46px;flex:none;">
+          <input type="text" id="cust-nb-name" class="cust-input" maxlength="20" placeholder="バッジ名（必須）">
+        </div>
+        <div class="cust-row">
+          <input type="text" id="cust-nb-desc" class="cust-input" maxlength="40" placeholder="説明（任意）">
+        </div>
+        <div class="cust-row">
+          <label class="cust-lbl" style="font-size:.68rem;">達成条件</label>
+          <select id="cust-nb-trigger" class="cust-input" style="flex:1;">
+            <option value="manual">手動で達成</option>
+            <option value="1">1時間突破時</option>
+            <option value="10">10時間突破時</option>
+            <option value="50">50時間突破時</option>
+            <option value="100">100時間突破時</option>
+            <option value="200">200時間突破時</option>
+            <option value="500">500時間突破時</option>
+            <option value="1000">1000時間突破時</option>
+          </select>
+          <button class="cust-btn ok" id="cust-nb-add" style="flex-shrink:0;">＋追加</button>
+        </div>
+      </div>
+    </div><!-- /カスタマイズ -->
+    <div style="height:16px;"></div>
+    <div style="border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:var(--surface2);">
+      <div style="font-size:.8rem;font-weight:800;color:var(--text);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">🗄 データ</div>
+      <div class="cust-sec" style="margin-bottom:0;padding-bottom:10px;border-bottom:1px solid var(--border);">
+        <div class="cust-sec-title">💾 データ管理</div>
+        <div class="cust-row" style="gap:8px;flex-wrap:wrap;">
+          <button class="backup-btn export-btn" id="export-btn" style="flex:1;min-width:120px;">⬇ バックアップを保存</button>
+          <button class="backup-btn import-btn" id="import-btn" style="flex:1;min-width:120px;">⬆ バックアップから復元</button>
+        </div>
+        <div style="font-size:.6rem;color:var(--text-muted);margin:4px 0 8px;line-height:1.6;">
+          🔁 端末を替えるとき：旧端末で「保存」→ 新端末で「復元」
+        </div>
+        <div style="display:flex;justify-content:center;margin-top:4px;">
+          <button class="backup-btn clear-btn" id="clear-all-btn" style="width:100%;">🗑 すべてのデータをクリア</button>
+        </div>
+      </div>
+      <div class="cust-sec" style="margin-bottom:0;">
+        <div class="cust-sec-title">☁️ データ同期</div>
+        <div style="font-size:.63rem;color:var(--text-muted);margin-bottom:8px;line-height:1.7;">複数の端末でデータを共有できます。同期コードを別の端末で入力するだけでOKです。</div>
+        <div class="cust-lbl" style="margin-bottom:4px;">あなたの同期コード</div>
+        <div class="sync-code-display">
+          <span class="sync-code-text" id="sync-code-display">----</span>
+          <button class="sync-copy-btn" onclick="copySyncCode()">📋 コピー</button>
+        </div>
+        <div id="sync-status" class="sync-status"></div>
+        <div class="cust-lbl" style="margin-top:10px;margin-bottom:4px;">別の端末のコードを入力して同期</div>
+        <div class="sync-code-display">
+          <input type="text" id="sync-code-input" maxlength="8" placeholder="XXXX0000" style="background:transparent;border:none;outline:none;font-size:1.15rem;font-weight:800;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;flex:1;width:100%;font-family:inherit;">
+          <button class="sync-copy-btn" id="sync-import-btn">取り込む</button>
+        </div>
+        <div style="font-size:.58rem;color:var(--text-muted);margin-top:5px;line-height:1.6;">⚠️ 取り込むと現在のデータが上書きされます</div>
+        <div style="margin-top:10px;padding:8px 10px;background:var(--surface);border-radius:8px;font-size:.58rem;color:var(--text-muted);line-height:1.8;">
+          🔒 同期機能を使用すると、学習データはGoogleのクラウドサービス（Firebase）に保存されます。コードを他人に教えない限り、あなた以外はデータにアクセスできません。
+        </div>
       </div>
     </div>
-    <div class="cust-sec">
-      <div class="cust-sec-title">💬 モチベーション名言</div>
-      <div class="cust-tog-row" style="margin-bottom:8px;">
-        <span style="font-size:.75rem;color:var(--text)">カスタム名言のみ使用</span>
-        <label class="tog-sw"><input type="checkbox" id="cust-qonly"><span class="tog-slider"></span></label>
-      </div>
-      <div class="cust-quotes-list" id="cust-q-list"></div>
-      <div class="cust-add-row">
-        <input type="text" id="cust-q-inp" class="cust-input" maxlength="80" placeholder="新しい名言を入力…">
-        <button class="cust-btn ok" id="cust-q-add">＋追加</button>
-      </div>
-    </div>
-    <div class="cust-sec">
-      <div class="cust-sec-title">📊 レベル名称・アイコン</div>
-      <div id="cust-level-list" style="display:flex;flex-direction:column;max-height:240px;overflow-y:auto;padding-right:2px;"></div>
-    </div>
-    <div class="cust-sec">
-      <div class="cust-sec-title">🏅 バッジの設定</div>
-      <div style="font-size:.62rem;color:var(--text-muted);margin-bottom:6px;">名前・説明を編集できます（空欄でデフォルトに戻る）</div>
-      <div id="cust-badge-edit-list" style="display:flex;flex-direction:column;gap:3px;max-height:210px;overflow-y:auto;margin-bottom:10px;"></div>
-      <div style="font-size:.68rem;font-weight:700;color:var(--text-muted);margin-bottom:6px;padding-top:8px;border-top:1px solid var(--border);">＋ カスタムバッジを追加</div>
-      <div class="cust-row" style="gap:5px;">
-        <input type="text" id="cust-nb-icon" class="cust-input" maxlength="4" placeholder="🏆" style="width:46px;flex:none;">
-        <input type="text" id="cust-nb-name" class="cust-input" maxlength="20" placeholder="バッジ名（必須）">
-      </div>
-      <div class="cust-row">
-        <input type="text" id="cust-nb-desc" class="cust-input" maxlength="40" placeholder="説明（任意）">
-      </div>
-      <div class="cust-row">
-        <label class="cust-lbl" style="font-size:.68rem;">達成条件</label>
-        <select id="cust-nb-trigger" class="cust-input" style="flex:1;">
-          <option value="manual">手動で達成</option>
-          <option value="1">1時間突破時</option>
-          <option value="10">10時間突破時</option>
-          <option value="50">50時間突破時</option>
-          <option value="100">100時間突破時</option>
-          <option value="200">200時間突破時</option>
-          <option value="500">500時間突破時</option>
-          <option value="1000">1000時間突破時</option>
-        </select>
-        <button class="cust-btn ok" id="cust-nb-add" style="flex-shrink:0;">＋追加</button>
-      </div>
-    </div>
-    </div>
-    <div class="cust-sec">
-      <div class="cust-sec-title">💾 データ管理</div>
-      <div class="cust-row" style="gap:8px;flex-wrap:wrap;">
-        <button class="backup-btn export-btn" id="export-btn" style="flex:1;min-width:120px;">⬇ バックアップを保存</button>
-        <button class="backup-btn import-btn" id="import-btn" style="flex:1;min-width:120px;">⬆ バックアップから復元</button>
-      </div>
-      <div style="font-size:.6rem;color:var(--text-muted);margin:4px 0 8px;line-height:1.6;">
-        🔁 端末を替えるとき：旧端末で「保存」→ 新端末で「復元」
-      </div>
-      <div style="display:flex;justify-content:center;margin-top:4px;">
-        <button class="backup-btn clear-btn" id="clear-all-btn" style="width:100%;">🗑 すべてのデータをクリア</button>
-      </div>
-    </div>
-    <div class="cust-sec">
-      <div class="cust-sec-title">☁️ データ同期</div>
-      <div style="font-size:.63rem;color:var(--text-muted);margin-bottom:8px;line-height:1.7;">複数の端末でデータを共有できます。同期コードを別の端末で入力するだけでOKです。</div>
-      <div class="cust-lbl" style="margin-bottom:4px;">あなたの同期コード</div>
-      <div class="sync-code-display">
-        <span class="sync-code-text" id="sync-code-display">----</span>
-        <button class="sync-copy-btn" onclick="copySyncCode()">📋 コピー</button>
-      </div>
-      <div id="sync-status" class="sync-status"></div>
-      <div class="cust-lbl" style="margin-top:10px;margin-bottom:4px;">別の端末のコードを入力して同期</div>
-      <div style="display:flex;gap:6px;">
-        <input type="text" id="sync-code-input" class="cust-input" maxlength="9" placeholder="XXXX-0000" style="letter-spacing:.1em;font-weight:700;text-transform:uppercase;flex:1;">
-        <button class="cust-btn ok" id="sync-import-btn" style="white-space:nowrap;flex-shrink:0;">取り込む</button>
-      </div>
-      <div style="font-size:.58rem;color:var(--text-muted);margin-top:5px;line-height:1.6;">⚠️ 取り込むと現在のデータが上書きされます</div>
-      <div style="margin-top:12px;padding:8px 10px;background:var(--surface2);border-radius:8px;font-size:.58rem;color:var(--text-muted);line-height:1.8;">
-        🔒 同期機能を使用すると、学習データはGoogleのクラウドサービス（Firebase）に保存されます。コードを他人に教えない限り、あなた以外はデータにアクセスできません。
-      </div>
-    </div>
-    <div style="display:flex;justify-content:center;gap:10px;padding-top:10px;border-top:1px solid var(--border);">
-      <button class="cust-btn ok" id="cust-save-btn" onclick="saveCustAndClose()" style="min-width:130px;font-size:.8rem;">💾 保存して閉じる</button>
-      <button class="cust-btn danger" id="cust-reset-btn">↺ リセット</button>
-    </div>
+    </div><!-- /スクロールラッパー -->
   </div>
 </div>
 
@@ -931,12 +926,13 @@
 
 <header>
   <div class="header-title" id="header-title-wrap" style="display:flex;align-items:center;justify-content:center;gap:6px;">
-    <div id="header-app-icon" style="display:none;width:22px;height:22px;border-radius:6px;overflow:hidden;flex-shrink:0;"></div>
+    <div id="header-app-icon" onclick="openIconPicker()" style="display:none;width:22px;height:22px;border-radius:6px;overflow:hidden;flex-shrink:0;cursor:pointer;title:'アイコン変更';"></div>
     <span id="header-title-text">コツコツ✏️サクサク🌸</span>
   </div>
   <div class="quote-bar" id="quote-bar"></div>
   <div class="header-controls">
     <button class="cust-gear-btn" id="cust-gear-btn" onclick="openCustPanel()" title="設定">設定</button>
+    <button class="cust-gear-btn" id="refresh-btn" onclick="checkAppUpdate()" title="アプリを最新の状態に更新" style="margin-left:4px;">更新</button>
     <div class="date-nav">
       <button class="nav-btn" id="prev-btn">&#8249;</button>
       <span id="date-label"></span>
@@ -4060,7 +4056,7 @@ const APP_ICONS = {
 };
 let CUST={...CUST_DEFAULTS};
 
-const CHECK_EMOJI_LIST=['🌸','🦍','🔥','⭐','💪','🎯','📚','✅','🌟','💎','🎉','🌈','🐉','🦊','🤖','👾','🍕','🧠','🚀','💐','🐧','🐸','🎸','🍎'];
+const CHECK_EMOJI_LIST=['🌸','🦍','🥦','🔥','⭐','💪','🎯','📚','✅','🌟','💎','🎉','🌈','🐉','🦊','🤖','👾','🍕','🧠','🚀','💐','🐧','🐸','🎸','🍎'];
 const COMBO_EMOJI_LIST=['✨','🔥','⚡','💥','🌟','🎯','🚀','💫','🎊','🏆','👏','🦍','🌈','💪','🤩','🐱','🎆','🎵'];
 
 function loadCust(){try{const s=LS.get('study-cust');if(s)CUST=Object.assign({},CUST_DEFAULTS,JSON.parse(s));}catch(e){CUST={...CUST_DEFAULTS};}}
@@ -4088,6 +4084,74 @@ function applyAppIcon(iconId){
     hIcon.innerHTML=def.svg.replace('viewBox','width="22" height="22" viewBox');
     hIcon.style.display='block';
   }
+}
+
+function openIconPicker(){
+  // 既存のピッカーがあれば削除
+  const existing=document.getElementById('icon-picker-overlay');
+  if(existing){existing.remove();return;}
+  const ov=document.createElement('div');
+  ov.id='icon-picker-overlay';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:20000;display:flex;align-items:center;justify-content:center;';
+  ov.onclick=function(e){if(e.target===ov)ov.remove();};
+  const box=document.createElement('div');
+  box.style.cssText='background:var(--surface);border-radius:16px;padding:20px;width:280px;max-width:90vw;';
+  box.innerHTML='<div style="font-size:.9rem;font-weight:800;color:var(--text);margin-bottom:4px;">🖼 アプリアイコン</div>'+
+    '<div style="font-size:.62rem;color:var(--text-muted);margin-bottom:12px;">タップで選択（変更後は保存して閉じる）</div>'+
+    '<div id="icon-picker-grid" style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-bottom:14px;"></div>'+
+    '<div style="font-size:.58rem;color:#f59e0b;line-height:1.7;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:8px 10px;margin-bottom:12px;">'+
+    '⚠️ ホーム画面のアイコンは自動では変わりません。変更後はアプリを再インストールするか、ショートカットアプリで手動設定してください。</div>'+
+    '<div style="display:flex;gap:8px;justify-content:center;">'+
+    '<button onclick="var o=document.getElementById(\'icon-picker-overlay\');if(o)o.remove();" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 18px;font-size:.75rem;color:var(--text);cursor:pointer;">閉じる</button></div>';
+  ov.appendChild(box);
+  document.body.appendChild(ov);
+  // アイコングリッドを描画
+  const grid=document.getElementById('icon-picker-grid');
+  Object.keys(APP_ICONS).forEach(function(key){
+    const def=APP_ICONS[key];
+    const wrap=document.createElement('div');
+    const isCur=(CUST.appIcon||'A')===key;
+    wrap.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:6px;border-radius:10px;border:2px solid '+(isCur?'var(--accent)':'transparent')+';background:'+(isCur?'rgba(var(--accent-rgb,1,.8,0),.1)':'transparent')+';';
+    const svgEl=document.createElement('div');
+    svgEl.style.cssText='width:48px;height:48px;border-radius:10px;overflow:hidden;';
+    svgEl.innerHTML=def.svg.replace('viewBox','width="48" height="48" viewBox');
+    const lbl=document.createElement('div');
+    lbl.style.cssText='font-size:.6rem;color:var(--text-muted);';
+    lbl.textContent=def.label||key;
+    wrap.appendChild(svgEl);wrap.appendChild(lbl);
+    wrap.onclick=function(){
+      CUST.appIcon=key;saveCust();applyAppIcon(key);
+      ov.remove();
+      showToast('✅ アイコンを変更しました');
+    };
+    grid.appendChild(wrap);
+  });
+  // ダウンロードエリアを追加
+  const dlWrap=document.createElement('div');
+  dlWrap.style.cssText='margin-top:12px;padding-top:10px;border-top:1px solid var(--border);';
+  const dlTitle=document.createElement('div');
+  dlTitle.style.cssText='font-size:.6rem;color:var(--text-muted);font-weight:700;margin-bottom:6px;';
+  const curDef=APP_ICONS[CUST.appIcon||'A'];
+  dlTitle.textContent='📥 選択中のアイコンをダウンロード（'+(curDef?curDef.label:'')+'）';
+  dlWrap.appendChild(dlTitle);
+  const dlBtnRow=document.createElement('div');
+  dlBtnRow.style.cssText='display:flex;gap:8px;flex-wrap:wrap;';
+  if(curDef){
+    // SVG
+    const svgBtn=_makeIconDlBtn('SVG','icon-kotsusaku.svg',function(){
+      const blob=new Blob([curDef.svg],{type:'image/svg+xml'});
+      return URL.createObjectURL(blob);
+    });
+    dlBtnRow.appendChild(svgBtn);
+    // PNG 192px
+    const png192Btn=_makeIconDlBtn('PNG 192px','icon-kotsusaku-192.png',null,curDef.svg,192);
+    dlBtnRow.appendChild(png192Btn);
+    // PNG 512px
+    const png512Btn=_makeIconDlBtn('PNG 512px','icon-kotsusaku-512.png',null,curDef.svg,512);
+    dlBtnRow.appendChild(png512Btn);
+  }
+  dlWrap.appendChild(dlBtnRow);
+  box.appendChild(dlWrap);
 }
 
 function applyCheckEmojiCSS(emoji){
@@ -4259,6 +4323,11 @@ function applyAllCust(){
 
 function openCustPanel(){_syncCustPanel();$('cust-overlay').classList.add('show');}
 function saveCustAndClose(){
+  // コンボ絵文字はチェック絵文字と共通化
+  const checkInp=$('cust-check-inp');
+  const comboInp=$('cust-combo-inp');
+  if(checkInp&&comboInp) comboInp.value=checkInp.value;
+  if(CUST.checkEmoji) CUST.comboEmoji=CUST.checkEmoji;
   saveCust();
   applyAllCust();
   closeCustPanel();
@@ -4804,7 +4873,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // このファイルが持っているバージョン番号（sw.jsと合わせる）
-  var CURRENT_VERSION = 'kotsusaku-v35';
+  var CURRENT_VERSION = 'kotsusaku-v43';
 
   // --- バナー操作ユーティリティ ---
   function showUpdateBanner(latestLabel) {
@@ -4859,6 +4928,28 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
         // version.jsonがない or ネットワークエラーは無視（壊れない）
       });
   }
+
+  // --- 手動更新ボタンから呼ばれる ---
+  window.checkAppUpdate = function() {
+    var btn = document.getElementById('refresh-btn');
+    if(btn){ btn.textContent='⏳'; btn.disabled=true; }
+    fetch('./version.json?_=' + Date.now(), { cache: 'no-store' })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        var latest = data && data.version;
+        if (latest && latest !== CURRENT_VERSION) {
+          showUpdateBanner(latest);
+        } else {
+          if(typeof showToast==='function') showToast('✅ 最新版です（' + CURRENT_VERSION + '）');
+        }
+      })
+      .catch(function(){
+        if(typeof showToast==='function') showToast('⚠️ ネットワークに接続して確認してください');
+      })
+      .finally(function(){
+        if(btn){ btn.textContent='更新'; btn.disabled=false; }
+      });
+  };
 
   // --- ② Service Worker 登録 ---
   if ('serviceWorker' in navigator &&
