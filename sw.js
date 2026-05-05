@@ -1,34 +1,42 @@
-const CACHE_NAME = 'kotsusaku-pwa-v21-integrated-20260503';
-const ASSETS = [
+// sw.js - コツコツサクサク Service Worker
+const CACHE_VERSION = 'kotsusaku-v22';
+const CACHE_FILES = [
   './',
   './index.html',
   './manifest.json',
-  './icons/icon-192.png',
-  './icons/icon-512.png'
 ];
 
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting())
+// インストール時：必要なファイルをキャッシュ
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE_VERSION).then(cache => cache.addAll(CACHE_FILES))
+  );
+  // 新しいSWをすぐに有効化（waitingをスキップ）
+  self.skipWaiting();
+});
+
+// 有効化時：古いキャッシュを削除
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.filter(k => k !== CACHE_VERSION).map(k => caches.delete(k))
+      )
+    )
+  );
+  self.clients.claim();
+});
+
+// フェッチ時：キャッシュ優先、なければネットワーク
+self.addEventListener('fetch', e => {
+  e.respondWith(
+    caches.match(e.request).then(cached => cached || fetch(e.request))
   );
 });
 
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim())
-  );
-});
-
-self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET') return;
-  event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request).then(response => {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
-        return response;
-      }).catch(() => caches.match('./index.html'));
-    })
-  );
+// メインスレッドからのメッセージ受信
+self.addEventListener('message', e => {
+  if (e.data === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });

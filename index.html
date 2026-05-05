@@ -540,6 +540,10 @@
 <div id="badge-popup" class="badge-popup"></div>
 <div id="easter-toast" class="easter-toast"></div>
 <div id="backup-toast" class="backup-toast"></div>
+<div id="update-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:10000;background:linear-gradient(90deg,#1a1a2e,#16213e);border-bottom:2px solid #f472b6;color:#fde8f7;font-size:.82rem;font-weight:700;padding:10px 16px;display:none;align-items:center;justify-content:space-between;gap:8px;box-shadow:0 2px 12px rgba(0,0,0,.5);">
+  <span>🆕 新しいバージョンがあります</span>
+  <button id="update-reload-btn" style="background:#f472b6;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:.8rem;font-weight:800;cursor:pointer;">今すぐ更新</button>
+</div>
 <div id="badge-overlay" class="badge-overlay" onclick="if(event.target===this)closeBadgePanel()">
   <div class="badge-panel">
     <div class="badge-panel-header">
@@ -560,7 +564,7 @@
 <div id="cust-overlay" class="cust-overlay" onclick="if(event.target===this)closeCustPanel()">
   <div class="cust-panel">
     <div class="cust-panel-hd">
-      <span class="cust-panel-title">🛠 設定</span><span id="ver-badge">(v21)</span>
+      <span class="cust-panel-title">🛠 設定</span><span id="ver-badge">(v22)</span>
       <button class="cust-panel-close" onclick="closeCustPanel()">✕</button>
     </div>
     <div class="cust-sec">
@@ -4047,7 +4051,36 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 (function(){
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
     window.addEventListener('load', function(){
-      navigator.serviceWorker.register('./sw.js').catch(function(err){
+      navigator.serviceWorker.register('./sw.js').then(function(reg){
+        // 新しいService Workerが待機状態になったら通知バナーを表示
+        reg.addEventListener('updatefound', function(){
+          const newWorker = reg.installing;
+          if(!newWorker) return;
+          newWorker.addEventListener('statechange', function(){
+            if(newWorker.state === 'installed' && navigator.serviceWorker.controller){
+              // 更新バナーを表示
+              const banner = document.getElementById('update-banner');
+              if(banner) banner.style.display = 'flex';
+              // 「今すぐ更新」ボタン
+              const btn = document.getElementById('update-reload-btn');
+              if(btn) btn.addEventListener('click', function(){
+                newWorker.postMessage('SKIP_WAITING');
+                window.location.reload();
+              });
+            }
+          });
+        });
+        // すでに更新待ちのSWがあれば即バナー表示
+        if(reg.waiting){
+          const banner = document.getElementById('update-banner');
+          if(banner) banner.style.display = 'flex';
+          const btn = document.getElementById('update-reload-btn');
+          if(btn) btn.addEventListener('click', function(){
+            reg.waiting.postMessage('SKIP_WAITING');
+            window.location.reload();
+          });
+        }
+      }).catch(function(err){
         console.log('Service Worker registration skipped:', err);
       });
     });
