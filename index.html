@@ -46,19 +46,19 @@
     .countdown-clear{background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:.75rem;padding:2px 4px;transition:color .15s;}
     .countdown-clear:hover{color:#f87171;}
     
-    .level-bar{padding:6px 0 4px;}
-    .level-bar-top{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
-    .level-icon{font-size:1.3rem;flex-shrink:0;line-height:1;}
+    .level-bar{padding:3px 0 2px;}
+    .level-bar-top{display:flex;align-items:center;gap:7px;margin-bottom:4px;}
+    .level-icon{font-size:1.1rem;flex-shrink:0;line-height:1;}
     .level-bar-body{flex:1;min-width:0;}
-    .level-bar-info-row{display:flex;align-items:center;gap:5px;flex-wrap:nowrap;min-width:0;}
-    .level-badge{background:var(--accent);color:var(--bg);font-size:.6rem;font-weight:800;padding:2px 7px;border-radius:99px;white-space:nowrap;flex-shrink:0;}
-    .level-title-text{font-size:.68rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;min-width:0;}
-    .level-bar-sep{font-size:.6rem;color:var(--border);flex-shrink:0;}
-    .level-bar-msg{font-size:.6rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:2;min-width:0;}
-    .level-bar-divider{height:1px;background:var(--border);margin-bottom:6px;}
+    .level-bar-info-row{display:flex;align-items:center;gap:4px;flex-wrap:nowrap;min-width:0;}
+    .level-badge{background:var(--accent);color:var(--bg);font-size:.58rem;font-weight:800;padding:2px 6px;border-radius:99px;white-space:nowrap;flex-shrink:0;}
+    .level-title-text{font-size:.64rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;min-width:0;}
+    .level-bar-sep{font-size:.58rem;color:var(--border);flex-shrink:0;}
+    .level-bar-msg{font-size:.58rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:2;min-width:0;}
+    .level-bar-divider{height:1px;background:var(--border);margin-bottom:4px;}
     .level-xp-wrap{display:flex;flex-direction:column;gap:2px;}
     .level-xp-bg{background:var(--surface2);border-radius:99px;height:5px;overflow:hidden;}
-    .level-xp-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--checked));border-radius:99px;transition:width .5s;}
+    .level-xp-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--checked));border-radius:99px;transition:width .6s ease-out;}
     .level-xp-info{font-size:.54rem;color:var(--text-muted);text-align:right;}
     
     
@@ -432,6 +432,25 @@
     .sw-btn.reset{background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-size:.72rem;padding:4px 8px;width:100%;}
     .sw-btn.reset:not(:disabled):hover{background:var(--border);color:var(--text);}
 
+    /* ── 横向き（landscape）対応 ──────────────────── */
+    /* 高さが少ない横向き端末でグリッドが見えなくなる問題を解消 */
+    @media (orientation:landscape) and (max-height:500px){
+      .stat-row{display:none;}
+      .challenge-wrap{display:none;}
+      .sw-card{padding:4px 12px;gap:2px;}
+      .sw-top-row{gap:8px;}
+      .sw-hint{display:none;}
+      .sw-label{display:none;}
+      .sw-btns-main{display:none;}
+      .sw-time-row{margin:0;}
+      .sw-display{font-size:1.2rem;}
+      .sw-next-lbl{font-size:.45rem;}
+      .sw-next-time{font-size:.8rem;}
+      .quote-bar{display:none;}
+      .countdown-bar{padding:2px 0;}
+      .countdown-days{font-size:1rem;}
+      .grid-wrap{margin-top:4px;}
+    }
     @media (max-width:520px){
       .stat-row{gap:4px;padding:0 8px;margin-top:10px;}
       .stat-card{padding:7px 7px;gap:2px;}
@@ -604,9 +623,36 @@
     <span style="color:#93c5fd;font-size:.7rem;">⚠️ アイコンが表示されない場合：右上の <b>⋮（3点メニュー）</b> → 「<b>その他のツール</b>」または「<b>キャスト、保存、共有</b>」→「<b>ページをアプリとしてインストール…</b>」をクリック</span>
   </div>
 </div>
-<div id="update-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:10000;background:linear-gradient(90deg,#1a1a2e,#16213e);border-bottom:2px solid #f472b6;color:#fde8f7;font-size:.82rem;font-weight:700;padding:10px 16px;align-items:center;justify-content:space-between;gap:8px;box-shadow:0 2px 12px rgba(0,0,0,.5);">
-  <span>🆕 新しいバージョンがあります</span>
-  <button id="update-reload-btn" style="background:#f472b6;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:.8rem;font-weight:800;cursor:pointer;">今すぐ更新</button>
+<!-- 更新オーバーレイ（旧バナーを置き換え。初心者でも見落とさない全画面モーダル） -->
+<div id="update-banner" style="display:none;position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,.72);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#0f1117;border:2px solid #f472b6;border-radius:20px;padding:28px 24px;max-width:380px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(244,114,182,.35);">
+    <div style="font-size:2.2rem;line-height:1;margin-bottom:10px;">🆕</div>
+    <div style="font-size:1.05rem;font-weight:800;color:#fde8f7;margin-bottom:6px;">新しいバージョンがあります</div>
+    <div id="update-version-text" style="font-size:.78rem;color:#c084fc;margin-bottom:20px;">最新版に更新してください</div>
+    <!-- メインボタン -->
+    <button id="update-reload-btn" style="display:block;width:100%;background:#f472b6;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:800;cursor:pointer;margin-bottom:12px;letter-spacing:.03em;">
+      ✅ 今すぐ更新する
+    </button>
+    <!-- うまくいかない場合の案内（折りたたみ） -->
+    <button id="update-manual-toggle" style="background:transparent;border:none;color:#9ca3af;font-size:.72rem;cursor:pointer;text-decoration:underline;margin-bottom:0;">
+      更新されない場合はこちら
+    </button>
+    <div id="update-manual-steps" style="display:none;margin-top:14px;text-align:left;background:#1a1d27;border-radius:10px;padding:14px 16px;">
+      <div style="font-size:.75rem;font-weight:700;color:#fde8f7;margin-bottom:8px;">📱 手動で更新する方法</div>
+      <div style="font-size:.72rem;color:#d1d5db;line-height:1.8;">
+        <b style="color:#f9a8d4;">Android Chrome の場合</b><br>
+        ① このモーダルを閉じる<br>
+        ② Chrome の <b>⋮</b>（右上メニュー）をタップ<br>
+        ③「<b>履歴</b>」→「<b>閲覧履歴データを削除</b>」<br>
+        ④「<b>キャッシュされた画像とファイル</b>」にチェックして削除<br>
+        ⑤ ページを再読み込み（↻）<br>
+        <br>
+        <b style="color:#f9a8d4;">iPhone Safari の場合</b><br>
+        ① Safari で直接 URL を開く<br>
+        ② 下部「<b>ぁあ</b>」→「<b>Webサイトの設定</b>」→「<b>サイトのデータを削除</b>」
+      </div>
+    </div>
+  </div>
 </div>
 <div id="badge-overlay" class="badge-overlay" onclick="if(event.target===this)closeBadgePanel()">
   <div class="badge-panel">
@@ -630,7 +676,7 @@
 <div id="cust-overlay" class="cust-overlay" onclick="if(event.target===this)closeCustPanel()">
   <div class="cust-panel">
     <div class="cust-panel-hd">
-      <span class="cust-panel-title">🛠 設定</span><span id="ver-badge">(v22)</span>
+      <span class="cust-panel-title">🛠 設定</span><span id="ver-badge">(v35)</span>
       <button class="cust-panel-close" onclick="closeCustPanel()">✕</button>
     </div>
     <div class="cust-sec">
@@ -994,9 +1040,10 @@
 </div>
 
 <!-- ストーリー & 週間チャレンジ -->
-<div class="challenge-wrap">
+<div class="challenge-wrap" id="challenge-wrap-outer">
   <!-- Story main card D案 (always visible) -->
-  <div class="story-main-card" id="story-main-card">
+  <div class="story-main-card" id="story-main-card" style="position:relative;">
+    <button id="story-card-toggle" onclick="toggleStoryCard()" title="折りたたむ" style="position:absolute;top:6px;right:6px;background:transparent;border:none;color:var(--text-muted);font-size:.75rem;cursor:pointer;padding:2px 4px;border-radius:4px;z-index:1;line-height:1;">▲</button>
     <!-- レベルセクション -->
     <div class="level-bar" id="level-bar">
       <div class="level-bar-top">
@@ -1307,15 +1354,23 @@
 const $=id=>document.getElementById(id);
 
 // === Firebase 初期化 ===
-firebase.initializeApp({
-  apiKey: "AIzaSyCx3hjG_55Voipdjnn25szsMZiGPC0Hv8Y",
-  authDomain: "kotsusaku-app.firebaseapp.com",
-  projectId: "kotsusaku-app",
-  storageBucket: "kotsusaku-app.firebasestorage.app",
-  messagingSenderId: "394043383608",
-  appId: "1:394043383608:web:433cc0d00b59ec71e86bcd"
-});
-const db = firebase.firestore();
+// Firebase CDNが読めない場合（オフライン・SW古いキャッシュ）でもアプリを動かすためtry-catchで保護
+let db = null;
+try {
+  if (typeof firebase !== 'undefined') {
+    firebase.initializeApp({
+      apiKey: "AIzaSyCx3hjG_55Voipdjnn25szsMZiGPC0Hv8Y",
+      authDomain: "kotsusaku-app.firebaseapp.com",
+      projectId: "kotsusaku-app",
+      storageBucket: "kotsusaku-app.firebasestorage.app",
+      messagingSenderId: "394043383608",
+      appId: "1:394043383608:web:433cc0d00b59ec71e86bcd"
+    });
+    db = firebase.firestore();
+  }
+} catch(e) {
+  console.warn('Firebase初期化エラー（オフライン時は正常）:', e);
+}
 
 // === 同期コード ===
 function generateSyncCode() {
@@ -1334,6 +1389,7 @@ function getSyncCode() {
 }
 let _cloudSaveTimer = null;
 function saveToCloud() {
+  if (!db) return; // Firebase未初期化（オフライン時）はスキップ
   if (_cloudSaveTimer) clearTimeout(_cloudSaveTimer);
   _cloudSaveTimer = setTimeout(async () => {
     try {
@@ -1353,6 +1409,7 @@ function saveToCloud() {
   }, 3000);
 }
 async function loadFromCloud(code) {
+  if (!db) return false; // Firebase未初期化（オフライン時）はスキップ
   try {
     const doc = await db.collection('users').doc(code).get();
     if (doc.exists) {
@@ -1732,7 +1789,7 @@ function renderQuote(){
 
 function _getTargetH(){return (CUST.targetTotalH&&CUST.targetTotalH>0)?CUST.targetTotalH:1000;}
 function _lvFormula(lv){const t=_getTargetH();return lv<=1?0:Math.round(Math.pow(lv/100,1.7)*t);}
-function _lvFromH(h){const t=_getTargetH();if(h<=0)return 1;if(h>=t)return 100;return Math.min(100,Math.max(1,Math.floor(Math.pow(h/t,1/1.7)*100+0.999)));}
+function _lvFromH(h){const t=_getTargetH();if(h<=0)return 1;if(h>=t)return 100;return Math.min(100,Math.max(1,Math.floor(Math.pow(h/t,1/1.7)*100)));}
 function getLevelData(totalMin){
   const totalH=totalMin/60;
   const lv=_lvFromH(totalH);
@@ -1766,8 +1823,19 @@ function renderLevelBar(){
   $('level-icon').textContent=ld.icon;
   $('level-badge').textContent='Lv.'+ld.lv;
   $('level-title-text').textContent=ld.title;
-  $('level-xp-fill').style.width=ld.pct+'%';
   $('level-xp-info').textContent=ld.xpInfo;
+  // アニメーション：一旦0%にリセットしてからrAFで正しい値をセット
+  const fillEl=$('level-xp-fill');
+  if(fillEl){
+    fillEl.style.transition='none';
+    fillEl.style.width='0%';
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        fillEl.style.transition='width .6s ease-out';
+        fillEl.style.width=ld.pct+'%';
+      });
+    });
+  }
   // A改1：ストーリーのセリフを横に表示
   const _tier=getStoryTier(ld.lv);
   const _msgEl=$('level-bar-msg');
@@ -3770,9 +3838,8 @@ const STORY_DEF=[
      'イタチャチャハウスの伝説は、今日も更新されている。',
      'ニヤニヤ……悪くないね。うん。悪くない。ふさふさだ。🥦',
    ],
-  },,
-
-{id:'spartan',name:'鬼教官の特訓',icon:'🐉',
+  },
+  {id:'spartan',name:'鬼教官の特訓',icon:'🐉',
    tiers:[
      {lvMin:1, char:'😤',title:'まだ言い訳してる段階',   msg:'やる気があるなら今すぐやれ。やる気が出るまで待つ？それが負け犬の発想だ。'},
      {lvMin:3, char:'🔥',title:'ようやく手が動き始めた',  msg:'続けてるな。当たり前だ。続けることが最低限だ。'},
@@ -3828,7 +3895,6 @@ const STORY_DEF=[
    ],
   },
 ];
-;
 // ── 学習予測アドバイス文（テーマ別） ──
 const FORECAST_ADVICE={
   gorilla:{
@@ -4611,6 +4677,38 @@ buildGrid();
 switchView('daily');
 updateBadgeCount();
 renderLevelBar();
+// ヘッダー高さを正確に計測（レベルバー描画後に再計測）
+setTimeout(_syncHeaderHeight, 100);
+// ── ストーリーカード折りたたみ ──────────────────────────
+(function(){
+  var STORAGE_KEY = 'story-card-collapsed';
+  var collapsed = localStorage.getItem(STORAGE_KEY) === '1';
+  function applyState(){
+    var card = document.getElementById('story-main-card');
+    var btn  = document.getElementById('story-card-toggle');
+    if(!card || !btn) return;
+    if(collapsed){
+      card.style.overflow = 'hidden';
+      card.style.maxHeight = '34px'; // ボタンのみ見える高さ
+      btn.textContent = '▼';
+      btn.title = '開く';
+    } else {
+      card.style.overflow = '';
+      card.style.maxHeight = '';
+      btn.textContent = '▲';
+      btn.title = '折りたたむ';
+    }
+    // ヘッダー高さ再計測（折りたたみでレイアウト変わるので）
+    setTimeout(_syncHeaderHeight, 50);
+  }
+  window.toggleStoryCard = function(){
+    collapsed = !collapsed;
+    localStorage.setItem(STORAGE_KEY, collapsed ? '1' : '0');
+    applyState();
+  };
+  applyState();
+})();
+
 // 現在時刻マスを1分ごとに更新（時刻が進んでも点滅が追従するよう）
 setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 
@@ -4697,42 +4795,115 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 </script>
 
 <script>
+// ============================================================
+// バージョン管理 & Service Worker 登録
+// ① 起動時に version.json をfetchして最新版と比較
+// ② 差異があれば即・大きなモーダルで更新を促す
+// ③ 「今すぐ更新」でSW強制更新→リロード
+// ④ うまくいかない場合はモーダル内に手動手順を表示
+// ============================================================
 (function(){
-  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+  // このファイルが持っているバージョン番号（sw.jsと合わせる）
+  var CURRENT_VERSION = 'kotsusaku-v35';
+
+  // --- バナー操作ユーティリティ ---
+  function showUpdateBanner(latestLabel) {
+    var banner = document.getElementById('update-banner');
+    if (!banner) return;
+    var vtxt = document.getElementById('update-version-text');
+    if (vtxt && latestLabel) vtxt.textContent = '現在: ' + CURRENT_VERSION + '  →  最新: ' + latestLabel;
+    banner.style.display = 'flex';
+
+    // 「今すぐ更新」ボタン
+    var btn = document.getElementById('update-reload-btn');
+    if (btn && !btn._bound) {
+      btn._bound = true;
+      btn.addEventListener('click', function(){
+        btn.textContent = '⏳ 更新中...';
+        btn.disabled = true;
+        // SWに強制切り替えを指示してからリロード
+        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage('SKIP_WAITING');
+          setTimeout(function(){ window.location.reload(true); }, 400);
+        } else {
+          window.location.reload(true);
+        }
+      });
+    }
+
+    // 「更新されない場合はこちら」折りたたみ
+    var toggle = document.getElementById('update-manual-toggle');
+    var steps  = document.getElementById('update-manual-steps');
+    if (toggle && steps && !toggle._bound) {
+      toggle._bound = true;
+      toggle.addEventListener('click', function(){
+        var isOpen = steps.style.display !== 'none';
+        steps.style.display = isOpen ? 'none' : 'block';
+        toggle.textContent  = isOpen ? '更新されない場合はこちら' : '▲ 閉じる';
+      });
+    }
+  }
+
+  // --- ① 起動時バージョンfetchチェック ---
+  // version.json: {"version":"kotsusaku-v35"} のような内容
+  function checkVersionJson() {
+    fetch('./version.json?_=' + Date.now(), { cache: 'no-store' })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        var latest = data && data.version;
+        if (latest && latest !== CURRENT_VERSION) {
+          showUpdateBanner(latest);
+        }
+      })
+      .catch(function(){
+        // version.jsonがない or ネットワークエラーは無視（壊れない）
+      });
+  }
+
+  // --- ② Service Worker 登録 ---
+  if ('serviceWorker' in navigator &&
+      (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
     window.addEventListener('load', function(){
+      // バージョンfetchチェックを実行（SW登録と並行）
+      checkVersionJson();
+
       navigator.serviceWorker.register('./sw.js').then(function(reg){
-        // 新しいService Workerが待機状態になったら通知バナーを表示
+        // 新しいSWが待機状態になったらバナー表示
         reg.addEventListener('updatefound', function(){
-          const newWorker = reg.installing;
-          if(!newWorker) return;
+          var newWorker = reg.installing;
+          if (!newWorker) return;
           newWorker.addEventListener('statechange', function(){
-            if(newWorker.state === 'installed' && navigator.serviceWorker.controller){
-              // 更新バナーを表示
-              const banner = document.getElementById('update-banner');
-              if(banner) banner.style.display = 'flex';
-              // 「今すぐ更新」ボタン
-              const btn = document.getElementById('update-reload-btn');
-              if(btn) btn.addEventListener('click', function(){
-                newWorker.postMessage('SKIP_WAITING');
-                window.location.reload();
-              });
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              showUpdateBanner(null);
+              // このケースではボタンでnewWorkerに通知
+              var btn = document.getElementById('update-reload-btn');
+              if (btn) {
+                btn._swWorker = newWorker;
+                var orig = btn.onclick;
+                btn.addEventListener('click', function(){
+                  newWorker.postMessage('SKIP_WAITING');
+                }, true);
+              }
             }
           });
         });
         // すでに更新待ちのSWがあれば即バナー表示
-        if(reg.waiting){
-          const banner = document.getElementById('update-banner');
-          if(banner) banner.style.display = 'flex';
-          const btn = document.getElementById('update-reload-btn');
-          if(btn) btn.addEventListener('click', function(){
-            reg.waiting.postMessage('SKIP_WAITING');
-            window.location.reload();
-          });
+        if (reg.waiting) {
+          showUpdateBanner(null);
+          var btn = document.getElementById('update-reload-btn');
+          if (btn) {
+            btn.addEventListener('click', function(){
+              reg.waiting.postMessage('SKIP_WAITING');
+            }, true);
+          }
         }
       }).catch(function(err){
         console.log('Service Worker registration skipped:', err);
       });
     });
+  } else {
+    // https非対応環境でもバージョンチェックだけは動かす
+    window.addEventListener('load', checkVersionJson);
   }
 })();
 
