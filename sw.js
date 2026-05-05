@@ -1,5 +1,5 @@
 // sw.js - コツコツサクサク Service Worker
-const CACHE_VERSION = 'kotsusaku-v31';
+const CACHE_VERSION = 'kotsusaku-v32';
 const CACHE_FILES = [
   './',
   './index.html',

@@ -46,14 +46,20 @@
     .countdown-clear{background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:.75rem;padding:2px 4px;transition:color .15s;}
     .countdown-clear:hover{color:#f87171;}
     
-    .level-bar{display:flex;align-items:center;gap:8px;padding:4px 0 2px;}
-    .level-badge{background:var(--accent);color:var(--bg);font-size:.62rem;font-weight:800;padding:2px 7px;border-radius:99px;white-space:nowrap;flex-shrink:0;}
-    .level-title-text{font-size:.68rem;font-weight:700;color:var(--text);white-space:nowrap;flex-shrink:0;}
-    .level-xp-wrap{flex:1;display:flex;flex-direction:column;gap:2px;}
-    .level-xp-bg{background:var(--surface2);border-radius:99px;height:4px;overflow:hidden;}
+    .level-bar{padding:6px 0 4px;}
+    .level-bar-top{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+    .level-icon{font-size:1.3rem;flex-shrink:0;line-height:1;}
+    .level-bar-body{flex:1;min-width:0;}
+    .level-bar-info-row{display:flex;align-items:center;gap:5px;flex-wrap:nowrap;min-width:0;}
+    .level-badge{background:var(--accent);color:var(--bg);font-size:.6rem;font-weight:800;padding:2px 7px;border-radius:99px;white-space:nowrap;flex-shrink:0;}
+    .level-title-text{font-size:.68rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;min-width:0;}
+    .level-bar-sep{font-size:.6rem;color:var(--border);flex-shrink:0;}
+    .level-bar-msg{font-size:.6rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:2;min-width:0;}
+    .level-bar-divider{height:1px;background:var(--border);margin-bottom:6px;}
+    .level-xp-wrap{display:flex;flex-direction:column;gap:2px;}
+    .level-xp-bg{background:var(--surface2);border-radius:99px;height:5px;overflow:hidden;}
     .level-xp-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--checked));border-radius:99px;transition:width .5s;}
     .level-xp-info{font-size:.54rem;color:var(--text-muted);text-align:right;}
-    .level-icon{font-size:1rem;flex-shrink:0;}
     
     
     .story-main-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;transition:background .3s,border-color .3s;}
@@ -613,7 +619,8 @@
         <button class="badge-tab-btn active" data-story="gorilla" onclick="switchBadgeTab('gorilla')">🦍 ゴリラ</button>
         <button class="badge-tab-btn" data-story="samurai" onclick="switchBadgeTab('samurai')">⚔️ 剣士</button>
         <button class="badge-tab-btn" data-story="space" onclick="switchBadgeTab('space')">🚀 宇宙</button>
-        <button class="badge-tab-btn" data-story="itachacha" onclick="switchBadgeTab('itachacha')">🥦 イタチャチャ</button>
+        <button class="badge-tab-btn" data-story="itachacha" onclick="switchBadgeTab('itachacha')">🥦 謎</button>
+        <button class="badge-tab-btn" data-story="spartan" onclick="switchBadgeTab('spartan')">🐉 鬼教官</button>
       </div>
     </div>
     <div class="badge-grid" id="badge-grid"></div>
@@ -722,7 +729,8 @@
             <option value="gorilla">🦍 ゴリラ成長記</option>
             <option value="samurai">⚔️ 受験剣士の道</option>
             <option value="space">🚀 宇宙探検家の旅</option>
-            <option value="itachacha">🥦 なぞのイキモノ育成記</option>
+            <option value="itachacha">🥦 正体不明育成記</option>
+            <option value="spartan">🐉 鬼教官の特訓</option>
           </optgroup>
           <optgroup label="📝 会計・FP系">
             <option value="boki3">📗 日商簿記3級合格への道</option>
@@ -991,9 +999,18 @@
   <div class="story-main-card" id="story-main-card">
     <!-- レベルセクション -->
     <div class="level-bar" id="level-bar">
-      <span class="level-icon" id="level-icon">📖</span>
-      <span class="level-badge" id="level-badge">Lv.1</span>
-      <span class="level-title-text" id="level-title-text">見習い受験生</span>
+      <div class="level-bar-top">
+        <span class="level-icon" id="level-icon">📖</span>
+        <div class="level-bar-body">
+          <div class="level-bar-info-row">
+            <span class="level-badge" id="level-badge">Lv.1</span>
+            <span class="level-title-text" id="level-title-text">見習い受験生</span>
+            <span class="level-bar-sep" id="level-bar-sep">｜</span>
+            <span class="level-bar-msg" id="level-bar-msg"></span>
+          </div>
+        </div>
+      </div>
+      <div class="level-bar-divider"></div>
       <div class="level-xp-wrap">
         <div class="level-xp-bg"><div class="level-xp-fill" id="level-xp-fill" style="width:0%"></div></div>
         <div class="level-xp-info" id="level-xp-info"></div>
@@ -1323,6 +1340,13 @@ function saveToCloud() {
       await db.collection('users').doc(getSyncCode()).set({
         studyData: JSON.stringify(data),
         studyNotes: JSON.stringify(notes),
+        studyCust: LS.get('study-cust',''),
+        studyBadges: LS.get('study-badges',''),
+        studyMilestones: LS.get('study-milestones',''),
+        studyGoal: LS.get('study-goal',''),
+        studyWeekGoal: LS.get('study-week-goal',''),
+        studyMonthGoal: LS.get('study-month-goal',''),
+        examDate: LS.get('exam-date',''),
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
     } catch(e) { console.warn('クラウド保存エラー:', e); }
@@ -1335,6 +1359,14 @@ async function loadFromCloud(code) {
       const d = doc.data();
       if (d.studyData) { data = JSON.parse(d.studyData); LS.set('study-data', d.studyData); }
       if (d.studyNotes) { notes = JSON.parse(d.studyNotes); LS.set('study-notes', d.studyNotes); }
+      if (d.studyCust) { LS.set('study-cust', d.studyCust); loadCust(); applyAllCust(); }
+      if (d.studyBadges) { LS.set('study-badges', d.studyBadges); loadBadges(); }
+      if (d.studyMilestones) { LS.set('study-milestones', d.studyMilestones); loadMilestones(); }
+      if (d.studyGoal) { LS.set('study-goal', d.studyGoal); }
+      if (d.studyWeekGoal) { LS.set('study-week-goal', d.studyWeekGoal); }
+      if (d.studyMonthGoal) { LS.set('study-month-goal', d.studyMonthGoal); }
+      if (d.examDate) { LS.set('exam-date', d.examDate); }
+      loadGoal();
       return true;
     }
     return false;
@@ -1736,11 +1768,20 @@ function renderLevelBar(){
   $('level-title-text').textContent=ld.title;
   $('level-xp-fill').style.width=ld.pct+'%';
   $('level-xp-info').textContent=ld.xpInfo;
+  // A改1：ストーリーのセリフを横に表示
+  const _tier=getStoryTier(ld.lv);
+  const _msgEl=$('level-bar-msg');
+  const _sepEl=$('level-bar-sep');
+  if(_msgEl&&_tier&&_tier.msg){
+    _msgEl.textContent=_tier.msg;
+    if(_sepEl)_sepEl.style.display='';
+  }else if(_msgEl){
+    _msgEl.textContent='';
+    if(_sepEl)_sepEl.style.display='none';
+  }
   if(lastLv>0&&ld.lv>lastLv){showLevelUp(ld);}
   lastLv=ld.lv;
   updateThemeDots();
-
-  // Refresh story card tier when level changes
   if(typeof updateStoryMainCard==='function')updateStoryMainCard();
 }
 function showLevelUp(ld){
@@ -1783,7 +1824,7 @@ function showMilestoneBanner(m){
 }
 
 let earnedBadges={};
-const FICTION_STORY_IDS=['gorilla','samurai','space','itachacha'];
+const FICTION_STORY_IDS=['gorilla','samurai','space','itachacha','spartan'];
 function isFictionStory(id){return FICTION_STORY_IDS.includes(id);}
 
 // ── 節目トースト ──────────────────────────────────────────
@@ -1797,6 +1838,7 @@ function _milestoneGroup(storyId){
   if(storyId==='samurai')return'samurai';
   if(storyId==='space')return'space';
   if(storyId==='itachacha')return'itachacha';
+  if(storyId==='spartan')return'spartan';
   // 資格系
   const SHIKAKU=['boki3','boki2','takken','sharoshi','zeirishi','fp2','koumuin','shindanshi','kaikeishi'];
   if(SHIKAKU.includes(storyId))return'shikaku';
@@ -1855,6 +1897,16 @@ const MILESTONE_MSG={
    300: 'ニヤニヤ……5じかん。かなり、やばいね。👑 Cチームのかがやきがある。',
    360: 'チャチャ！！6じかん！！🥦 もうなんかイタガキせんせいっぽくなってきた！！',
    480: 'ニヤニヤ……8じかん。もうこれは、イタガキせんせいだよ。🏆 おつかれさま。',
+  },
+  spartan:{
+    30: '30分やった。当たり前だ。続けろ。',
+    60: '1時間か。悪くない。だがまだ足りない。',
+   120: '2時間。本気の入口に立った。',
+   180: '3時間続けた。言い訳してた頃の自分とは別人だ。',
+   240: '4時間。もう逃げられないところまで来た。',
+   300: '5時間。才能じゃない。これが積み上げというものだ。',
+   360: '6時間。試験官がお前を落とせなくなってきたぞ。',
+   480: '8時間。今日だけで合格に大きく近づいた。認めてやる。',
   },
   shikaku:{
     30: '今日も30分、着実に積み上げた📚 合格への道は続く。',
@@ -3718,8 +3770,65 @@ const STORY_DEF=[
      'イタチャチャハウスの伝説は、今日も更新されている。',
      'ニヤニヤ……悪くないね。うん。悪くない。ふさふさだ。🥦',
    ],
+  },,
+
+{id:'spartan',name:'鬼教官の特訓',icon:'🐉',
+   tiers:[
+     {lvMin:1, char:'😤',title:'まだ言い訳してる段階',   msg:'やる気があるなら今すぐやれ。やる気が出るまで待つ？それが負け犬の発想だ。'},
+     {lvMin:3, char:'🔥',title:'ようやく手が動き始めた',  msg:'続けてるな。当たり前だ。続けることが最低限だ。'},
+     {lvMin:6, char:'⚡',title:'本物の努力を知り始めた',  msg:'やっと本気になってきた。遅いけどな。'},
+     {lvMin:9, char:'💀',title:'もう後には引けない',      msg:'ここまで来て諦めたら、今までの時間が全部ゴミになる。わかってるな？'},
+     {lvMin:10,char:'🏆',title:'結果を出す人間になった',  msg:'合格した。当然だ。これだけやったんだから。'},
+   ],
+   startMsg:'また来たか。いいだろう。やれ。話はそれだけだ。',
+   comboMsg:'その調子だ。だが褒めない。これが普通だから。｜続けろ。止まったら終わりだ。｜いいペースだ。だが油断するな。本番は今じゃない。｜連打か。悪くない。だがスピードより正確さだ。｜その集中力を試験当日に出せ。それだけでいい。',
+   quotes:[
+     'やる気が出てからやろうと思ってる時点で、もう負けてる。',
+     '「忙しい」は言い訳だ。本当に忙しい人間ほど、時間を作る。',
+     '積み上げた時間は裏切らない。積み上げなかった時間も、裏切らない。',
+     '才能がないと思うなら、量でカバーしろ。それだけだ。',
+     '辛いのは全員同じだ。その中でやるかやらないかが、合否を分ける。',
+     '今日サボった分は、誰かが埋める。そいつが合格して、お前が落ちる。',
+     '「難しい」と「無理」は違う。混同するな。',
+     '10分でもやれ。やる気がなくても手を動かせば、脳はついてくる。',
+     '合格した自分を想像する前に、今日の問題を1問解け。',
+     '努力できることも才能だと言う奴がいる。違う。努力は選択だ。お前が選べる。',
+   ],
+   levelNames:{1:'まだ言い訳してる',11:'手が動き始めた',21:'習慣になってきた',31:'本気の入口に立った',41:'逃げなくなってきた',51:'覚悟が決まった',61:'本物の努力をしてる',71:'もう止まれない',81:'結果が見えてきた',91:'あとは本番だけだ',100:'結果を出す人間になった'},
+   levelIcons:{1:'😤',11:'🔥',21:'⚡',31:'💪',41:'🎯',51:'💀',61:'🔱',71:'⚔️',81:'🌟',91:'👑',100:'🏆'},
+   badgePresets:{
+     first:      {icon:'😤',name:'とりあえず始めた',   desc:'言い訳より行動を選んだ'},
+     streak3:    {icon:'🔥',name:'3日続けた',           desc:'当たり前のことを当たり前にやれ'},
+     streak7:    {icon:'⚡',name:'7日続けた',           desc:'1週間。まだスタートラインだ'},
+     streak30:   {icon:'💀',name:'30日続けた',          desc:'ここまで来たら後には引けない'},
+     streak100:  {icon:'🏆',name:'100日続けた',         desc:'本物だ。認めてやる'},
+     morning:    {icon:'🌅',name:'朝型人間',            desc:'朝4〜8時、10回以上。それが強い人間の習慣だ'},
+     night:      {icon:'🌙',name:'深夜の特訓',          desc:'深夜0〜3時、10回以上。体は大事にしろよ'},
+     bloom5:     {icon:'😤',name:'目標5回達成',         desc:'5回。まだ序の口だ'},
+     bloom20:    {icon:'🔥',name:'目標20回達成',        desc:'20回。やっと本気と呼べる'},
+     weekly_goal:{icon:'⚡',name:'週間ノルマ達成',      desc:'週間目標をはじめて達成。これが最低限だ'},
+     monthly_goal:{icon:'💀',name:'月間ノルマ達成',     desc:'月間目標をはじめて達成。本物の積み上げだ'},
+     h50:        {icon:'⚡',name:'50時間特訓',          desc:'50時間。ようやくスタートラインだ'},
+     h100:       {icon:'💀',name:'100時間特訓',         desc:'100時間。本物の努力がわかってきたな'},
+     h500:       {icon:'🏆',name:'500時間の結果',       desc:'500時間。これだけやったんだから、受かって当然だ'},
+   },
+   quotes2:[
+     '2周目か。1周目で終わらなかった理由を考えろ。それが弱点だ。',
+     '同じ問題で同じミスをするな。それは努力じゃなくて作業だ。',
+     '2度目は言い訳が通らない。全部わかってるはずだから。',
+     'まだやるのか。いいだろう。その根性だけは認める。',
+     '2周目の目的は完璧にすることだ。中途半端は許さない。',
+   ],
+   quotes3:[
+     '3周もやってるのか。それだけやれば受かるに決まってる。',
+     'もう敵はいない。あとは本番で実力を出すだけだ。',
+     '3周した人間の言葉には重みがある。合格してから言ってやれ。',
+     'ここまで来たお前を、俺は認める。だが油断するな。最後まで手を緩めるな。',
+     '3度積み上げた知識は、もう折れない。本番でそれを証明しろ。',
+   ],
   },
 ];
+;
 // ── 学習予測アドバイス文（テーマ別） ──
 const FORECAST_ADVICE={
   gorilla:{
@@ -3825,6 +3934,14 @@ const FORECAST_ADVICE={
     ng_sub:()=>`チャチャ！！ペースあげよ！！いっしょにがんばろ！！`,
     ok_main:()=>`🥦 このペースでもくひょうじかんをクリアできる！チャチャ！！`,
     ok_sub:(over)=>`${over}のよゆう！！ニヤニヤ……まあ、わるくないね。`,
+  },
+  spartan:{
+    close_main:(add)=>`あと${add}だ。言い訳している暇があるなら手を動かせ。`,
+    close_sub:()=>`ここまで来て諦めるつもりか。やれ。`,
+    ng_main:(add)=>`1日${add}足りていない。それだけの差で合否が決まる。`,
+    ng_sub:()=>`ペースが落ちている。今日の遅れは誰かのチャンスになる。`,
+    ok_main:()=>`このペースなら目標時間に届く。当然の結果にしろ。`,
+    ok_sub:(over)=>`${over}の余裕。だが油断するな。本番まで手を緩めるな。`,
   },
   default:{
     close_main:(add)=>`あと${add}で目標達成！もう少しだけペースを上げよう！`,
