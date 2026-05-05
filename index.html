@@ -128,6 +128,12 @@
     .levelup-popup{background:linear-gradient(135deg,#071e3d,#153a6e);border:2px solid #38bdf8;padding:20px 28px;border-radius:18px;}
     .levelup-popup .lu-lv{font-size:2.2rem;font-weight:800;color:#38bdf8;}
     .levelup-popup .lu-title{font-size:.9rem;color:#bae6fd;}
+    /* 🥦 itachacha専用ポップアップ */
+    .itachacha-popup{background:linear-gradient(135deg,#0d1f13,#1c3d25);border:2px solid #4ade80;padding:24px 32px;border-radius:20px;box-shadow:0 8px 40px rgba(74,222,128,.4);min-width:220px;}
+    .itachacha-popup .ic-days{font-size:2.4rem;font-weight:800;color:#4ade80;line-height:1.1;display:block;}
+    .itachacha-popup .ic-line1{font-size:1.05rem;font-weight:800;color:#bbf7d0;display:block;margin-top:4px;}
+    .itachacha-popup .ic-line2{font-size:.85rem;color:#86efac;display:block;margin-top:6px;font-weight:700;}
+    .itachacha-popup .ic-line3{font-size:.8rem;color:#6ee7b7;display:block;margin-top:4px;}
     
     .badge-popup{display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--surface);border:1.5px solid var(--checked);color:var(--text);padding:12px 20px;border-radius:14px;z-index:9997;text-align:center;animation:badgePop .4s ease;box-shadow:0 4px 20px rgba(0,0,0,.3);white-space:nowrap;}
     @keyframes badgePop{from{transform:translateX(-50%) translateY(20px);opacity:0;}to{transform:translateX(-50%) translateY(0);opacity:1;}}
@@ -143,6 +149,22 @@
     .block.lucky.checked::after{content:'⭐';animation:petalWiggle 1.8s ease-in-out infinite;}
     @keyframes nowBlink{0%,100%{box-shadow:0 0 5px 2px rgba(79,142,247,.45);border-color:rgba(79,142,247,.6);}50%{box-shadow:0 0 12px 5px rgba(79,142,247,.85);border-color:rgba(79,142,247,1);}}
     .block.now-time:not(.checked):not(.lucky){animation:nowBlink 1.2s ease-in-out infinite;border-color:rgba(79,142,247,.6);}
+
+    /* 🥦 itachacha：朝5〜7時ライブ配信ブロック */
+    @keyframes broccGlow{0%,100%{box-shadow:0 0 5px 2px rgba(74,222,128,.35);border-color:rgba(74,222,128,.5);}50%{box-shadow:0 0 11px 4px rgba(74,222,128,.65);border-color:rgba(74,222,128,.85);}}
+    .block.itachacha-live:not(.checked):not(.lucky){animation:broccGlow 2s ease-in-out infinite;border-color:rgba(74,222,128,.55);background:rgba(74,222,128,.10);}
+    .block.itachacha-live:not(.checked):not(.lucky)::after{content:'🥦';font-size:9px;line-height:1;opacity:.45;}
+    .block.itachacha-live.checked:not(.lucky)::after{content:'🥦'!important;font-size:11px;line-height:1;animation:petalWiggle 2.5s ease-in-out infinite;}
+    .hour-btn.itachacha-live-btn{background:rgba(74,222,128,.18)!important;border-color:rgba(74,222,128,.6)!important;color:#16a34a!important;}
+    [data-theme="light"] .hour-btn.itachacha-live-btn{color:#15803d!important;}
+
+    /* 🍞 itachacha：夜21:40〜22時ライブ配信ブロック */
+    @keyframes breadGlow{0%,100%{box-shadow:0 0 5px 2px rgba(217,119,6,.35);border-color:rgba(217,119,6,.5);}50%{box-shadow:0 0 11px 4px rgba(217,119,6,.65);border-color:rgba(217,119,6,.85);}}
+    .block.itachacha-bread:not(.checked):not(.lucky){animation:breadGlow 2s ease-in-out infinite;border-color:rgba(217,119,6,.55);background:rgba(251,191,36,.10);}
+    .block.itachacha-bread:not(.checked):not(.lucky)::after{content:'🍞';font-size:9px;line-height:1;opacity:.45;}
+    .block.itachacha-bread.checked:not(.lucky)::after{content:'🍞'!important;font-size:11px;line-height:1;animation:petalWiggle 2.5s ease-in-out infinite;}
+    .hour-btn.itachacha-bread-btn{background:rgba(217,119,6,.15)!important;border-color:rgba(217,119,6,.6)!important;color:#92400e!important;}
+    [data-theme="light"] .hour-btn.itachacha-bread-btn{color:#78350f!important;}
     
     .easter-toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#1a0a1e,#341b42);border:1.5px solid #f472b6;color:#fde8f7;font-size:.82rem;font-weight:700;padding:12px 22px;border-radius:12px;z-index:9996;opacity:0;transition:opacity .3s;pointer-events:none;text-align:center;box-shadow:0 4px 20px rgba(244,114,182,.3);}
     .easter-toast.show{opacity:1;}
@@ -539,6 +561,7 @@
 <div id="bloom-banner" class="popup-center">🌸満開🌸<br>🌸目標達成🌸</div>
 <div id="milestone-popup" class="milestone-popup popup-center"></div>
 <div id="levelup-popup" class="levelup-popup popup-center"></div>
+<div id="itachacha-popup" class="itachacha-popup popup-center"></div>
 <div id="badge-popup" class="badge-popup"></div>
 <div id="easter-toast" class="easter-toast"></div>
 <div id="backup-toast" class="backup-toast"></div>
@@ -571,7 +594,8 @@
   <div id="install-guide-pc" style="display:none;padding:0 14px 10px;line-height:1.7;font-size:.75rem;color:#bae6fd;">
     <b>PCの場合：</b><br>
     アドレスバー右端の <b>インストールアイコン（⊕）</b> をクリックしてインストールできます<br>
-    <span style="color:#7dd3fc;font-size:.7rem;">※ インストールするとオフラインでも使えます</span>
+    <span style="color:#7dd3fc;font-size:.7rem;">※ インストールするとオフラインでも使えます</span><br>
+    <span style="color:#93c5fd;font-size:.7rem;">⚠️ アイコンが表示されない場合：右上の <b>⋮（3点メニュー）</b> → 「<b>その他のツール</b>」または「<b>キャスト、保存、共有</b>」→「<b>ページをアプリとしてインストール…</b>」をクリック</span>
   </div>
 </div>
 <div id="update-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:10000;background:linear-gradient(90deg,#1a1a2e,#16213e);border-bottom:2px solid #f472b6;color:#fde8f7;font-size:.82rem;font-weight:700;padding:10px 16px;align-items:center;justify-content:space-between;gap:8px;box-shadow:0 2px 12px rgba(0,0,0,.5);">
@@ -589,6 +613,7 @@
         <button class="badge-tab-btn active" data-story="gorilla" onclick="switchBadgeTab('gorilla')">🦍 ゴリラ</button>
         <button class="badge-tab-btn" data-story="samurai" onclick="switchBadgeTab('samurai')">⚔️ 剣士</button>
         <button class="badge-tab-btn" data-story="space" onclick="switchBadgeTab('space')">🚀 宇宙</button>
+        <button class="badge-tab-btn" data-story="itachacha" onclick="switchBadgeTab('itachacha')">🥦 イタチャチャ</button>
       </div>
     </div>
     <div class="badge-grid" id="badge-grid"></div>
@@ -657,8 +682,15 @@
     <div class="cust-sec">
       <div class="cust-sec-title">🖼 アプリアイコン</div>
       <div style="font-size:.6rem;color:var(--text-muted);margin-bottom:4px;">好きなアイコンを選んでください</div>
-      <div style="font-size:.6rem;color:#f59e0b;margin-bottom:10px;line-height:1.6;">⚠️ ホーム画面のアイコンに反映するには<br>一度アプリを削除して再度追加してください</div>
+      <div style="font-size:.6rem;color:#f59e0b;margin-bottom:6px;line-height:1.7;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:8px 10px;">
+        ⚠️ <b>ホーム画面のアイコンは自動では変わりません</b><br>
+        変更を反映するには…<br>
+        ① 下の「📥 ダウンロード」でアイコン画像を保存<br>
+        ② アプリを一度削除して再インストール<br>
+        <span style="color:var(--text-muted);">または iPhoneは「ショートカット」アプリ、Androidは「ランチャーアプリ」でアイコンを手動設定できます</span>
+      </div>
       <div id="icon-sel-grid" style="display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-start;"></div>
+      <div id="icon-dl-area" style="margin-top:12px;"></div>
     </div>
     <div class="cust-sec">
       <div class="cust-sec-title">🎨 背景テーマ</div>
@@ -690,6 +722,7 @@
             <option value="gorilla">🦍 ゴリラ成長記</option>
             <option value="samurai">⚔️ 受験剣士の道</option>
             <option value="space">🚀 宇宙探検家の旅</option>
+            <option value="itachacha">🥦 なぞのイキモノ育成記</option>
           </optgroup>
           <optgroup label="📝 会計・FP系">
             <option value="boki3">📗 日商簿記3級合格への道</option>
@@ -843,7 +876,10 @@
 <input type="file" id="import-file-input" accept=".json" style="display:none">
 
 <header>
-  <div class="header-title">コツコツ✏️サクサク🌸</div>
+  <div class="header-title" id="header-title-wrap" style="display:flex;align-items:center;justify-content:center;gap:6px;">
+    <div id="header-app-icon" style="display:none;width:22px;height:22px;border-radius:6px;overflow:hidden;flex-shrink:0;"></div>
+    <span id="header-title-text">コツコツ✏️サクサク🌸</span>
+  </div>
   <div class="quote-bar" id="quote-bar"></div>
   <div class="header-controls">
     <button class="cust-gear-btn" id="cust-gear-btn" onclick="openCustPanel()" title="設定">設定</button>
@@ -1747,7 +1783,7 @@ function showMilestoneBanner(m){
 }
 
 let earnedBadges={};
-const FICTION_STORY_IDS=['gorilla','samurai','space'];
+const FICTION_STORY_IDS=['gorilla','samurai','space','itachacha'];
 function isFictionStory(id){return FICTION_STORY_IDS.includes(id);}
 
 // ── 節目トースト ──────────────────────────────────────────
@@ -1760,6 +1796,7 @@ function _milestoneGroup(storyId){
   if(storyId==='gorilla')return'gorilla';
   if(storyId==='samurai')return'samurai';
   if(storyId==='space')return'space';
+  if(storyId==='itachacha')return'itachacha';
   // 資格系
   const SHIKAKU=['boki3','boki2','takken','sharoshi','zeirishi','fp2','koumuin','shindanshi','kaikeishi'];
   if(SHIKAKU.includes(storyId))return'shikaku';
@@ -1808,6 +1845,16 @@ const MILESTONE_MSG={
    300: '5時間——もはや伝説の宇宙探検家の領域だ🛸',
    360: '6時間！星の数ほどの可能性が見えてきた✨',
    480: '8時間飛行🏆 この探検記録は宇宙史に刻まれた！',
+  },
+  itachacha:{
+    30: 'チャチャ！！30ぷんのコツコツ！！えらい！！イタガキせんせいもどこかでニヤニヤしてるよ！！',
+    60: 'イタチャチャ！！1じかんとっぱ！！📺 ハイライトいっぽんぶんのじかんを勉強につかったよ！！',
+   120: 'ニヤニヤ……2じかんか。まあ、わるくないね。👀 だいぶこさんぽくなってきた。',
+   180: 'チャチャチャ！！3じかん！！🏠 もうイタチャチャハウスのじゅうにんだよこれ！！',
+   240: 'イイねー！！4じかん！！🎉 このがんばりをイタガキせんせいにみせたい！！',
+   300: 'ニヤニヤ……5じかん。かなり、やばいね。👑 Cチームのかがやきがある。',
+   360: 'チャチャ！！6じかん！！🥦 もうなんかイタガキせんせいっぽくなってきた！！',
+   480: 'ニヤニヤ……8じかん。もうこれは、イタガキせんせいだよ。🏆 おつかれさま。',
   },
   shikaku:{
     30: '今日も30分、着実に積み上げた📚 合格への道は続く。',
@@ -1885,6 +1932,102 @@ function _markChachaShown(){
 }
 function clearChachaToastFlag(){
   localStorage.removeItem(_chachaLsKey());
+}
+
+// ────────────────────────────────────────────────────────
+// 🥦 itachacha専用機能
+// ────────────────────────────────────────────────────────
+
+// ① 朝の30分サプライズ（5〜7時の累計3枠ごと）
+function _itachachaMorningLsKey(){return 'itachacha-morning-'+toStudyDateStr(new Date());}
+function _countMorningLiveBlocks(){
+  const ds=toStudyDateStr(new Date());
+  if(!data[ds])return 0;
+  return Object.entries(data[ds]).filter(([k,v])=>{
+    if(!v)return false;
+    const h=parseInt(k.split(':')[0]);
+    return h===5||h===6;
+  }).length;
+}
+const _ITACHACHA_MORNING_MSGS={
+  3:['…30分。（気づいたらそんなにやってた）えらいじゃないですか。','チャチャ！！30分！！ライブ配信中に30分できた！！','ニヤニヤ……朝から30分か。悪くないね。'],
+  6:['チャチャ！！朝のライブ配信で1時間！！クレイジーにえらい！！','ニヤニヤ……1時間。朝から本物だ。','イイねー！！1時間！！大人の朝の使い方、わかってる！！'],
+  9:['…っ！！朝90分！！もう止まれない！！🌿','イイねー！！90分！！大人の朝の使い方、わかってる！！','ニヤニヤ……90分。ふさふさしてきた気がする。🌿'],
+  12:['チャチャチャ！！朝のライブ配信2時間フル参戦！！先生の分身になってきた！！🥦','ニヤニヤ……2時間。ふさふさだ。🥦','…2時間。（もうインキャラとは言えない）えらすぎる。'],
+};
+function checkItachachaMorningSurprise(){
+  if(!_isItachachaMode())return;
+  const h=new Date().getHours();
+  if(h<5||h>=7)return;
+  const cnt=_countMorningLiveBlocks();
+  const milestone=[3,6,9,12].find(m=>m===cnt);
+  if(!milestone)return;
+  // 今日この節目をすでに表示したか
+  const key=_itachachaMorningLsKey();
+  let shown=[];
+  try{shown=JSON.parse(localStorage.getItem(key)||'[]');}catch{shown=[];}
+  if(shown.includes(milestone))return;
+  shown.push(milestone);
+  localStorage.setItem(key,JSON.stringify(shown));
+  const msgs=_ITACHACHA_MORNING_MSGS[milestone];
+  const msg=msgs[Math.floor(Math.random()*msgs.length)];
+  setTimeout(()=>showEasterToast('🥦 '+msg),600);
+}
+
+// ② 連続記録ポップアップ（5〜7時の最初のチェック時・中央ドーン）
+function _itachachaStreakLsKey(){return 'itachacha-streak-shown-'+toStudyDateStr(new Date());}
+function _isItachachaStreakShown(){return localStorage.getItem(_itachachaStreakLsKey())==='1';}
+function _markItachachaStreakShown(){localStorage.setItem(_itachachaStreakLsKey(),'1');}
+function _itachachaStreakPopupHtml(streak){
+  let line1='',line2='',line3='';
+  if(streak===2){
+    line1='…っ！';line2='2日連続で来た。';line3='（インキャラがたかぶってる）';
+  }else if(streak===3){
+    line1='チャチャ！！';line2='3日連続！！';line3='えらすぎる！！';
+  }else if(streak===5){
+    line1='ニヤニヤ……';line2='5日連続か。';line3='本物だね。';
+  }else if(streak===7){
+    line1='イイねー！！';line2='7日連続！！';line3='もう止まれない！！🌿';
+  }else if(streak===14){
+    line1='…ふさふさしてきた。';line2='14日連続。';line3='先生の分身に近づいてる。🥦';
+  }else if(streak===30){
+    line1='チャチャチャ！！';line2='30日連続！！クレイジーにすごい！！';line3='先生もニヤニヤしてる。';
+  }else{
+    line1='ニヤニヤ……';line2=streak+'日連続。';line3='ありがとう。';
+  }
+  return `<span class="ic-days">🥦</span><span class="ic-line1">${line1}</span><span class="ic-line2">${line2}</span>${line3?`<span class="ic-line3">${line3}</span>`:''}`;
+}
+function checkItachachaStreakPopup(){
+  if(!_isItachachaMode())return;
+  const h=new Date().getHours();
+  if(h<5||h>=7)return;
+  if(_isItachachaStreakShown())return;
+  // 今日の5〜7時に初めてチェックした瞬間か確認
+  const cnt=_countMorningLiveBlocks();
+  if(cnt!==1)return; // 最初の1枠のみ発動
+  const streak=currentStreak();
+  if(streak<2)return;
+  _markItachachaStreakShown();
+  const html=_itachachaStreakPopupHtml(streak);
+  setTimeout(()=>_showPopup('itachacha-popup',html,3200,null,null),700);
+}
+
+// ③ 🍞イタパントースト（21:40〜22:00チェック時）
+const _ITAPAN_MSGS={
+  40:['🍞 イタパン開始！5分全力で暗記しよう！','🍞 さあ、何を覚える？5分で1個。始めよう。','🍞 イタパンの時間。全力で。'],
+  50:['🍞 もう1個いける。全力で。','🍞 5分で次の1個。止まらないで。','🍞 覚えたら「覚えた！」って言おう。'],
+  60:['🍞 今日のイタパン完走！覚えた宣言、した？','🍞 イタパン完走！えらい！！大人の夜の使い方、わかってる！！','🍞 ニヤニヤ……今夜も覚えた。悪くないね。'],
+};
+function _itapanLsKey(){return 'itapan-toast-'+toStudyDateStr(new Date());}
+function checkItapanToast(m){
+  if(!_isItachachaMode())return;
+  const msgs=_ITAPAN_MSGS[m];
+  if(!msgs)return;
+  const key=_itapanLsKey()+'-m'+m;
+  if(localStorage.getItem(key)==='1')return;
+  localStorage.setItem(key,'1');
+  const msg=msgs[Math.floor(Math.random()*msgs.length)];
+  setTimeout(()=>showEasterToast(msg),500);
 }
 
 function checkChachaToast(){
@@ -2702,7 +2845,12 @@ function buildGrid(){
     if(seps.has(h))tr.classList.add('sep');
     const hd=document.createElement('td');hd.className='hour-cell';hd.textContent=h===0?'24':String(h).padStart(2,'0');tr.appendChild(hd);
     const btnTd=document.createElement('td');btnTd.className='hour-btn-cell';
-    const hBtn=document.createElement('button');hBtn.className='hour-btn';hBtn.dataset.h=h;hBtn.textContent=CUST.checkEmoji||'🌸';
+    const hBtn=document.createElement('button');hBtn.className='hour-btn';hBtn.dataset.h=h;
+    // itachacha：一括ボタンのアイコン切り替え
+    const _liveEmoji=_itachachaLiveEmoji(h);
+    hBtn.textContent=_liveEmoji||(CUST.checkEmoji||'🌸');
+    if(_liveEmoji==='🥦')hBtn.classList.add('itachacha-live-btn');
+    else if(_liveEmoji==='🍞')hBtn.classList.add('itachacha-bread-btn');
     hBtn.title=String(h===0?24:h)+'時台をまとめて入力';
     hBtn.addEventListener('click',()=>onHourBtn(h));
     btnTd.appendChild(hBtn);tr.appendChild(btnTd);
@@ -2710,6 +2858,9 @@ function buildGrid(){
       const td=document.createElement('td');td.className='block-cell';
       const div=document.createElement('div');
       let cls='block';if(i===0)cls+=' first';if(i===MINS.length-1)cls+=' last';
+      // itachacha：ライブ配信時間帯クラス付与
+      const _bc=_itachachaBlockClass(h,m);
+      if(_bc)cls+=' '+_bc;
       div.className=cls;div.dataset.h=h;div.dataset.m=m;
       div.addEventListener('click',onBlock);
       td.appendChild(div);tr.appendChild(td);
@@ -2723,6 +2874,25 @@ function buildGrid(){
       tb.appendChild(guide);
     }
   });
+}
+
+// itachacha：ライブ配信時間帯判定ヘルパー
+function _isItachachaMode(){return CUST.storyId==='itachacha';}
+function _itachachaLiveEmoji(h){
+  if(!_isItachachaMode())return null;
+  // 朝5〜6時台（5:10〜7:00）
+  if(h===5||h===6)return'🥦';
+  // 夜21時台（21:40〜22:00）→ MINS=[10,20,30,40,50,60]なので21:40=m40, 21:50=m50, 21:60=m60
+  if(h===21)return'🍞';
+  return null;
+}
+function _itachachaBlockClass(h,m){
+  if(!_isItachachaMode())return null;
+  // 朝5:10〜7:00（h=5全枠、h=6全枠）
+  if(h===5||h===6)return'itachacha-live';
+  // 夜21:40〜22:00（h=21のm=40,50,60のみ）
+  if(h===21&&(m===40||m===50||m===60))return'itachacha-bread';
+  return null;
 }
 function onHourBtn(h){
   const allChecked=MINS.every(m=>isChecked(currentDate,h,m));
@@ -2762,6 +2932,12 @@ function onBlock(e){
   if(!wasChecked) checkMilestoneToast();
   // チャチャサプライズ（朝5〜7時・1日1回）
   if(!wasChecked) checkChachaToast();
+  // 🥦 itachacha：朝の30分サプライズ（3枠ごと）
+  if(!wasChecked) checkItachachaMorningSurprise();
+  // 🥦 itachacha：連続記録ポップアップ（5〜7時の最初のチェック）
+  if(!wasChecked) checkItachachaStreakPopup();
+  // 🍞 itachacha：イタパントースト（21:40〜22:00）
+  if(!wasChecked&&CUST.storyId==='itachacha'&&h===21){checkItapanToast(m);}
   // サウンド
   if(!wasChecked)playCheckSound();
   const hBtn=document.querySelector('.hour-btn[data-h="'+h+'"]');
@@ -3485,6 +3661,64 @@ const STORY_DEF=[
    levelIcons:{1:'📊',11:'📒',21:'💰',31:'📈',41:'🔍',51:'⚖️',61:'💴',71:'✅',81:'✍️',91:'🌟',100:'🏆'},
    badgePresets:{first:{icon:'📊',name:'会計の第一歩',desc:'はじめての学習記録'},streak3:{icon:'📒',name:'3日連続学習',desc:'3日連続で学習'},streak7:{icon:'💰',name:'7日連続学習',desc:'7日連続で学習'},streak30:{icon:'📈',name:'30日連続学習',desc:'30日連続で学習'},streak100:{icon:'🏆',name:'100日連続学習',desc:'100日連続で学習'},morning:{icon:'☀️',name:'朝の財務会計',desc:'朝4〜8時の学習を10回以上'},night:{icon:'🌙',name:'深夜の監査論',desc:'深夜0〜3時の学習を10回以上'},bloom5:{icon:'🌸',name:'目標5回達成',desc:'日別目標を5回達成'},bloom20:{icon:'💮',name:'目標20回達成',desc:'日別目標を20回達成'},weekly_goal:{icon:'📊',name:'週間目標クリア',desc:'週間目標をはじめて達成'},monthly_goal:{icon:'📅',name:'月間目標クリア',desc:'月間目標をはじめて達成'},h50:{icon:'📊',name:'50時間突破',desc:'累計50時間を学習'},h100:{icon:'💪',name:'100時間突破',desc:'累計100時間を学習'},h500:{icon:'🏆',name:'会計士合格レベル',desc:'累計500時間を学習'}},
   },
+
+  {id:'itachacha',name:'なぞのイキモノ育成記',icon:'🥦',
+   tiers:[
+     {lvMin:1, char:'…',    title:'ひっそり視聴してる',              msg:'…（見てない。見てる。）'},
+     {lvMin:3, char:'..!',  title:'ライブ配信にかじりついた',         msg:'チャチャって、何？（気になって視聴してる）'},
+     {lvMin:6, char:'(^^)', title:'だんだん前向きになってきた',        msg:'楽しいかも。毎朝来るようになった。'},
+     {lvMin:9, char:'ニヤ🌿',title:'すべてが楽しい…何か生えてきた',  msg:'ニヤニヤ……何でも楽しいな。あれ、何か生えてきた？'},
+     {lvMin:10,char:'🥦',   title:'先生の分身になった。ふさふさだ。', msg:'ニヤニヤ、待て。'},
+   ],
+   startMsg:'…あ、ライブ配信始まった。（ニヤニヤ）今日もコツコツやろ。楽しいから。あと何か生えてきた気がする。🌿',
+   comboMsg:'ニヤニヤ……やるじゃないですか。（インキャラっぽく言う）｜チャチャチャ！！連打！！クレイジーにえらい！！｜…っ！！（たかぶってる）止まれない！！🌿｜イイねー！！大人の楽しみかた、わかってる！！｜ニヤニヤ……悪くないね。（ふさふさしてきた気がする）🥦',
+   quotes:[
+     '…べつに、視聴してないし。（してる）',
+     'チャチャ！！って、最初は何のことかわからなかった。でも今はわかる。',
+     'ニヤニヤ……何でも楽しめるって、最強だと思う。',
+     'インキャラだった頃の自分に、イタチャチャハウスを教えてあげたい。',
+     'コメントするのこわかった。でも、したら、全部かわった。',
+     '今日もコツコツ。それだけで、もう十分クレイジーにえらい。',
+     '勉強って、一人じゃなくてよかったんだ。',
+     'ニヤニヤ……この気持ち、もっと早く知りたかった。',
+     '大人になっても、クレイジーに楽しんでいい。むしろ楽しまなきゃ。',
+     '先生がニヤニヤしてたのは、きっとずっと前からわかってたんだ。',
+     '何か生えてきた気がする。🌿 気のせいじゃないと思う。',
+     'ふさふさになってきた。🥦 これが…分身ということか。',
+   ],
+   levelNames:{1:'ひっそり視聴してる',11:'ライブ配信にかじりついた',21:'チャチャって言ってみた',31:'コメントしてみた（初めて）',41:'楽しいと思いはじめた',51:'ニヤニヤが止まらない',61:'何でも楽しくなってきた',71:'クレイジーに楽しんでる',81:'大人をめいっぱい楽しんでる',91:'何か生えてきた🌿',100:'ふさふさになった🥦'},
+   levelIcons:{1:'👤',11:'👀',21:'🙂',31:'😄',41:'🎉',51:'💬',61:'📺',71:'🏅',81:'🏠',91:'🌿',100:'🥦'},
+   badgePresets:{
+     first:       {icon:'…',   name:'初めて視聴した',       desc:'初めてのイタチャチャハウス体験'},
+     streak3:     {icon:'..!', name:'3日ライブ配信見た',     desc:'3日連続でコツコツ'},
+     streak7:     {icon:'(^^)',name:'7日前向き',              desc:'7日連続。楽しくなってきた'},
+     streak30:    {icon:'ニヤ',name:'30日ニヤニヤ',          desc:'30日連続。もう止まれない'},
+     streak100:   {icon:'🌿', name:'何か生えてきた',          desc:'100日連続。気のせいじゃないと思う'},
+     morning:     {icon:'🌅', name:'朝5時から視聴してる',     desc:'朝4〜8時、10回以上'},
+     night:       {icon:'🌙', name:'深夜のニヤニヤ',          desc:'深夜0〜3時、10回以上'},
+     bloom5:      {icon:'(^^)',name:'5回楽しかった',           desc:'日別目標5回達成'},
+     bloom20:     {icon:'🌿', name:'20回…何か生えてきた',     desc:'日別目標20回達成'},
+     weekly_goal: {icon:'📺', name:'週間ライブ配信完走',       desc:'週間目標をはじめて達成'},
+     monthly_goal:{icon:'🏠', name:'月間イタチャチャ完走',     desc:'月間目標をはじめて達成'},
+     h50:         {icon:'..!',name:'50時間視聴した',           desc:'累計50時間'},
+     h100:        {icon:'ニヤ',name:'100時間ニヤニヤ',         desc:'累計100時間'},
+     h500:        {icon:'🥦', name:'🥦の分身になった',         desc:'累計500時間。ニヤニヤ、待て。'},
+   },
+   quotes2:[
+     'ニヤニヤ……2周目か。本物だね。',
+     'チャチャ！！また来てくれた！！うれしい！！えらい！！',
+     '2周目のライブ配信は、見える景色が違う。コメント欄の深みがわかってくる。',
+     'また1からだけど、あのときより全部速い。体が覚えてる。',
+     'ニヤニヤ……続けるって、それだけで才能だよ。',
+   ],
+   quotes3:[
+     'ニヤニヤ……3周か。もうここの住人どころか、壁の一部だね。',
+     'チャチャチャ！！3周目！！つよすぎ！！やばすぎ！！先生泣いてる（ニヤニヤしながら）！！',
+     '3度積み上げた者に、ゴールなんてない。ただ、続く。',
+     'イタチャチャハウスの伝説は、今日も更新されている。',
+     'ニヤニヤ……悪くないね。うん。悪くない。ふさふさだ。🥦',
+   ],
+  },
 ];
 // ── 学習予測アドバイス文（テーマ別） ──
 const FORECAST_ADVICE={
@@ -3584,6 +3818,14 @@ const FORECAST_ADVICE={
     ok_main:()=>`🎉 このペースで目標時間をクリアできる！`,
     ok_sub:(over)=>`${over}の余裕。短答も論文もしっかり積み上がる！`,
   },
+  itachacha:{
+    close_main:(add)=>`チャチャ！！あと${add}でもくひょうたっせいだよ！！もうひとふんばり！！`,
+    close_sub:()=>`ニヤニヤ……もうちょっとだね。みてるよ。`,
+    ng_main:(add)=>`1日${add}のコツコツで、イタチャチャハウスがよりちかくなる！`,
+    ng_sub:()=>`チャチャ！！ペースあげよ！！いっしょにがんばろ！！`,
+    ok_main:()=>`🥦 このペースでもくひょうじかんをクリアできる！チャチャ！！`,
+    ok_sub:(over)=>`${over}のよゆう！！ニヤニヤ……まあ、わるくないね。`,
+  },
   default:{
     close_main:(add)=>`あと${add}で目標達成！もう少しだけペースを上げよう！`,
     close_sub:()=>`ゴールは目の前。小さな積み上げが大きな差を生む！`,
@@ -3657,6 +3899,12 @@ function applyAppIcon(iconId){
     const blob=new Blob([JSON.stringify(manifest)],{type:'application/manifest+json'});
     mEl.href=URL.createObjectURL(blob);
   }
+  // B案：ヘッダーにアイコンを表示
+  const hIcon=$('header-app-icon');
+  if(hIcon){
+    hIcon.innerHTML=def.svg.replace('viewBox','width="22" height="22" viewBox');
+    hIcon.style.display='block';
+  }
 }
 
 function applyCheckEmojiCSS(emoji){
@@ -3667,7 +3915,7 @@ function applyCheckEmojiCSS(emoji){
 }
 function applyAppName(name){
   const n=name||CUST_DEFAULTS.appName;
-  const el=document.querySelector('.header-title');if(el)el.textContent=n;
+  const el=$('header-title-text');if(el)el.textContent=n;
   document.title=n;
 }
 function applyTreeBg(show){
@@ -4037,6 +4285,74 @@ function _renderIconSelGrid(){
     });
     g.appendChild(wrap);
   });
+  // ダウンロードエリア（C案：PNG192・PNG512・SVG）
+  const dlArea=$('icon-dl-area');
+  if(!dlArea)return;
+  const curDef=APP_ICONS[cur];
+  if(!curDef){dlArea.innerHTML='';return;}
+  dlArea.innerHTML='';
+  const dlTitle=document.createElement('div');
+  dlTitle.style.cssText='font-size:.6rem;color:var(--text-muted);font-weight:700;margin-bottom:6px;';
+  dlTitle.textContent='📥 選択中のアイコンをダウンロード（'+curDef.label+'）';
+  dlArea.appendChild(dlTitle);
+  const btnWrap=document.createElement('div');
+  btnWrap.style.cssText='display:flex;gap:8px;flex-wrap:wrap;';
+  // SVGダウンロード
+  const svgBtn=_makeIconDlBtn('SVG','icon-kotsusaku.svg',function(){
+    const blob=new Blob([curDef.svg],{type:'image/svg+xml'});
+    return URL.createObjectURL(blob);
+  });
+  btnWrap.appendChild(svgBtn);
+  // PNG192ダウンロード
+  const png192Btn=_makeIconDlBtn('PNG 192px','icon-kotsusaku-192.png',null,curDef.svg,192);
+  btnWrap.appendChild(png192Btn);
+  // PNG512ダウンロード
+  const png512Btn=_makeIconDlBtn('PNG 512px','icon-kotsusaku-512.png',null,curDef.svg,512);
+  btnWrap.appendChild(png512Btn);
+  dlArea.appendChild(btnWrap);
+  const hint=document.createElement('div');
+  hint.style.cssText='font-size:.55rem;color:var(--text-muted);margin-top:6px;line-height:1.6;';
+  hint.innerHTML='💡 iPhone：ショートカットアプリ→新規→アプリを開く→ホーム画面へ追加→アイコンを変更<br>💡 Android：ホーム画面長押し→ウィジェット or ランチャーでアイコン変更';
+  dlArea.appendChild(hint);
+}
+
+function _makeIconDlBtn(label,filename,blobFn,svgStr,pxSize){
+  const btn=document.createElement('button');
+  btn.textContent='📥 '+label;
+  btn.style.cssText='background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:.62rem;font-weight:700;padding:5px 10px;border-radius:7px;cursor:pointer;transition:background .15s;';
+  btn.addEventListener('click',function(){
+    if(blobFn){
+      // SVG
+      const url=blobFn();
+      _triggerDl(url,filename);
+    } else {
+      // PNG（Canvasで変換）
+      const canvas=document.createElement('canvas');
+      canvas.width=pxSize;canvas.height=pxSize;
+      const ctx=canvas.getContext('2d');
+      const img=new Image();
+      const svgBlob=new Blob([svgStr],{type:'image/svg+xml'});
+      const url=URL.createObjectURL(svgBlob);
+      img.onload=function(){
+        ctx.drawImage(img,0,0,pxSize,pxSize);
+        URL.revokeObjectURL(url);
+        canvas.toBlob(function(pngBlob){
+          const pngUrl=URL.createObjectURL(pngBlob);
+          _triggerDl(pngUrl,filename);
+        },'image/png');
+      };
+      img.src=url;
+    }
+  });
+  return btn;
+}
+
+function _triggerDl(url,filename){
+  const a=document.createElement('a');
+  a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
 }
 function _renderCheckGrid(){
   const g=$('cust-check-grid');if(!g)return;g.innerHTML='';
