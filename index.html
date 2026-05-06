@@ -1456,7 +1456,10 @@ function initSyncUI() {
       localStorage.setItem('kotsusaku-sync-code', formatted);
       if ($('sync-code-display')) $('sync-code-display').textContent = formatted;
       showSyncStatus('✅ 同期完了！', 'ok');
+      lastBloomPct=-1;lastWeeklyPct=-1;lastMonthlyPct=-1;lastLv=0;
       if (currentView === 'daily') { refreshGrid(); updateDateLabel(); updateStats(); applyLuckyBlock(); }
+      else { updateStats(); }
+      renderForecast();
     } else {
       showSyncStatus('⚠️ そのコードのデータが見つかりません', 'err');
     }
@@ -3189,8 +3192,9 @@ $('import-file-input').addEventListener('change',function(){
       if(backup.badges)LS.set('study-badges',backup.badges);
       if(backup.milestones)LS.set('study-milestones',backup.milestones);
       if(backup.customizations)LS.set('study-cust',backup.customizations);
-      load();loadNotes();loadGoal();loadCountdown();loadBadges();loadMilestones();
+      load();loadNotes();loadGoal();loadCountdown();loadBadges();loadMilestones();loadCust();
       applyTheme(LS.get('study-theme','light'));
+      applyAllCust();
       lastBloomPct=-1;lastWeeklyPct=-1;lastMonthlyPct=-1;lastLv=0;
       switchView('daily');if(window.refreshCustomGoalBtns)window.refreshCustomGoalBtns();
       showToast('✅ データを復元しました！');
@@ -4445,6 +4449,11 @@ function toggleChallengePopup(){
 function applyAllCust(){
   if(_loopTimer){clearInterval(_loopTimer);_loopTimer=null;}
   applyAppName(CUST.appName);
+  // itachachaストーリー選択中は🥦に強制上書き
+  if(CUST.storyId==='itachacha'){
+    CUST.checkEmoji='🥦';
+    CUST.comboEmoji='🥦';
+  }
   applyCheckEmojiCSS(CUST.checkEmoji||'🌸');
   applyTreeBg(CUST.showTreeBg);
   renderQuote();
@@ -4456,19 +4465,37 @@ function applyAllCust(){
   applyAppIcon(CUST.appIcon||'A');
 }
 
-function openCustPanel(){_syncCustPanel();$('cust-overlay').classList.add('show');}
+let _custSnapshot=null;
+function openCustPanel(){
+  // 開くときにCUSTのスナップショットを保存
+  _custSnapshot=JSON.stringify(CUST);
+  _syncCustPanel();
+  $('cust-overlay').classList.add('show');
+}
 function saveCustAndClose(){
-  // コンボ絵文字はチェック絵文字と共通化
+  // 保存ボタン：確定して保存
   const checkInp=$('cust-check-inp');
   const comboInp=$('cust-combo-inp');
   if(checkInp&&comboInp) comboInp.value=checkInp.value;
   if(CUST.checkEmoji) CUST.comboEmoji=CUST.checkEmoji;
   saveCust();
   applyAllCust();
-  closeCustPanel();
+  renderLevelBar();
+  renderAllTimeCard();
+  renderForecast();
+  _custSnapshot=null;
+  $('cust-overlay').classList.remove('show');
   showToast('✅ 設定を保存しました');
 }
-function closeCustPanel(){$('cust-overlay').classList.remove('show');}
+function closeCustPanel(){
+  // ✕ボタン or 外側タップ：スナップショットに戻してキャンセル
+  if(_custSnapshot){
+    CUST=Object.assign({},JSON.parse(_custSnapshot));
+    applyAllCust();
+    _custSnapshot=null;
+  }
+  $('cust-overlay').classList.remove('show');
+}
 
 function _renderLevelList(){
   const list=$('cust-level-list');if(!list)return;list.innerHTML='';
@@ -4648,8 +4675,11 @@ function saveStoryQ(idx,val){
 }
 function _syncCustPanel(){
   const ne=$('cust-app-name');if(ne)ne.value=CUST.appName!==CUST_DEFAULTS.appName?CUST.appName:'';
-  const ce=$('cust-check-inp');if(ce)ce.value=CUST.checkEmoji||'🌸';
-  const co=$('cust-combo-inp');if(co)co.value=CUST.comboEmoji||'✨';
+  const isItachacha=CUST.storyId==='itachacha';
+  const ce=$('cust-check-inp');
+  if(ce){ce.value=isItachacha?'🥦':(CUST.checkEmoji||'🌸');ce.disabled=isItachacha;ce.style.opacity=isItachacha?'0.4':'';ce.title=isItachacha?'itachachaストーリー中は🥦固定':'';}
+  const co=$('cust-combo-inp');
+  if(co){co.value=isItachacha?'🥦':(CUST.comboEmoji||'✨');co.disabled=isItachacha;co.style.opacity=isItachacha?'0.4':'';co.title=isItachacha?'itachachaストーリー中は🥦固定':'';}
   const tt=$('cust-tree-tog');if(tt)tt.checked=CUST.showTreeBg!==false;
   const qo=$('cust-qonly');if(qo)qo.checked=!!CUST.useCustomQuotesOnly;
   _renderCheckGrid();_renderComboGrid();_renderQuotesList();_renderLevelList();_renderBadgeEditList();
@@ -4758,14 +4788,18 @@ function _renderCheckGrid(){
   CHECK_EMOJI_LIST.forEach(e=>{
     const b=document.createElement('button');b.className='cust-e-btn'+(CUST.checkEmoji===e?' active':'');
     b.textContent=e;b.title=e;
-    b.addEventListener('click',()=>{
-      CUST.checkEmoji=e;saveCust();applyCheckEmojiCSS(e);
-      const inp=$('cust-check-inp');if(inp)inp.value=e;
-      document.querySelectorAll('.hour-btn').forEach(hb=>hb.textContent=e);
-      const sh=$('sw-hint');if(sh&&!sh.textContent.includes('中'))sh.textContent='10分ごとに '+e;
-      const nl=document.querySelector('.sw-next-lbl');if(nl)nl.textContent=e+'まであと';
-      _renderCheckGrid();
-    });
+    if(CUST.storyId==='itachacha'){
+      b.disabled=true;b.style.opacity='0.3';b.style.cursor='not-allowed';b.title='itachachaストーリー中は🥦固定';
+    }else{
+      b.addEventListener('click',()=>{
+        CUST.checkEmoji=e;saveCust();applyCheckEmojiCSS(e);
+        const inp=$('cust-check-inp');if(inp)inp.value=e;
+        document.querySelectorAll('.hour-btn').forEach(hb=>hb.textContent=e);
+        const sh=$('sw-hint');if(sh&&!sh.textContent.includes('中'))sh.textContent='10分ごとに '+e;
+        const nl=document.querySelector('.sw-next-lbl');if(nl)nl.textContent=e+'まであと';
+        _renderCheckGrid();
+      });
+    }
     g.appendChild(b);
   });
 }
@@ -4774,7 +4808,11 @@ function _renderComboGrid(){
   COMBO_EMOJI_LIST.forEach(e=>{
     const b=document.createElement('button');b.className='cust-e-btn'+(CUST.comboEmoji===e?' active':'');
     b.textContent=e;b.title=e;
-    b.addEventListener('click',()=>{CUST.comboEmoji=e;saveCust();const inp=$('cust-combo-inp');if(inp)inp.value=e;_renderComboGrid();});
+    if(CUST.storyId==='itachacha'){
+      b.disabled=true;b.style.opacity='0.3';b.style.cursor='not-allowed';b.title='itachachaストーリー中は🥦固定';
+    }else{
+      b.addEventListener('click',()=>{CUST.comboEmoji=e;saveCust();const inp=$('cust-combo-inp');if(inp)inp.value=e;_renderComboGrid();});
+    }
     g.appendChild(b);
   });
 }
@@ -4799,6 +4837,7 @@ function _renderQuotesList(){
   // チェック絵文字テキスト入力
   const chkInp=$('cust-check-inp');
   if(chkInp)chkInp.addEventListener('input',function(){
+    if(CUST.storyId==='itachacha'){this.value='🥦';return;}
     const e=[...this.value.trim()].slice(0,2).join('')||'🌸';
     CUST.checkEmoji=e;saveCust();applyCheckEmojiCSS(e);
     document.querySelectorAll('.hour-btn').forEach(hb=>hb.textContent=e);
@@ -4871,7 +4910,7 @@ loadCust();load();loadNotes();loadGoal();loadBadges();loadMilestones();loadCount
 // クラウドから自動同期（初回起動時）
 (async () => {
   const ok = await loadFromCloud(getSyncCode());
-  if (ok && currentView === 'daily') { refreshGrid(); updateDateLabel(); updateStats(); }
+  if (ok && currentView === 'daily') { refreshGrid(); updateDateLabel(); updateStats(); renderForecast(); }
 })();
 initSyncUI();
 function _syncHeaderHeight(){
@@ -5020,7 +5059,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // このファイルが持っているバージョン番号（sw.jsと合わせる）
-  var CURRENT_VERSION = 'kotsusaku-v51';
+  var CURRENT_VERSION = 'kotsusaku-v54';
 
   // --- バナー操作ユーティリティ ---
   function showUpdateBanner(latestLabel) {
