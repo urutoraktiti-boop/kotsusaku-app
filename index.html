@@ -67,7 +67,10 @@
     .story-main-char{font-size:2rem;flex-shrink:0;line-height:1;}
     .story-main-body{flex:1;min-width:0;}
     .story-main-title{font-size:.82rem;font-weight:800;color:var(--text);margin:0;}
-    .story-main-msg{font-size:.65rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .story-main-msg{font-size:.65rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;position:relative;}
+    .story-main-msg-inner{display:inline-block;padding-right:24px;}
+    .story-main-msg-inner.scrolling{animation:storyMsgScroll var(--scroll-dur,12s) linear infinite;}
+    @keyframes storyMsgScroll{0%{transform:translateX(0);}100%{transform:translateX(var(--scroll-dist,-100%));}}
     .story-lv-chip{background:rgba(0,120,255,.12);color:var(--accent);font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap;flex-shrink:0;}
     .story-divider{height:1px;background:var(--border);margin:10px 0 8px;}
     .story-bar-track{background:var(--surface2);border-radius:99px;height:5px;overflow:hidden;}
@@ -2374,6 +2377,16 @@ function applyLuckyBlock(){
 }
 let _swIsRunning=false;
 let _nowProgressTimer=null;
+
+// タイマー動作中チェック付きリロード（更新ボタン・保存して閉じるで共用）
+function _reloadWithCheck(){
+  if(_swIsRunning){
+    if(!window.confirm('⏱ タイマーが動作中です。\nリロードするとタイマーがリセットされますが、よろしいですか？')){
+      return;
+    }
+  }
+  window.location.reload(true);
+}
 function updateNowBlock(){
   const now=new Date();
   const todayStr=toStudyDateStr(now);
@@ -4284,7 +4297,9 @@ function openIconPicker(){
     lbl.textContent=def.label||key;
     wrap.appendChild(svgEl);wrap.appendChild(lbl);
     wrap.onclick=function(){
-      CUST.appIcon=key;saveCust();applyAppIcon(key);
+      CUST.appIcon=key;saveCust();
+      if(typeof saveToCloud==='function')saveToCloud();
+      applyAppIcon(key);
       ov.remove();
       showToast('✅ アイコンを変更しました');
     };
@@ -4297,21 +4312,37 @@ function openIconPicker(){
   dlTitle.style.cssText='font-size:.6rem;color:var(--text-muted);font-weight:700;margin-bottom:6px;';
   const curDef=APP_ICONS[CUST.appIcon||'A'];
   dlTitle.textContent='📥 選択中のアイコンをダウンロード（'+(curDef?curDef.label:'')+'）';
-  dlWrap.appendChild(dlTitle);
+  // ── タイトル：選択中アイコンのプレビュー＋名前を明示 ──
+  if(curDef){
+    const dlHeader=document.createElement('div');
+    dlHeader.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:8px 10px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);';
+    const dlPreview=document.createElement('div');
+    dlPreview.style.cssText='width:32px;height:32px;border-radius:8px;overflow:hidden;flex-shrink:0;';
+    dlPreview.innerHTML=curDef.svg.replace('viewBox','width="32" height="32" viewBox');
+    const dlInfo=document.createElement('div');
+    const dlName=document.createElement('div');
+    dlName.style.cssText='font-size:.72rem;font-weight:800;color:var(--text);';
+    dlName.textContent='📥 「'+curDef.label+'」をダウンロード';
+    const dlSub=document.createElement('div');
+    dlSub.style.cssText='font-size:.56rem;color:var(--text-muted);margin-top:2px;';
+    dlSub.textContent='SVG・PNG 192px・PNG 512px の3形式';
+    dlInfo.appendChild(dlName);
+    dlInfo.appendChild(dlSub);
+    dlHeader.appendChild(dlPreview);
+    dlHeader.appendChild(dlInfo);
+    dlWrap.appendChild(dlHeader);
+  }
   const dlBtnRow=document.createElement('div');
   dlBtnRow.style.cssText='display:flex;gap:8px;flex-wrap:wrap;';
   if(curDef){
-    // SVG
-    const svgBtn=_makeIconDlBtn('SVG','icon-kotsusaku.svg',function(){
+    const svgBtn=_makeIconDlBtn('📥 SVG','icon-kotsusaku.svg',function(){
       const blob=new Blob([curDef.svg],{type:'image/svg+xml'});
       return URL.createObjectURL(blob);
     });
     dlBtnRow.appendChild(svgBtn);
-    // PNG 192px
-    const png192Btn=_makeIconDlBtn('PNG 192px','icon-kotsusaku-192.png',null,curDef.svg,192);
+    const png192Btn=_makeIconDlBtn('📥 PNG 192px','icon-kotsusaku-192.png',null,curDef.svg,192);
     dlBtnRow.appendChild(png192Btn);
-    // PNG 512px
-    const png512Btn=_makeIconDlBtn('PNG 512px','icon-kotsusaku-512.png',null,curDef.svg,512);
+    const png512Btn=_makeIconDlBtn('📥 PNG 512px','icon-kotsusaku-512.png',null,curDef.svg,512);
     dlBtnRow.appendChild(png512Btn);
   }
   dlWrap.appendChild(dlBtnRow);
@@ -4365,7 +4396,7 @@ function updateStoryMainCard(){
   if(!s){
     charEl.textContent='📖';
     titleEl.textContent='ストーリーなし';
-    msgEl.textContent='設定でストーリーを選択できます';
+    msgEl.innerHTML='<span class="story-main-msg-inner">設定でストーリーを選択できます</span>';
     if(progArea)progArea.style.display='none';
     if(lvChip)lvChip.style.display='none';
     if(loopBadge)loopBadge.style.display='none';
@@ -4383,7 +4414,26 @@ function updateStoryMainCard(){
   // ── 上部：キャラ・タイトル・メッセージ
   charEl.textContent=tier.char||s.icon||'📖';
   titleEl.textContent=tier.title||s.name;
-  msgEl.textContent=tierMsg;
+  // ── メッセージのスクロール表示 ──
+  // inner span にテキストを入れ、はみ出す場合のみスクロールアニメを適用
+  msgEl.innerHTML='';
+  const msgInner=document.createElement('span');
+  msgInner.className='story-main-msg-inner';
+  msgInner.textContent=tierMsg;
+  msgEl.appendChild(msgInner);
+  // 一度レイアウトさせてから幅を比較
+  requestAnimationFrame(function(){
+    const outerW=msgEl.offsetWidth;
+    const innerW=msgInner.scrollWidth;
+    if(innerW>outerW+4){
+      // テキストが枠より長い場合のみスクロール
+      const dist=-(innerW+24);
+      const dur=Math.max(8,Math.round(innerW/40))+'s';
+      msgInner.style.setProperty('--scroll-dist',dist+'px');
+      msgInner.style.setProperty('--scroll-dur',dur);
+      msgInner.classList.add('scrolling');
+    }
+  });
   // ── 周回バッジ・カウンター
   if(loopBadge){
     if(loopN>=2){
@@ -4510,13 +4560,15 @@ function saveCustAndClose(){
   saveCust();
   // クラウドにも同期（リロード後に設定が戻らないよう）
   if(typeof saveToCloud==='function') saveToCloud();
-  applyAllCust();
-  renderLevelBar();
-  renderAllTimeCard();
-  renderForecast();
   _custSnapshot=null;
   $('cust-overlay').classList.remove('show');
-  showToast('✅ 設定を保存しました');
+  // 保存完了後にタイマーチェック付きリロード
+  // （リロード後に最新設定が確実に反映される）
+  if(typeof _reloadWithCheck==='function'){
+    _reloadWithCheck();
+  } else {
+    window.location.reload(true);
+  }
 }
 function closeCustPanel(){
   // ✕ボタン or 外側タップ：スナップショットに戻してキャンセル
@@ -4741,7 +4793,9 @@ function _renderIconSelGrid(){
     wrap.appendChild(svgWrap);
     wrap.appendChild(lbl);
     wrap.addEventListener('click',function(){
-      CUST.appIcon=key;saveCust();applyAppIcon(key);_renderIconSelGrid();
+      CUST.appIcon=key;saveCust();
+      if(typeof saveToCloud==='function')saveToCloud();
+      applyAppIcon(key);_renderIconSelGrid();
     });
     g.appendChild(wrap);
   });
@@ -4751,27 +4805,43 @@ function _renderIconSelGrid(){
   const curDef=APP_ICONS[cur];
   if(!curDef){dlArea.innerHTML='';return;}
   dlArea.innerHTML='';
-  const dlTitle=document.createElement('div');
-  dlTitle.style.cssText='font-size:.6rem;color:var(--text-muted);font-weight:700;margin-bottom:6px;';
-  dlTitle.textContent='📥 選択中のアイコンをダウンロード（'+curDef.label+'）';
-  dlArea.appendChild(dlTitle);
+
+  // ── タイトル行：選択中アイコンのプレビュー＋名前を大きく表示 ──
+  const dlHeader=document.createElement('div');
+  dlHeader.style.cssText='display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:8px 10px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);';
+  const dlPreview=document.createElement('div');
+  dlPreview.style.cssText='width:36px;height:36px;border-radius:8px;overflow:hidden;flex-shrink:0;';
+  dlPreview.innerHTML=curDef.svg.replace('viewBox','width="36" height="36" viewBox');
+  const dlInfo=document.createElement('div');
+  const dlName=document.createElement('div');
+  dlName.style.cssText='font-size:.75rem;font-weight:800;color:var(--text);';
+  dlName.textContent='📥 「'+curDef.label+'」をダウンロード';
+  const dlSub=document.createElement('div');
+  dlSub.style.cssText='font-size:.58rem;color:var(--text-muted);margin-top:2px;';
+  dlSub.textContent='SVG・PNG 192px・PNG 512px の3形式';
+  dlInfo.appendChild(dlName);
+  dlInfo.appendChild(dlSub);
+  dlHeader.appendChild(dlPreview);
+  dlHeader.appendChild(dlInfo);
+  dlArea.appendChild(dlHeader);
+
   const btnWrap=document.createElement('div');
   btnWrap.style.cssText='display:flex;gap:8px;flex-wrap:wrap;';
   // SVGダウンロード
-  const svgBtn=_makeIconDlBtn('SVG','icon-kotsusaku.svg',function(){
+  const svgBtn=_makeIconDlBtn('📥 SVG','icon-kotsusaku.svg',function(){
     const blob=new Blob([curDef.svg],{type:'image/svg+xml'});
     return URL.createObjectURL(blob);
   });
   btnWrap.appendChild(svgBtn);
   // PNG192ダウンロード
-  const png192Btn=_makeIconDlBtn('PNG 192px','icon-kotsusaku-192.png',null,curDef.svg,192);
+  const png192Btn=_makeIconDlBtn('📥 PNG 192px','icon-kotsusaku-192.png',null,curDef.svg,192);
   btnWrap.appendChild(png192Btn);
   // PNG512ダウンロード
-  const png512Btn=_makeIconDlBtn('PNG 512px','icon-kotsusaku-512.png',null,curDef.svg,512);
+  const png512Btn=_makeIconDlBtn('📥 PNG 512px','icon-kotsusaku-512.png',null,curDef.svg,512);
   btnWrap.appendChild(png512Btn);
   dlArea.appendChild(btnWrap);
   const hint=document.createElement('div');
-  hint.style.cssText='font-size:.55rem;color:var(--text-muted);margin-top:6px;line-height:1.6;';
+  hint.style.cssText='font-size:.55rem;color:var(--text-muted);margin-top:8px;line-height:1.6;';
   hint.innerHTML='💡 iPhone：ショートカットアプリ→新規→アプリを開く→ホーム画面へ追加→アイコンを変更<br>💡 Android：ホーム画面長押し→ウィジェット or ランチャーでアイコン変更';
   dlArea.appendChild(hint);
 }
@@ -5167,15 +5237,21 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
       .then(function(data){
         var latest = data && data.version;
         if (latest && latest !== CURRENT_VERSION) {
+          // 新バージョンあり → 更新バナーを表示
+          if (btn){ btn.textContent='更新'; btn.disabled=false; }
           showUpdateBanner(latest, null);
         } else {
-          if (typeof showToast==='function') showToast('✅ 最新版です（' + CURRENT_VERSION + '）');
+          // 最新版 → タイマーチェック付きでリロード
+          if (btn){ btn.textContent='更新'; btn.disabled=false; }
+          if (typeof _reloadWithCheck==='function'){
+            _reloadWithCheck();
+          } else {
+            window.location.reload(true);
+          }
         }
       })
       .catch(function(){
         if (typeof showToast==='function') showToast('⚠️ ネットワークに接続して確認してください');
-      })
-      .finally(function(){
         if (btn){ btn.textContent='更新'; btn.disabled=false; }
       });
   };
