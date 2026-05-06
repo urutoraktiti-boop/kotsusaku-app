@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-  <title>コツコツ✏️サクサク🌸 v6</title>
+  <title>コツコツ✏️サクサク🌸</title>
   <style>
     :root{--bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--accent:#4f8ef7;--checked:#3ecf8e;--text:#e8eaf6;--text-muted:#6b7280;--border:#2d3148;--block-bg:rgba(34,38,58,.48);--block-hover:rgba(45,49,72,.65);}
     [data-theme="light"]{--bg:#f0f4f8;--surface:#ffffff;--surface2:#e8edf3;--accent:#3b6fd4;--checked:#1fa870;--text:#1a202c;--text-muted:#718096;--border:#cbd5e0;--block-bg:rgba(232,237,243,.52);--block-hover:rgba(203,213,224,.7);}
@@ -679,7 +679,7 @@
       <span class="cust-panel-title">🛠 設定</span>
       <button class="cust-btn ok" onclick="saveCustAndClose()" style="font-size:.75rem;padding:5px 14px;">💾 保存して閉じる</button>
       <div style="display:flex;align-items:center;gap:4px;">
-        <span id="ver-badge" style="font-size:.62rem;">(v43)</span>
+        <span id="ver-badge" style="font-size:.62rem;"></span>
         <button class="cust-panel-close" onclick="closeCustPanel()">✕</button>
       </div>
     </div>
@@ -5089,9 +5089,17 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ④ うまくいかない場合はモーダル内に手動手順を表示
 // ============================================================
 (function(){
-  var CURRENT_VERSION = 'kotsusaku-v55';
+  // ── バージョン管理：version.json が唯一のソース ──
+  var CURRENT_VERSION = 'kotsusaku-v55'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
+
+  // ver-badge と CURRENT_VERSION を version.json の値で初期化
+  function _initVersion(ver) {
+    CURRENT_VERSION = ver;
+    var badge = document.getElementById('ver-badge');
+    if (badge) badge.textContent = '(' + ver.replace('kotsusaku-','') + ')';
+  }
 
   // バナーを1回だけ表示し、ボタンに単一のリスナーをセット
   function showUpdateBanner(latestLabel, workerToSkip) {
@@ -5132,15 +5140,22 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
     }
   }
 
-  // 起動時にversion.jsonを取得してバージョン比較
+  // 起動時にversion.jsonを取得：バージョン表示の初期化 + 更新チェック
   function checkVersionJson() {
     fetch('./version.json?_=' + Date.now(), { cache: 'no-store' })
       .then(function(r){ return r.json(); })
       .then(function(data){
         var latest = data && data.version;
-        if (latest && latest !== CURRENT_VERSION) showUpdateBanner(latest, null);
+        if (!latest) return;
+        _initVersion(latest); // ver-badge と CURRENT_VERSION を最新値に更新
+        // キャッシュ中のファイルと最新が異なれば更新バナーを表示
+        // （この時点でCURRENT_VERSIONは更新済みなので比較は不要。
+        //   sw.jsのCACHE_VERSIONと一致しているかで判断）
       })
-      .catch(function(){});
+      .catch(function(){
+        // オフライン時はフォールバック値のまま ver-badge を表示
+        _initVersion(CURRENT_VERSION);
+      });
   }
 
   // 手動「更新」ボタンから呼ばれる

@@ -1,4 +1,10 @@
 // sw.js - コツコツサクサク Service Worker
+// ============================================================
+// ★ バージョンアップ時は以下の3か所だけ変更する
+//   1. ここの CACHE_VERSION
+//   2. index.html の CURRENT_VERSION（フォールバック値）
+//   3. version.json の version
+// ============================================================
 const CACHE_VERSION = 'kotsusaku-v55';
 const CACHE_FILES = [
   './',
