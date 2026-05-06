@@ -1409,6 +1409,25 @@ function saveToCloud() {
     } catch(e) { console.warn('クラウド保存エラー:', e); }
   }, 3000);
 }
+// 設定保存など即時同期が必要な場面で使う（遅延なし版）
+async function saveToCloudNow() {
+  if (!db) return;
+  if (_cloudSaveTimer) { clearTimeout(_cloudSaveTimer); _cloudSaveTimer = null; }
+  try {
+    await db.collection('users').doc(getSyncCode()).set({
+      studyData: JSON.stringify(data),
+      studyNotes: JSON.stringify(notes),
+      studyCust: LS.get('study-cust',''),
+      studyBadges: LS.get('study-badges',''),
+      studyMilestones: LS.get('study-milestones',''),
+      studyGoal: LS.get('study-goal',''),
+      studyWeekGoal: LS.get('study-week-goal',''),
+      studyMonthGoal: LS.get('study-month-goal',''),
+      examDate: LS.get('exam-date',''),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch(e) { console.warn('クラウド即時保存エラー:', e); }
+}
 async function loadFromCloud(code) {
   if (!db) return false; // Firebase未初期化（オフライン時）はスキップ
   try {
@@ -4227,6 +4246,7 @@ function saveCust(){LS.set('study-cust',JSON.stringify(CUST));}
       if(done)return;done=true;
       const v=parseInt(inp.value);
       CUST.targetTotalH=(v>0&&v<=9999)?v:0;
+      saveCust(); // 確実にlocalStorageに保存（blur→saveの順序問題を防ぐ）
       renderLevelBar();renderForecast();renderAllTimeCard();
       inp.replaceWith(btn);refreshTargetBtn();
     }
@@ -4234,7 +4254,7 @@ function saveCust(){LS.set('study-cust',JSON.stringify(CUST));}
       if(e.key==='Enter'){e.preventDefault();commit();}
       if(e.key==='Escape'){done=true;inp.replaceWith(btn);refreshTargetBtn();}
     });
-    inp.addEventListener('blur',function(){setTimeout(commit,120);});
+    inp.addEventListener('blur',function(){setTimeout(commit,150);});
   }
   document.addEventListener('click',function(e){
     if(e.target&&e.target.id==='cust-target-h-btn')openTargetInput();
@@ -4569,19 +4589,21 @@ function openCustPanel(){
   _syncCustPanel();
   $('cust-overlay').classList.add('show');
 }
-function saveCustAndClose(){
+async function saveCustAndClose(){
   // 保存ボタン：確定して保存
   const checkInp=$('cust-check-inp');
   const comboInp=$('cust-combo-inp');
   if(checkInp&&comboInp) comboInp.value=checkInp.value;
   if(CUST.checkEmoji) CUST.comboEmoji=CUST.checkEmoji;
-  saveCust();
-  // クラウドにも同期（リロード後に設定が戻らないよう）
-  if(typeof saveToCloud==='function') saveToCloud();
+  saveCust(); // 現在のCUST（targetTotalH含む）をlocalStorageに保存
   _custSnapshot=null;
   $('cust-overlay').classList.remove('show');
-  // 保存完了後にタイマーチェック付きリロード
-  // （リロード後に最新設定が確実に反映される）
+  // Firebaseへの書き込み完了を待ってからリロード
+  // （saveToCloudの3秒遅延を使わず即時送信）
+  if(typeof saveToCloudNow==='function'){
+    await saveToCloudNow();
+  }
+  // タイマーチェック付きリロード
   if(typeof _reloadWithCheck==='function'){
     _reloadWithCheck();
   } else {
