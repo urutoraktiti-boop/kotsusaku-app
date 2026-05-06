@@ -4211,7 +4211,7 @@ function saveCust(){LS.set('study-cust',JSON.stringify(CUST));}
       if(done)return;done=true;
       const v=parseInt(inp.value);
       CUST.targetTotalH=(v>0&&v<=9999)?v:0;
-      saveCust();renderLevelBar();renderForecast();renderAllTimeCard();
+      renderLevelBar();renderForecast();renderAllTimeCard();
       inp.replaceWith(btn);refreshTargetBtn();
     }
     inp.addEventListener('keydown',function(e){
@@ -4508,6 +4508,8 @@ function saveCustAndClose(){
   if(checkInp&&comboInp) comboInp.value=checkInp.value;
   if(CUST.checkEmoji) CUST.comboEmoji=CUST.checkEmoji;
   saveCust();
+  // クラウドにも同期（リロード後に設定が戻らないよう）
+  if(typeof saveToCloud==='function') saveToCloud();
   applyAllCust();
   renderLevelBar();
   renderAllTimeCard();
@@ -5087,40 +5089,42 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ④ うまくいかない場合はモーダル内に手動手順を表示
 // ============================================================
 (function(){
-  // このファイルが持っているバージョン番号（sw.jsと合わせる）
   var CURRENT_VERSION = 'kotsusaku-v55';
+  var _bannerShown = false;
+  var _pendingWorker = null;
 
-  // --- バナー操作ユーティリティ ---
-  function showUpdateBanner(latestLabel) {
+  // バナーを1回だけ表示し、ボタンに単一のリスナーをセット
+  function showUpdateBanner(latestLabel, workerToSkip) {
+    if (_bannerShown) return;
+    _bannerShown = true;
+    if (workerToSkip) _pendingWorker = workerToSkip;
+
     var banner = document.getElementById('update-banner');
     if (!banner) return;
     var vtxt = document.getElementById('update-version-text');
     if (vtxt && latestLabel) vtxt.textContent = '現在: ' + CURRENT_VERSION + '  →  最新: ' + latestLabel;
     banner.style.display = 'flex';
 
-    // 「今すぐ更新」ボタン
     var btn = document.getElementById('update-reload-btn');
-    if (btn && !btn._bound) {
-      btn._bound = true;
-      btn.addEventListener('click', function(){
-        btn.textContent = '⏳ 更新中...';
-        btn.disabled = true;
-        // SWに強制切り替えを指示してからリロード
-        if (navigator.serviceWorker && navigator.serviceWorker.controller) {
-          navigator.serviceWorker.controller.postMessage('SKIP_WAITING');
-          setTimeout(function(){ window.location.reload(true); }, 400);
-        } else {
-          window.location.reload(true);
-        }
-      });
-    }
+    if (!btn) return;
+    btn.addEventListener('click', function() {
+      btn.textContent = '⏳ 更新中...';
+      btn.disabled = true;
+      if (_pendingWorker) {
+        _pendingWorker.postMessage('SKIP_WAITING');
+        setTimeout(function(){ window.location.reload(true); }, 500);
+      } else if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage('SKIP_WAITING');
+        setTimeout(function(){ window.location.reload(true); }, 500);
+      } else {
+        window.location.reload(true);
+      }
+    });
 
-    // 「更新されない場合はこちら」折りたたみ
     var toggle = document.getElementById('update-manual-toggle');
     var steps  = document.getElementById('update-manual-steps');
-    if (toggle && steps && !toggle._bound) {
-      toggle._bound = true;
-      toggle.addEventListener('click', function(){
+    if (toggle && steps) {
+      toggle.addEventListener('click', function() {
         var isOpen = steps.style.display !== 'none';
         steps.style.display = isOpen ? 'none' : 'block';
         toggle.textContent  = isOpen ? '更新されない場合はこちら' : '▲ 閉じる';
@@ -5128,87 +5132,64 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
     }
   }
 
-  // --- ① 起動時バージョンfetchチェック ---
-  // version.json: {"version":"kotsusaku-v35"} のような内容
+  // 起動時にversion.jsonを取得してバージョン比較
   function checkVersionJson() {
     fetch('./version.json?_=' + Date.now(), { cache: 'no-store' })
       .then(function(r){ return r.json(); })
       .then(function(data){
         var latest = data && data.version;
-        if (latest && latest !== CURRENT_VERSION) {
-          showUpdateBanner(latest);
-        }
+        if (latest && latest !== CURRENT_VERSION) showUpdateBanner(latest, null);
       })
-      .catch(function(){
-        // version.jsonがない or ネットワークエラーは無視（壊れない）
-      });
+      .catch(function(){});
   }
 
-  // --- 手動更新ボタンから呼ばれる ---
+  // 手動「更新」ボタンから呼ばれる
   window.checkAppUpdate = function() {
     var btn = document.getElementById('refresh-btn');
-    if(btn){ btn.textContent='⏳'; btn.disabled=true; }
+    if (btn){ btn.textContent='⏳'; btn.disabled=true; }
     fetch('./version.json?_=' + Date.now(), { cache: 'no-store' })
       .then(function(r){ return r.json(); })
       .then(function(data){
         var latest = data && data.version;
         if (latest && latest !== CURRENT_VERSION) {
-          showUpdateBanner(latest);
+          showUpdateBanner(latest, null);
         } else {
-          if(typeof showToast==='function') showToast('✅ 最新版です（' + CURRENT_VERSION + '）');
+          if (typeof showToast==='function') showToast('✅ 最新版です（' + CURRENT_VERSION + '）');
         }
       })
       .catch(function(){
-        if(typeof showToast==='function') showToast('⚠️ ネットワークに接続して確認してください');
+        if (typeof showToast==='function') showToast('⚠️ ネットワークに接続して確認してください');
       })
       .finally(function(){
-        if(btn){ btn.textContent='更新'; btn.disabled=false; }
+        if (btn){ btn.textContent='更新'; btn.disabled=false; }
       });
   };
 
-  // --- ② Service Worker 登録 ---
+  // Service Worker 登録
   if ('serviceWorker' in navigator &&
       (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
     window.addEventListener('load', function(){
-      // バージョンfetchチェックを実行（SW登録と並行）
       checkVersionJson();
-
       navigator.serviceWorker.register('./sw.js').then(function(reg){
-        // 新しいSWが待機状態になったらバナー表示
+        // 新しいSWがインストールされたらバナー表示
         reg.addEventListener('updatefound', function(){
           var newWorker = reg.installing;
           if (!newWorker) return;
           newWorker.addEventListener('statechange', function(){
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              showUpdateBanner(null);
-              // このケースではボタンでnewWorkerに通知
-              var btn = document.getElementById('update-reload-btn');
-              if (btn) {
-                btn._swWorker = newWorker;
-                var orig = btn.onclick;
-                btn.addEventListener('click', function(){
-                  newWorker.postMessage('SKIP_WAITING');
-                }, true);
-              }
+              showUpdateBanner(null, newWorker);
             }
           });
         });
-        // すでに更新待ちのSWがあれば即バナー表示
+        // すでに待機中のSWがあればバナー表示
         if (reg.waiting) {
-          showUpdateBanner(null);
-          var btn = document.getElementById('update-reload-btn');
-          if (btn) {
-            btn.addEventListener('click', function(){
-              reg.waiting.postMessage('SKIP_WAITING');
-            }, true);
-          }
+          showUpdateBanner(null, reg.waiting);
         }
       }).catch(function(err){
         console.log('Service Worker registration skipped:', err);
       });
     });
   } else {
-    // https非対応環境でもバージョンチェックだけは動かす
     window.addEventListener('load', checkVersionJson);
   }
 })();

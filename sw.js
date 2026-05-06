@@ -14,8 +14,7 @@ self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_VERSION).then(cache => cache.addAll(CACHE_FILES))
   );
-  // 新しいSWをすぐに有効化（waitingをスキップ）
-  self.skipWaiting();
+  // skipWaiting はメッセージ経由でのみ実行（自動発火しない）
 });
 
 // 有効化時：古いキャッシュを削除
