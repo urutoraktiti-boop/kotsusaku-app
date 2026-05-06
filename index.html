@@ -444,7 +444,10 @@
       .sw-top-row{gap:8px;}
       .sw-hint{display:none;}
       .sw-label{display:none;}
-      .sw-btns-main{display:none;}
+      /* ボタンは非表示にせずコンパクト表示に変更 */
+      .sw-btns-main{gap:4px;}
+      .sw-btn.start,.sw-btn.stop{font-size:.62rem;padding:5px 10px;}
+      .sw-btn.reset{font-size:.58rem;padding:3px 8px;}
       .sw-time-row{margin:0;}
       .sw-display{font-size:1.2rem;}
       .sw-next-lbl{font-size:.45rem;}
@@ -4421,18 +4424,33 @@ function updateStoryMainCard(){
   msgInner.className='story-main-msg-inner';
   msgInner.textContent=tierMsg;
   msgEl.appendChild(msgInner);
-  // 一度レイアウトさせてから幅を比較
+  // 二重rAFで確実にレイアウト後に幅を測定
   requestAnimationFrame(function(){
-    const outerW=msgEl.offsetWidth;
-    const innerW=msgInner.scrollWidth;
-    if(innerW>outerW+4){
-      // テキストが枠より長い場合のみスクロール
-      const dist=-(innerW+24);
-      const dur=Math.max(8,Math.round(innerW/40))+'s';
-      msgInner.style.setProperty('--scroll-dist',dist+'px');
-      msgInner.style.setProperty('--scroll-dur',dur);
-      msgInner.classList.add('scrolling');
-    }
+    requestAnimationFrame(function(){
+      const outerW=msgEl.offsetWidth;
+      const innerW=msgInner.scrollWidth;
+      if(outerW>0 && innerW>outerW+4){
+        const dist=-(innerW+24);
+        const dur=Math.max(8,Math.round(innerW/40))+'s';
+        msgInner.style.setProperty('--scroll-dist',dist+'px');
+        msgInner.style.setProperty('--scroll-dur',dur);
+        msgInner.classList.add('scrolling');
+      }
+      // outerWが0（非表示状態）なら500ms後に再試行
+      else if(outerW===0){
+        setTimeout(function(){
+          const oW=msgEl.offsetWidth;
+          const iW=msgInner.scrollWidth;
+          if(oW>0 && iW>oW+4){
+            const dist=-(iW+24);
+            const dur=Math.max(8,Math.round(iW/40))+'s';
+            msgInner.style.setProperty('--scroll-dist',dist+'px');
+            msgInner.style.setProperty('--scroll-dur',dur);
+            msgInner.classList.add('scrolling');
+          }
+        },500);
+      }
+    });
   });
   // ── 周回バッジ・カウンター
   if(loopBadge){
