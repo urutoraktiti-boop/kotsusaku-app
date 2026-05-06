@@ -704,8 +704,7 @@
       <div class="cust-row" style="margin-top:10px;">
         <label class="cust-lbl">目標総学習時間</label>
         <div style="display:flex;align-items:center;gap:6px;">
-          <input type="number" id="cust-target-h" class="cust-input" min="1" max="9999" placeholder="例：300" style="width:80px;text-align:center;">
-          <span style="font-size:.72rem;color:var(--text-muted);">時間</span>
+          <button class="goal-btn" data-custom="true" id="cust-target-h-btn">✏</button>
         </div>
       </div>
       <div style="font-size:.6rem;color:var(--text-muted);margin-top:4px;">設定するとLv.100がその時間に合わせて調整されます（未設定時は1000時間）</div>
@@ -3420,14 +3419,7 @@ if(_custCdClear){
     renderForecast();
   });
 }
-const _targetHInp=$('cust-target-h');
-if(_targetHInp){
-  _targetHInp.addEventListener('input',function(){
-    const v=parseInt(this.value);
-    CUST.targetTotalH=(v>0&&v<=9999)?v:0;
-    saveCust();renderLevelBar();renderForecast();
-  });
-}
+
 
 function applyTheme(theme){
   if(theme==='dark')document.documentElement.removeAttribute('data-theme');
@@ -4197,6 +4189,43 @@ const COMBO_EMOJI_LIST=['✨','🔥','⚡','💥','🌟','🎯','🚀','💫','�
 function loadCust(){try{const s=LS.get('study-cust');if(s)CUST=Object.assign({},CUST_DEFAULTS,JSON.parse(s));}catch(e){CUST={...CUST_DEFAULTS};}}
 function saveCust(){LS.set('study-cust',JSON.stringify(CUST));}
 
+// ── 目標総学習時間ボタン（✏ボタン→input方式）──
+(function(){
+  function refreshTargetBtn(){
+    const btn=$('cust-target-h-btn');if(!btn)return;
+    btn.textContent=CUST.targetTotalH>0?'✏'+CUST.targetTotalH+'h':'✏';
+    btn.classList.toggle('active',CUST.targetTotalH>0);
+  }
+  window._refreshTargetBtn=refreshTargetBtn;
+  function openTargetInput(){
+    const btn=$('cust-target-h-btn');if(!btn)return;
+    const currentH=CUST.targetTotalH>0?CUST.targetTotalH:'';
+    const inp=document.createElement('input');
+    inp.type='number';inp.className='goal-input-custom';
+    inp.min='1';inp.max='9999';inp.value=currentH;
+    inp.placeholder='例:300';inp.title='時間数を入力してEnterで確定';
+    inp.style.width='72px';
+    btn.replaceWith(inp);inp.focus();inp.select();
+    let done=false;
+    function commit(){
+      if(done)return;done=true;
+      const v=parseInt(inp.value);
+      CUST.targetTotalH=(v>0&&v<=9999)?v:0;
+      saveCust();renderLevelBar();renderForecast();renderAllTimeCard();
+      inp.replaceWith(btn);refreshTargetBtn();
+    }
+    inp.addEventListener('keydown',function(e){
+      if(e.key==='Enter'){e.preventDefault();commit();}
+      if(e.key==='Escape'){done=true;inp.replaceWith(btn);refreshTargetBtn();}
+    });
+    inp.addEventListener('blur',function(){setTimeout(commit,120);});
+  }
+  document.addEventListener('click',function(e){
+    if(e.target&&e.target.id==='cust-target-h-btn')openTargetInput();
+  });
+  refreshTargetBtn();
+})();
+
 function applyAppIcon(iconId){
   const id=iconId||'A';
   const def=APP_ICONS[id];
@@ -4686,7 +4715,7 @@ function _syncCustPanel(){
   const ct=$('cust-combo-text');if(ct)ct.value=CUST.comboText&&CUST.comboText!=='コンボ！'?CUST.comboText:'';
   const cht=$('cust-combo-high');if(cht)cht.value=CUST.comboHighText&&CUST.comboHighText!=='すごい！'?CUST.comboHighText:'';
   const cdInp=$('cust-cd-input');if(cdInp)cdInp.value=LS.get('exam-date')||'';
-  const tgtInp=$('cust-target-h');if(tgtInp)tgtInp.value=CUST.targetTotalH>0?CUST.targetTotalH:'';
+  if(window._refreshTargetBtn)window._refreshTargetBtn();
   const ss=$('cust-story-sel');if(ss)ss.value=CUST.storyId||'';
   const sed=$('cust-story-edit');if(sed)sed.style.display=CUST.storyId?'block':'none';
   const smw=$('cust-story-msg-wrap');if(smw)smw.style.display=CUST.storyId?'block':'none';
@@ -5059,7 +5088,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // このファイルが持っているバージョン番号（sw.jsと合わせる）
-  var CURRENT_VERSION = 'kotsusaku-v54';
+  var CURRENT_VERSION = 'kotsusaku-v55';
 
   // --- バナー操作ユーティリティ ---
   function showUpdateBanner(latestLabel) {
