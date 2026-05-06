@@ -35,8 +35,16 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
-// フェッチ時：キャッシュ優先、なければネットワーク
+// フェッチ時：version.jsonはネットワーク優先（更新検知のため）、他はキャッシュ優先
 self.addEventListener('fetch', e => {
+  const url = new URL(e.request.url);
+  if (url.pathname.endsWith('version.json')) {
+    // version.json は常にネットワークから取得（キャッシュしない）
+    e.respondWith(
+      fetch(e.request, { cache: 'no-store' }).catch(() => caches.match(e.request))
+    );
+    return;
+  }
   e.respondWith(
     caches.match(e.request).then(cached => cached || fetch(e.request))
   );

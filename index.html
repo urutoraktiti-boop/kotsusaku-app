@@ -69,7 +69,7 @@
     .story-main-title{font-size:.82rem;font-weight:800;color:var(--text);margin:0;}
     .story-main-msg{font-size:.65rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;position:relative;}
     .story-main-msg-inner{display:inline-block;padding-right:24px;}
-    .story-main-msg-inner.scrolling{animation:storyMsgScroll var(--scroll-dur,12s) linear infinite;}
+    .story-main-msg-inner.scrolling{animation:storyMsgScroll var(--scroll-dur,24s) linear 1 forwards;}
     @keyframes storyMsgScroll{0%{transform:translateX(0);}100%{transform:translateX(var(--scroll-dist,-100%));}}
     .story-lv-chip{background:rgba(0,120,255,.12);color:var(--accent);font-size:.6rem;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap;flex-shrink:0;}
     .story-divider{height:1px;background:var(--border);margin:10px 0 8px;}
@@ -4451,7 +4451,7 @@ function updateStoryMainCard(){
       const innerW=msgInner.scrollWidth;
       if(outerW>0 && innerW>outerW+4){
         const dist=-(innerW+24);
-        const dur=Math.max(8,Math.round(innerW/40))+'s';
+        const dur=Math.max(16,Math.round(innerW/20))+'s'; // 速度を半分に
         msgInner.style.setProperty('--scroll-dist',dist+'px');
         msgInner.style.setProperty('--scroll-dur',dur);
         msgInner.classList.add('scrolling');
@@ -4463,7 +4463,7 @@ function updateStoryMainCard(){
           const iW=msgInner.scrollWidth;
           if(oW>0 && iW>oW+4){
             const dist=-(iW+24);
-            const dur=Math.max(8,Math.round(iW/40))+'s';
+            const dur=Math.max(16,Math.round(iW/20))+'s'; // 速度を半分に
             msgInner.style.setProperty('--scroll-dist',dist+'px');
             msgInner.style.setProperty('--scroll-dur',dur);
             msgInner.classList.add('scrolling');
@@ -5257,14 +5257,19 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
       .then(function(data){
         var latest = data && data.version;
         if (!latest) return;
-        _initVersion(latest); // ver-badge と CURRENT_VERSION を最新値に更新
-        // キャッシュ中のファイルと最新が異なれば更新バナーを表示
-        // （この時点でCURRENT_VERSIONは更新済みなので比較は不要。
-        //   sw.jsのCACHE_VERSIONと一致しているかで判断）
+        // ver-badgeはlatestで表示する
+        var badge = document.getElementById('ver-badge');
+        if (badge) badge.textContent = '(' + latest.replace('kotsusaku-','') + ')';
+        // CURRENT_VERSION（このファイルが持つバージョン）と比較して更新バナーを出す
+        if (latest !== CURRENT_VERSION) {
+          showUpdateBanner(latest, null);
+        }
+        // ※ CURRENT_VERSION はここでは上書きしない（比較基準として維持）
       })
       .catch(function(){
         // オフライン時はフォールバック値のまま ver-badge を表示
-        _initVersion(CURRENT_VERSION);
+        var badge = document.getElementById('ver-badge');
+        if (badge) badge.textContent = '(' + CURRENT_VERSION.replace('kotsusaku-','') + ')';
       });
   }
 
