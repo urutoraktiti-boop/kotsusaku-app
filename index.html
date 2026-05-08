@@ -52,9 +52,9 @@
     .level-bar-body{flex:1;min-width:0;}
     .level-bar-info-row{display:flex;align-items:center;gap:4px;flex-wrap:nowrap;min-width:0;}
     .level-badge{background:var(--accent);color:var(--bg);font-size:.58rem;font-weight:800;padding:2px 6px;border-radius:99px;white-space:nowrap;flex-shrink:0;}
-    .level-title-text{font-size:.64rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;min-width:0;}
+    .level-title-text{font-size:.64rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;flex-shrink:1;min-width:0;position:relative;}
     .level-bar-sep{font-size:.58rem;color:var(--border);flex-shrink:0;}
-    .level-bar-msg{font-size:.58rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:2;min-width:0;}
+    .level-bar-msg{font-size:.58rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;flex-shrink:2;min-width:0;position:relative;}
     .level-bar-divider{height:1px;background:var(--border);margin-bottom:4px;}
     .level-xp-wrap{display:flex;flex-direction:column;gap:2px;}
     .level-xp-bg{background:var(--surface2);border-radius:99px;height:5px;overflow:hidden;}
@@ -80,7 +80,7 @@
     .story-dot{flex:1;height:6px;border-radius:99px;background:var(--surface2);}
     .story-dot.done{background:var(--checked);}
     .story-dot.active{background:#f59e0b;}
-    .story-quote-box{background:var(--surface2);border-left:2px solid var(--border);border-radius:0 4px 4px 0;padding:6px 10px;font-size:.65rem;color:var(--text-muted);font-style:italic;line-height:1.5;}
+    .story-quote-box{background:var(--surface2);border-left:2px solid var(--border);border-radius:0 4px 4px 0;padding:6px 10px;font-size:.65rem;color:var(--text-muted);font-style:italic;white-space:nowrap;overflow:hidden;}
     
     .story-char-wrap{position:relative;flex-shrink:0;}
     .story-loop-counter{position:absolute;bottom:-3px;right:-6px;font-size:.5rem;font-weight:700;background:#534ab7;color:#fff;border-radius:99px;padding:1px 5px;line-height:1.4;pointer-events:none;}
@@ -178,7 +178,7 @@
     .easter-toast{position:fixed;top:50%;left:50%;transform:translateX(-50%) translateY(-50%);background:linear-gradient(135deg,#1a0a1e,#341b42);border:1.5px solid #f472b6;color:#fde8f7;font-size:.82rem;font-weight:700;padding:12px 22px;border-radius:12px;z-index:9996;opacity:0;transition:opacity .3s;pointer-events:none;text-align:center;box-shadow:0 4px 20px rgba(244,114,182,.3);max-width:min(90vw,600px);white-space:normal;line-height:1.5;word-break:break-word;}
     .easter-toast.show{opacity:1;}
     
-    .challenge-wrap{width:100%;max-width:700px;padding:0 14px;margin:12px auto 0;}
+    .challenge-wrap{width:100%;max-width:700px;padding:0 10px;margin:12px auto 0;}
     .challenge-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;transition:background .3s,border-color .3s;}
     .challenge-card.achieved{border-color:var(--checked);background:rgba(62,207,142,.07);}
     .challenge-icon{font-size:1.4rem;flex-shrink:0;}
@@ -238,7 +238,7 @@
     .weekly-report-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-size:.65rem;font-weight:700;padding:4px 10px;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:background .15s,color .15s;margin-left:auto;}
     .weekly-report-btn:hover{background:var(--border);color:var(--text);}
     
-    .all-time-wrap{width:100%;max-width:700px;padding:0 14px 24px;margin:0 auto;}
+    .all-time-wrap{width:100%;max-width:700px;padding:0 10px 24px;margin:0 auto;}
     #all-time-card{margin:0;border-top:1px solid var(--border);padding:14px 6px 10px;background:transparent;border-radius:0;border-left:none;border-right:none;border-bottom:none;display:flex;align-items:center;gap:14px;transition:background .3s,border-color .3s;}
     .atc-icon{font-size:1.6rem;line-height:1;flex-shrink:0;}
     .atc-body{flex:1;display:flex;flex-direction:column;gap:3px;}
@@ -277,7 +277,7 @@
     .tabs{display:flex;border-top:1px solid var(--border);}
     .tab-btn{flex:1;padding:9px 0;background:transparent;border:none;color:var(--text-muted);font-size:.8rem;font-weight:700;cursor:pointer;border-bottom:3px solid transparent;transition:color .15s,border-color .15s;}
     .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
-    .stat-row{width:100%;max-width:700px;margin:14px auto 0;padding:0 14px;display:flex;gap:8px;position:relative;z-index:1;}
+    .stat-row{width:100%;max-width:700px;margin:14px auto 0;padding:0 10px;display:flex;gap:8px;position:relative;z-index:1;}
     .stat-card{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:11px 14px;display:flex;flex-direction:column;gap:3px;transition:background .3s,border-color .3s;}
     .stat-label{font-size:.65rem;color:var(--text-muted);}
     .stat-value{font-size:1.25rem;font-weight:800;color:var(--checked);}
@@ -289,7 +289,7 @@
     .goal-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);padding:3px 8px;border-radius:5px;cursor:pointer;font-size:.65rem;font-weight:700;transition:background .15s,color .15s,border-color .15s;}
     .goal-btn:hover{background:var(--border);}
     .goal-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
-    .view{display:none;width:100%;max-width:700px;padding:0 14px 32px;}
+    .view{display:none;width:100%;max-width:700px;padding:0 10px 32px;}
     .view.active{display:block;}
     #view-daily{position:relative;}
     #sakura-tree-bg{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0;overflow:hidden;}
@@ -407,7 +407,7 @@
     .goal-input-custom{background:var(--surface2);border:1.5px solid var(--accent);color:var(--text);width:52px;padding:3px 5px;border-radius:5px;font-size:.68rem;font-weight:700;outline:none;text-align:center;-moz-appearance:textfield;}
     .goal-input-custom::-webkit-outer-spin-button,.goal-input-custom::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
     .goal-input-custom::placeholder{color:var(--text-muted);font-size:.6rem;}
-    .sw-wrap{width:100%;max-width:700px;margin:0 auto;padding:6px 14px 4px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:var(--header-h,0px);z-index:99;}
+    .sw-wrap{width:100%;max-width:700px;margin:0 auto;padding:6px 10px 4px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:var(--header-h,0px);z-index:99;}
     .sw-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 16px;display:flex;flex-direction:column;gap:6px;transition:background .3s,border-color .3s;}
     .sw-top-row{display:flex;align-items:center;gap:8px;}
     .sw-icon{font-size:1.2rem;flex-shrink:0;}
@@ -550,8 +550,8 @@
     .cust-cb-row{display:flex;align-items:center;gap:5px;background:rgba(79,142,247,.05);border:1px solid var(--border);border-radius:6px;padding:5px 8px;}
   
   .lu-unlock{font-size:.73rem;margin-top:8px;background:rgba(250,204,21,.15);border:1px solid rgba(250,204,21,.4);border-radius:8px;padding:5px 12px;color:#facc15;letter-spacing:.02em;}
-  .lu-story{font-size:1.4rem;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px;}
-  .lu-story-msg{font-size:.75rem;color:var(--text-muted);font-style:italic;}
+  .lu-story{font-size:1.4rem;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px;overflow:hidden;max-width:280px;margin-left:auto;margin-right:auto;}
+  .lu-story-msg{font-size:.75rem;color:var(--text-muted);font-style:italic;white-space:nowrap;overflow:hidden;display:block;}
   .story-tier-row{display:grid;grid-template-columns:32px 1fr;gap:4px;align-items:center;margin-bottom:3px;}
   .story-tier-char{font-size:18px;text-align:center;}
   .cust-story-q-row{display:flex;gap:5px;align-items:center;margin-bottom:3px;}
@@ -1073,7 +1073,7 @@
       <div class="story-main-body">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap;min-width:0;margin-bottom:2px;">
           <div class="story-lv-chip" id="story-lv-chip" style="display:none;flex-shrink:0;">Lv.1</div>
-          <div class="story-main-title" id="story-main-title" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;">ストーリーなし</div>
+          <div class="story-main-title" id="story-main-title" style="overflow:hidden;white-space:nowrap;min-width:0;">ストーリーなし</div>
           <div class="story-loop-badge" id="story-loop-badge" style="display:none;flex-shrink:0;">2周目</div>
         </div>
         <div class="story-main-msg" id="story-main-msg">設定でストーリーを選択できます</div>
@@ -1845,7 +1845,17 @@ function renderLevelBar(){
   const ld=getLevelData(total);
   $('level-icon').textContent=ld.icon;
   $('level-badge').textContent='Lv.'+ld.lv;
-  $('level-title-text').textContent=ld.title;
+  // level-title-text：スクロール対応
+  (function(){
+    var el=$('level-title-text');
+    if(!el)return;
+    el.innerHTML='';
+    var inner=document.createElement('span');
+    inner.className='story-main-msg-inner';
+    inner.textContent=ld.title;
+    el.appendChild(inner);
+    if(typeof _applyScrollAnim==='function')_applyScrollAnim(el,inner);
+  })();
   $('level-xp-info').textContent=ld.xpInfo;
   // アニメーション：一旦0%にリセットしてからrAFで正しい値をセット
   const fillEl=$('level-xp-fill');
@@ -1859,14 +1869,19 @@ function renderLevelBar(){
       });
     });
   }
-  // コツサク称号のひとことを表示
+  // コツサク称号のひとことを表示（スクロール対応）
   const _msgEl=$('level-bar-msg');
   const _sepEl=$('level-bar-sep');
   if(_msgEl&&ld.msg){
-    _msgEl.textContent=ld.msg;
+    _msgEl.innerHTML='';
+    var _msgInner=document.createElement('span');
+    _msgInner.className='story-main-msg-inner';
+    _msgInner.textContent=ld.msg;
+    _msgEl.appendChild(_msgInner);
+    if(typeof _applyScrollAnim==='function')_applyScrollAnim(_msgEl,_msgInner);
     if(_sepEl)_sepEl.style.display='';
   }else if(_msgEl){
-    _msgEl.textContent='';
+    _msgEl.innerHTML='';
     if(_sepEl)_sepEl.style.display='none';
   }
   if(lastLv>0&&ld.lv>lastLv){showLevelUp(ld);}
@@ -1879,9 +1894,17 @@ function showLevelUp(ld){
     const popup=$('levelup-popup');
     const unlock=FEATURE_UNLOCKS[ld.lv];
     const unlockHtml=unlock?`<div class="lu-unlock">🔓 ${unlock.label} 解放！</div>`:'';
-    const msgHtml=ld.msg?`<div class="lu-story"><span class="lu-story-msg">${ld.msg}</span></div>`:'';
+    const msgHtml=ld.msg?`<div class="lu-story"><span class="lu-story-msg story-main-msg-inner" id="lu-story-msg-inner">${ld.msg}</span></div>`:'';
     popup.innerHTML=`<div class="lu-lv">${ld.icon} Lv.${ld.lv}</div><div class="lu-title">「${ld.title}」に昇格！</div>${msgHtml}${unlockHtml}`;
     popup.style.display='block';
+    // lu-story-msgスクロール判定
+    (function(){
+      var luMsg=popup.querySelector('.lu-story-msg');
+      var luWrap=popup.querySelector('.lu-story');
+      if(luMsg&&luWrap&&typeof _applyScrollAnim==='function'){
+        setTimeout(function(){ _applyScrollAnim(luWrap,luMsg); },100);
+      }
+    })();
     playLevelUpSound();
     launchFireworks('weekly');
     if(unlock)setTimeout(()=>launchPetals(),600);
@@ -2399,6 +2422,52 @@ function applyLuckyBlock(){
 }
 let _swIsRunning=false;
 let _nowProgressTimer=null;
+
+// ── テキストスクロール共通関数 ──
+// 要素がコンテナより長い場合のみ1回スクロールして先頭に戻る
+function _applyScrollAnim(containerEl, innerEl){
+  if(!containerEl||!innerEl)return;
+  // innerに既存アニメを解除してから再計測
+  innerEl.classList.remove('scrolling');
+  innerEl.style.removeProperty('--scroll-dist');
+  innerEl.style.removeProperty('--scroll-dur');
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      var outerW=containerEl.offsetWidth;
+      var innerW=innerEl.scrollWidth;
+      if(outerW>0&&innerW>outerW+4){
+        var dist=-(innerW+24);
+        var dur=Math.max(16,Math.round(innerW/20))+'s';
+        innerEl.style.setProperty('--scroll-dist',dist+'px');
+        innerEl.style.setProperty('--scroll-dur',dur);
+        innerEl.classList.add('scrolling');
+      } else if(outerW===0){
+        setTimeout(function(){
+          var oW=containerEl.offsetWidth;
+          var iW=innerEl.scrollWidth;
+          if(oW>0&&iW>oW+4){
+            var d=-(iW+24);
+            var dr=Math.max(16,Math.round(iW/20))+'s';
+            innerEl.style.setProperty('--scroll-dist',d+'px');
+            innerEl.style.setProperty('--scroll-dur',dr);
+            innerEl.classList.add('scrolling');
+          }
+        },500);
+      }
+    });
+  });
+}
+
+// テキストをspanで包んでスクロール判定を適用するヘルパー
+function _setScrollText(containerEl, text){
+  if(!containerEl)return;
+  containerEl.innerHTML='';
+  var inner=document.createElement('span');
+  inner.className='story-main-msg-inner';
+  inner.textContent=text;
+  containerEl.appendChild(inner);
+  _applyScrollAnim(containerEl,inner);
+}
 
 // タイマー動作中チェック付きリロード（更新ボタン・保存して閉じるで共用）
 function _reloadWithCheck(){
@@ -4419,7 +4488,7 @@ function updateStoryMainCard(){
   if(!s){
     charEl.textContent='📖';
     titleEl.textContent='ストーリーなし';
-    msgEl.innerHTML='<span class="story-main-msg-inner">設定でストーリーを選択できます</span>';
+    if(typeof _setScrollText==='function'){_setScrollText(msgEl,'設定でストーリーを選択できます');}else{msgEl.textContent='設定でストーリーを選択できます';}
     if(progArea)progArea.style.display='none';
     if(lvChip)lvChip.style.display='none';
     if(loopBadge)loopBadge.style.display='none';
@@ -4436,42 +4505,19 @@ function updateStoryMainCard(){
   const tierMsg=getStoryTierMsg(tierIdx);
   // ── 上部：キャラ・タイトル・メッセージ
   charEl.textContent=tier.char||s.icon||'📖';
-  titleEl.textContent=tier.title||s.name;
+  // story-main-title：スクロール対応
+  (function(){
+    var t=tier.title||s.name||'';
+    titleEl.innerHTML='';
+    var inner=document.createElement('span');
+    inner.className='story-main-msg-inner';
+    inner.textContent=t;
+    titleEl.appendChild(inner);
+    if(typeof _applyScrollAnim==='function')_applyScrollAnim(titleEl,inner);
+  })();
   // ── メッセージのスクロール表示 ──
   // inner span にテキストを入れ、はみ出す場合のみスクロールアニメを適用
-  msgEl.innerHTML='';
-  const msgInner=document.createElement('span');
-  msgInner.className='story-main-msg-inner';
-  msgInner.textContent=tierMsg;
-  msgEl.appendChild(msgInner);
-  // 二重rAFで確実にレイアウト後に幅を測定
-  requestAnimationFrame(function(){
-    requestAnimationFrame(function(){
-      const outerW=msgEl.offsetWidth;
-      const innerW=msgInner.scrollWidth;
-      if(outerW>0 && innerW>outerW+4){
-        const dist=-(innerW+24);
-        const dur=Math.max(16,Math.round(innerW/20))+'s'; // 速度を半分に
-        msgInner.style.setProperty('--scroll-dist',dist+'px');
-        msgInner.style.setProperty('--scroll-dur',dur);
-        msgInner.classList.add('scrolling');
-      }
-      // outerWが0（非表示状態）なら500ms後に再試行
-      else if(outerW===0){
-        setTimeout(function(){
-          const oW=msgEl.offsetWidth;
-          const iW=msgInner.scrollWidth;
-          if(oW>0 && iW>oW+4){
-            const dist=-(iW+24);
-            const dur=Math.max(16,Math.round(iW/20))+'s'; // 速度を半分に
-            msgInner.style.setProperty('--scroll-dist',dist+'px');
-            msgInner.style.setProperty('--scroll-dur',dur);
-            msgInner.classList.add('scrolling');
-          }
-        },500);
-      }
-    });
-  });
+  if(typeof _setScrollText==='function'){_setScrollText(msgEl,tierMsg);}else{msgEl.textContent=tierMsg;}
   // ── 周回バッジ・カウンター
   if(loopBadge){
     if(loopN>=2){
@@ -4532,7 +4578,12 @@ function updateStoryMainCard(){
     const qKey=loopN>=3?'quotes3':loopN===2?'quotes2':'quotes';
     const pool=(s[qKey]&&s[qKey].length)?s[qKey]:(s.quotes||['今日も頑張ろう！']);
     const qi=Math.floor(Date.now()/30000)%pool.length;
-    quoteEl.textContent='「'+pool[qi]+'」';
+    // story-quote-box：スクロール対応
+    if(typeof _setScrollText==='function'){
+      _setScrollText(quoteEl,'「'+pool[qi]+'」');
+    } else {
+      quoteEl.textContent='「'+pool[qi]+'」';
+    }
   }
   // ── クリア時のボタン表示 + 10秒カウントダウン
   const completeDiv=$('story-loop-complete');
@@ -5200,7 +5251,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v55'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v56'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
 
