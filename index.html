@@ -5279,12 +5279,14 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
     btn.addEventListener('click', function() {
       btn.textContent = '⏳ 更新中...';
       btn.disabled = true;
+      // リロード後に再度バナーが出ないよう「更新済み」フラグを立てる
+      try { sessionStorage.setItem('_swJustUpdated','1'); } catch(e){}
       if (_pendingWorker) {
         _pendingWorker.postMessage('SKIP_WAITING');
-        setTimeout(function(){ window.location.reload(true); }, 500);
+        setTimeout(function(){ window.location.reload(true); }, 1500);
       } else if (navigator.serviceWorker && navigator.serviceWorker.controller) {
         navigator.serviceWorker.controller.postMessage('SKIP_WAITING');
-        setTimeout(function(){ window.location.reload(true); }, 500);
+        setTimeout(function(){ window.location.reload(true); }, 1500);
       } else {
         window.location.reload(true);
       }
@@ -5303,6 +5305,15 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 
   // 起動時にversion.jsonを取得：バージョン表示の初期化 + 更新チェック
   function checkVersionJson() {
+    // 直前に更新ボタンでリロードした場合はバナーを出さない（連続表示防止）
+    try {
+      if (sessionStorage.getItem('_swJustUpdated') === '1') {
+        sessionStorage.removeItem('_swJustUpdated');
+        var badge = document.getElementById('ver-badge');
+        if (badge) badge.textContent = '(' + CURRENT_VERSION.replace('kotsusaku-','') + ')';
+        return;
+      }
+    } catch(e){}
     fetch('./version.json?_=' + Date.now(), { cache: 'no-store' })
       .then(function(r){ return r.json(); })
       .then(function(data){
