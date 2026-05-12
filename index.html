@@ -100,7 +100,7 @@
 <div style="font-size:2.2rem;line-height:1;margin-bottom:10px;">🆕</div>
 <div style="font-size:1.05rem;font-weight:800;color:#fde8f7;margin-bottom:6px;">新しいバージョンがあります</div>
 <div id="update-version-text" style="font-size:.78rem;color:#c084fc;margin-bottom:10px;">最新版に更新してください</div>
-<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">📅 マイイベント機能を強化<br><span style="font-size:.68rem;color:#c4b5fd;">設定画面を開いてみて。新しいことが待ってるよ。ニヤニヤ。</span></div>
+<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">📅 My Crazyに名前をつけられるようになったよ<br><span style="font-size:.68rem;color:#c4b5fd;">設定でイベント名と時間帯を確認してみて。ニヤニヤ。</span></div>
 <button id="update-reload-btn" style="display:block;width:100%;background:#f472b6;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:800;cursor:pointer;margin-bottom:12px;letter-spacing:.03em;">
 ✅ 今すぐ更新する
 </button>
@@ -155,7 +155,7 @@
 <div style="overflow-y:auto;flex:1;padding:16px 20px 20px;">
 <div id="crazy10-settings-sec" style="display:none;margin-bottom:18px;background:rgba(74,222,128,.07);border:1.5px solid rgba(74,222,128,.4);border-radius:12px;padding:12px 14px;">
 <div style="font-size:.75rem;font-weight:800;color:#4ade80;letter-spacing:.05em;margin-bottom:6px;">🎯 Crazy10イベント</div>
-<div style="font-size:.62rem;color:#86efac;background:rgba(74,222,128,.1);border-radius:6px;padding:5px 8px;margin-bottom:8px;line-height:1.6;">Crazy10を各自で設定できます。公式イベントの参加やマイイベントの登録・管理をここで行えます。</div>
+<div style="font-size:.62rem;color:#86efac;background:rgba(74,222,128,.1);border-radius:6px;padding:5px 8px;margin-bottom:8px;line-height:1.6;">Crazy10を各自で設定できます。公式イベントの参加やMy Crazyの登録・管理をここで行えます。</div>
 <div class="cust-tog-row">
 <span style="font-size:.75rem;color:var(--text);">Crazy10 に参加する</span>
 <label class="tog-sw"><input type="checkbox" id="crazy10-tog"><span class="tog-slider"></span></label>
@@ -168,8 +168,8 @@
 <div id="crazy10-official-list" style="display:flex;flex-direction:column;gap:3px;margin-bottom:8px;"></div>
 <div style="border-top:1px solid rgba(74,222,128,.2);margin-bottom:8px;"></div>
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
-<span style="font-size:.65rem;font-weight:700;color:#4ade80;">📅 マイイベント</span><button onclick="_showMyEvInfo()" style="background:transparent;border:none;color:#4ade80;font-size:.72rem;cursor:pointer;padding:0 0 0 4px;line-height:1;opacity:.8;">ℹ️</button>
-<span id="myev-info-tip" style="font-size:.6rem;color:#86efac;display:none;margin-left:6px;">自分だけの勉強イベントを設定できます</span>
+<span style="font-size:.65rem;font-weight:700;color:#4ade80;">📅 My Crazy</span><button onclick="_showMyEvInfo()" style="background:transparent;border:none;color:#4ade80;font-size:.72rem;cursor:pointer;padding:0 0 0 4px;line-height:1;opacity:.8;">ℹ️</button>
+<span id="myev-info-tip" style="font-size:.6rem;color:#86efac;display:none;margin-left:6px;">自分だけのMy Crazyを設定できます</span>
 </div>
 <div id="crazy10-my-list" style="display:flex;flex-direction:column;gap:3px;margin-bottom:6px;"></div>
 <div id="myev-acc-hd" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:4px 6px;margin-bottom:4px;background:rgba(0,0,0,.15);border-radius:7px;" onclick="_toggleMyEventAcc()">
@@ -179,6 +179,10 @@
 <div id="myev-acc-body" style="display:none;">
 <div style="background:rgba(0,0,0,.15);border-radius:8px;padding:9px;display:flex;flex-direction:column;gap:6px;">
 <div style="font-size:.63rem;font-weight:700;color:#86efac;">追加フォーム</div>
+<div style="display:flex;align-items:center;gap:5px;">
+<span style="font-size:.62rem;color:var(--text-muted);min-width:48px;">名前</span>
+<input type="text" id="myev-name" class="cust-input" maxlength="20" placeholder="例：マイクレイジー" style="flex:1;font-size:.68rem;">
+</div>
 <div style="display:flex;align-items:center;gap:5px;">
 <span style="font-size:.62rem;color:var(--text-muted);min-width:48px;">開催日</span>
 <input type="date" id="myev-date" class="cust-input" style="flex:1;font-size:.68rem;">
@@ -192,7 +196,7 @@
 <div id="myev-breaks-wrap" style="display:flex;flex-direction:column;gap:4px;"></div>
 <button id="myev-add-brk-btn" style="background:transparent;border:1px dashed rgba(74,222,128,.4);color:#4ade80;border-radius:6px;padding:4px;font-size:.62rem;font-weight:700;cursor:pointer;width:100%;">＋ 休憩を追加（最大3回）</button>
 <div id="myev-calc" style="font-size:.63rem;color:#4ade80;font-weight:700;min-height:13px;"></div>
-<button id="myev-add-btn" style="background:#4ade80;color:#052e16;border:none;border-radius:7px;padding:6px;font-size:.7rem;font-weight:800;cursor:pointer;width:100%;">+ マイイベントを追加</button>
+<button id="myev-add-btn" style="background:#4ade80;color:#052e16;border:none;border-radius:7px;padding:6px;font-size:.7rem;font-weight:800;cursor:pointer;width:100%;">+ My Crazyを追加</button>
 </div>
 </div>
 </div>
@@ -4838,7 +4842,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v62'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v63'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
 
@@ -5030,8 +5034,11 @@ function _renderCrazy10Stars(dateStr){
   const todayStr=_toLocalDateStr(new Date());
   const isActive=dateStr===todayStr&&_isCrazy10Period()&&!!_getAnyEvent(dateStr);
   let html='<div id="crazy10-stars-wrap" style="margin:8px 0 4px;padding:8px 12px;background:rgba(74,222,128,.07);border:1px solid rgba(74,222,128,.3);border-radius:10px;">';
-  const _evTitle=ev.isOfficial?'🥦 ITACHACHA House Crazy10':'📅 マイイベント';
-  html+='<div style="font-size:.6rem;font-weight:700;color:#4ade80;letter-spacing:.05em;margin-bottom:6px;">'+_evTitle+'</div>';
+  const _myEvName=(!ev.isOfficial&&ev.name)?ev.name:'My Crazy';
+  const _evTitle=ev.isOfficial?'🥦 ITACHACHA House Crazy10':('📅 '+_myEvName);
+  const _startStr=_hToTimeStr(ev.start),_endStr=_hToTimeStr(ev.end);
+  const _timeRange=ev.isOfficial?'':('<span style="font-size:.55rem;color:#6ee7b7;font-weight:400;margin-left:5px;">'+_startStr+'〜'+_endStr+'</span>');
+  html+='<div style="font-size:.6rem;font-weight:700;color:#4ade80;letter-spacing:.05em;margin-bottom:6px;">'+_evTitle+_timeRange+'</div>';
   html+='<div style="display:flex;flex-wrap:wrap;gap:3px;align-items:center;">';
   for(let i=0;i<maxSets;i++){
     if(i===maxSets-1&&sets>=maxSets){
@@ -5128,15 +5135,17 @@ function _showCrazy10PreviewToastIfNeeded(){
   // 明日がマイイベントの前日かどうかを判定
   const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
   const tmStr=_toLocalDateStr(tomorrow);
-  const isMyEv=(CUST.myEvents||[]).some(e=>e.dateStr===tmStr);
+  const tmMyEv=(CUST.myEvents||[]).find(e=>e.dateStr===tmStr);
+  const isMyEv=!!tmMyEv;
+  const tmEvName=isMyEv&&tmMyEv.name?tmMyEv.name:'My Crazy';
   let msgs;
   if(isMyEv){
-    // マイイベント用メッセージ
+    // マイイベント用メッセージ（イベント名を差し込む）
     msgs=[
-      '📅 ニヤニヤ……明日はあなたが決めた特別な日だ。ワクワクしてきた？',
-      '📅 明日は自分だけのイベント日！今夜は早めに休んで、全力で挑もう！',
-      '📅 ドキドキしてきた？明日がついにやってくる。あなたのイベント、全力で楽しんで！',
-      '📅 明日、あなたが決めたその日がやってくる。ニヤニヤ……準備はいい？',
+      '📅 ニヤニヤ……明日は「'+tmEvName+'」だ。ワクワクしてきた？',
+      '📅 明日は「'+tmEvName+'」！今夜は早めに休んで、全力で挑もう！',
+      '📅 ドキドキしてきた？明日の「'+tmEvName+'」がついにやってくる。全力で楽しんで！',
+      '📅 明日、あなたが決めた「'+tmEvName+'」がやってくる。ニヤニヤ……準備はいい？',
     ];
   } else {
     // 公式イベント用メッセージ（既存のまま）
@@ -5331,9 +5340,10 @@ function _renderMyEventList(){
     const totalBreak=_calcTotalBreak(breaks);
     const study=(ev.end-ev.start)-totalBreak;
     const bkTxt=breaks.length?breaks.map(b=>_hToTimeStr(b.s)+'〜'+_hToTimeStr(b.e)).join('、'):'なし';
+    const evName=ev.name?ev.name:'My Crazy';
     return '<div style="background:rgba(74,222,128,.05);border:1px solid rgba(74,222,128,.2);border-radius:7px;padding:6px 10px;display:flex;align-items:center;gap:8px;">'
       +'<div style="flex:1;min-width:0;">'
-      +'<div style="font-size:.7rem;font-weight:700;color:var(--text);">'+ev.dateStr+'</div>'
+      +'<div style="font-size:.7rem;font-weight:700;color:var(--text);">📅 '+evName+'　<span style="font-weight:400;color:var(--text-muted);">'+ev.dateStr+'</span></div>'
       +'<div style="font-size:.6rem;color:var(--text-muted);margin-top:2px;">'+sh+' 〜 '+eh+'　休憩 '+bkTxt+'　実質 '+_hDiffStr(study)+'</div>'
       +'</div>'
       +'<button onclick="_deleteMyEvent('+i+')" style="background:transparent;border:1px solid rgba(248,113,113,.5);color:#f87171;border-radius:6px;font-size:.6rem;padding:3px 8px;cursor:pointer;white-space:nowrap;flex-shrink:0;">削除</button>'
@@ -5470,6 +5480,7 @@ function _calcMyEventStudyTime(){
 // マイイベント追加ボタン処理
 function _addMyEvent(){
   const dateVal=document.getElementById('myev-date')?.value;
+  const nameVal=(document.getElementById('myev-name')?.value||'').trim();
   const s=_timeToH(document.getElementById('myev-start')?.value);
   const e=_timeToH(document.getElementById('myev-end')?.value);
   if(!dateVal){showToast('開催日を入力してください','error');return;}
@@ -5481,17 +5492,19 @@ function _addMyEvent(){
   const all=_getAllCrazy10Events();
   if(all.some(ev=>ev.dateStr===dateVal)){showToast('その日付はすでに登録されています','error');return;}
   if(!CUST.myEvents)CUST.myEvents=[];
-  // 新形式で保存（breaks配列）
-  CUST.myEvents.push({dateStr:dateVal,start:s,end:e,breaks:breaks});
+  // 新形式で保存（breaks配列・name追加）
+  CUST.myEvents.push({dateStr:dateVal,name:nameVal,start:s,end:e,breaks:breaks});
   CUST.myEvents.sort((a,b)=>a.dateStr.localeCompare(b.dateStr));
   saveCust();
   _renderMyEventList();
   // フォームリセット
+  const nameInpR=document.getElementById('myev-name');
+  if(nameInpR)nameInpR.value='';
   const wrap=document.getElementById('myev-breaks-wrap');
   if(wrap)wrap.innerHTML='';
   const addBrkBtn=document.getElementById('myev-add-brk-btn');
   if(addBrkBtn)addBrkBtn.style.display='';
-  showToast('マイイベントを追加しました');
+  showToast('My Crazyを追加しました');
 }
 
 // 設定パネルでのCrazy10セクション同期（拡張版）
@@ -5505,11 +5518,12 @@ _syncCrazy10SettingsSec=function(){
   _buildTimeOptions('myev-end','16:00');
   // フォームイベント登録（重複防止）
   const dateInp=document.getElementById('myev-date');
+  const nameInp=document.getElementById('myev-name');
   const startInp=document.getElementById('myev-start');
   const endInp=document.getElementById('myev-end');
   const addBrkBtn=document.getElementById('myev-add-brk-btn');
   const addBtn=document.getElementById('myev-add-btn');
-  [dateInp,startInp,endInp].forEach(inp=>{
+  [dateInp,nameInp,startInp,endInp].forEach(inp=>{
     if(inp&&!inp.dataset.c10bound){inp.dataset.c10bound='1';inp.addEventListener('change',_calcMyEventStudyTime);}
   });
   if(addBrkBtn&&!addBrkBtn.dataset.c10bound){addBrkBtn.dataset.c10bound='1';addBrkBtn.addEventListener('click',_addBreakRow);}
