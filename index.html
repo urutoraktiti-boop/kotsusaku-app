@@ -3761,10 +3761,11 @@ function _getCrazy10EventNow(){return _getAnyEventNow();}
 function _isCrazy10Period(){const ev=_getCrazy10EventNow();if(!ev)return false;const now=new Date();const h=now.getHours()+now.getMinutes()/60;return h>=ev.start&&h<ev.end;}
 function _isCrazy10Joined(dateStr){return !!(CUST.crazy10Joined&&CUST.crazy10Joined[dateStr]);}
 function _setCrazy10Joined(dateStr,val){if(!CUST.crazy10Joined)CUST.crazy10Joined={};CUST.crazy10Joined[dateStr]=val;saveCust();}
-function _isCrazy10Active(){const ev=_getCrazy10EventNow();if(!ev)return false;return _isCrazy10Joined(ev.dateStr)&&_isCrazy10Period();}
+function _isCrazy10Active(){const ev=_getCrazy10EventNow();if(!ev)return false;if(!ev.isOfficial)return _isCrazy10Period();return _isCrazy10Joined(ev.dateStr)&&_isCrazy10Period();}
 function _getCrazy10SetCount(dateStr){
   const ev=_getAnyEvent(dateStr);
-  if(!ev||!_isCrazy10Joined(dateStr))return 0;
+  if(!ev)return 0;
+  if(ev.isOfficial&&!_isCrazy10Joined(dateStr))return 0;
   const dayData=data[dateStr]||{};
   let sets=0;
   const evBreaks=ev.breaks&&ev.breaks.length?ev.breaks:(ev.breakEnd>ev.breakStart?[{s:ev.breakStart,e:ev.breakEnd}]:[]);
@@ -5016,8 +5017,9 @@ document.addEventListener('visibilitychange', () => {
 
 // ── 星バッジHTML生成 ──
 function _renderCrazy10Stars(dateStr){
-  const ev=_getCrazy10Event(dateStr);
-  if(!ev||!_isCrazy10Joined(dateStr))return null;
+  const ev=_getAnyEvent(dateStr);
+  if(!ev)return null;
+  if(ev.isOfficial&&!_isCrazy10Joined(dateStr))return null;
   const sets=_getCrazy10SetCount(dateStr);
   // 最大SET数 = (ev.end - ev.start - (breakEnd-breakStart)) * 2
   const studyHours=(ev.end-ev.start)-_calcTotalBreak(_normalizeBreaks(ev));
@@ -5100,6 +5102,7 @@ function crazy10TestPopup(){
 function _showCrazy10PopupIfNeeded(){
   const ev=_getCrazy10EventNow();
   if(!ev||!_isCrazy10Period())return;
+  if(!ev.isOfficial)return; // MyEventは参加/不参加ポップアップ不要
   const key=_crazy10PopupKey(ev.dateStr);
   if(localStorage.getItem(key)==='1')return; // 今日すでに見た
   const overlay=document.getElementById('crazy10-overlay');
