@@ -5026,9 +5026,10 @@ function _renderCrazy10Stars(dateStr){
   const maxSets=studyHours*2;
   // 表示中のdateStrが今日かつイベント期間中なら点滅星を表示
   const todayStr=_toLocalDateStr(new Date());
-  const isActive=dateStr===todayStr&&_isCrazy10Period()&&!!_getCrazy10Event(dateStr);
+  const isActive=dateStr===todayStr&&_isCrazy10Period()&&!!_getAnyEvent(dateStr);
   let html='<div id="crazy10-stars-wrap" style="margin:8px 0 4px;padding:8px 12px;background:rgba(74,222,128,.07);border:1px solid rgba(74,222,128,.3);border-radius:10px;">';
-  html+='<div style="font-size:.6rem;font-weight:700;color:#4ade80;letter-spacing:.05em;margin-bottom:6px;">🥦 ITACHACHA House Crazy10</div>';
+  const _evTitle=ev.isOfficial?'🥦 ITACHACHA House Crazy10':'📅 マイイベント';
+  html+='<div style="font-size:.6rem;font-weight:700;color:#4ade80;letter-spacing:.05em;margin-bottom:6px;">'+_evTitle+'</div>';
   html+='<div style="display:flex;flex-wrap:wrap;gap:3px;align-items:center;">';
   for(let i=0;i<maxSets;i++){
     if(i===maxSets-1&&sets>=maxSets){
