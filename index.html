@@ -2661,6 +2661,8 @@ function onBlock(e){
   updateStats();
   checkBadges();
   checkEasterEggs();
+  // Crazy10/MyEvent：ブロックをタップするたびに星をリアルタイム更新
+  if(typeof renderCrazy10Stars==='function')renderCrazy10Stars();
 }
 function isLucky(h,m){
   const lb=getLuckyBlockKey();
