@@ -5,7 +5,7 @@
 //   2. index.html の CURRENT_VERSION（フォールバック値）
 //   3. version.json の version
 // ============================================================
-const CACHE_VERSION = 'kotsusaku-v56';
+const CACHE_VERSION = 'kotsusaku-v62';
 const CACHE_FILES = [
   './',
   './index.html',
@@ -35,9 +35,11 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
-// フェッチ時：version.jsonはネットワーク優先（更新検知のため）、他はキャッシュ優先
+// フェッチ時：version.json と画面本体はネットワーク優先（更新検知・反映のため）
 self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
+
   if (url.pathname.endsWith('version.json')) {
     // version.json は常にネットワークから取得（キャッシュしない）
     e.respondWith(
@@ -45,6 +47,22 @@ self.addEventListener('fetch', e => {
     );
     return;
   }
+
+  if (e.request.mode === 'navigate' || url.pathname.endsWith('/index.html')) {
+    e.respondWith(
+      fetch(e.request, { cache: 'no-store' }).then(response => {
+        const copyForRoot = response.clone();
+        const copyForIndex = response.clone();
+        caches.open(CACHE_VERSION).then(cache => {
+          cache.put('./', copyForRoot);
+          cache.put('./index.html', copyForIndex);
+        });
+        return response;
+      }).catch(() => caches.match('./index.html'))
+    );
+    return;
+  }
+
   e.respondWith(
     caches.match(e.request).then(cached => cached || fetch(e.request))
   );
