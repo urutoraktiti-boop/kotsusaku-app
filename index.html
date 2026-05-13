@@ -120,7 +120,7 @@
 <div style="font-size:2.2rem;line-height:1;margin-bottom:10px;">🆕</div>
 <div style="font-size:1.05rem;font-weight:800;color:#fde8f7;margin-bottom:6px;">新しいバージョンがあります</div>
 <div id="update-version-text" style="font-size:.78rem;color:#c084fc;margin-bottom:10px;">最新版に更新してください</div>
-<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">📅 My Crazyに名前をつけられるようになったよ<br><span style="font-size:.68rem;color:#c4b5fd;">星バッジ・一覧・前日ポップアップにも名前が反映されます。</span></div>
+<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">ちょっちゅ休憩時間変更したねん</div>
 <button id="update-reload-btn" style="display:block;width:100%;background:#f472b6;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:800;cursor:pointer;margin-bottom:12px;letter-spacing:.03em;">
 ✅ 今すぐ更新する
 </button>
@@ -4214,6 +4214,7 @@ function applyCheckEmojiCSS(emoji){
   let st=document.getElementById('cust-emoji-st');
   if(!st){st=document.createElement('style');st.id='cust-emoji-st';document.head.appendChild(st);}
   const e=emoji||'🌸';
+  document.documentElement.style.setProperty('--check-emoji',JSON.stringify(e));
   st.textContent=`.block.checked:not(.lucky)::after{content:'${e}'!important;font-size:11px;line-height:1;animation:petalWiggle 2.5s ease-in-out infinite;}`;
 }
 function applyAppName(name){
@@ -5025,7 +5026,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v71'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v72'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
 
