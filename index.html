@@ -119,7 +119,7 @@
 <div style="font-size:2.2rem;line-height:1;margin-bottom:10px;">🆕</div>
 <div style="font-size:1.05rem;font-weight:800;color:#fde8f7;margin-bottom:6px;">新しいバージョンがあります</div>
 <div id="update-version-text" style="font-size:.78rem;color:#c084fc;margin-bottom:10px;">最新版に更新してください</div>
-<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">🔄 一部表示を改善<br><span style="font-size:.68rem;color:#c4b5fd;">より快適に使えるようになったよ。</span></div>
+<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">📅 My Crazyに名前をつけられるようになったよ<br><span style="font-size:.68rem;color:#c4b5fd;">星バッジ・一覧・前日ポップアップにも名前が反映されます。</span></div>
 <button id="update-reload-btn" style="display:block;width:100%;background:#f472b6;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:800;cursor:pointer;margin-bottom:12px;letter-spacing:.03em;">
 ✅ 今すぐ更新する
 </button>
@@ -175,7 +175,7 @@
 <div style="overflow-y:auto;flex:1;padding:16px 20px 20px;">
 <div id="crazy10-settings-sec" style="display:none;margin-bottom:18px;background:rgba(74,222,128,.07);border:1.5px solid rgba(74,222,128,.4);border-radius:12px;padding:12px 14px;">
 <div style="font-size:.75rem;font-weight:800;color:#4ade80;letter-spacing:.05em;margin-bottom:6px;">🎯 Crazy10イベント</div>
-<div style="font-size:.62rem;color:#86efac;background:rgba(74,222,128,.1);border-radius:6px;padding:5px 8px;margin-bottom:8px;line-height:1.6;">Crazy10を各自で設定できます。公式イベントの参加やマイイベントの登録・管理をここで行えます。</div>
+<div style="font-size:.62rem;color:#86efac;background:rgba(74,222,128,.1);border-radius:6px;padding:5px 8px;margin-bottom:8px;line-height:1.6;">Crazy10を各自で設定できます。公式イベントの参加やMy Crazyの登録・管理をここで行えます。</div>
 <div class="cust-tog-row">
 <span style="font-size:.75rem;color:var(--text);">Crazy10 に参加する</span>
 <label class="tog-sw"><input type="checkbox" id="crazy10-tog"><span class="tog-slider"></span></label>
@@ -188,8 +188,8 @@
 <div id="crazy10-official-list" style="display:flex;flex-direction:column;gap:3px;margin-bottom:8px;"></div>
 <div style="border-top:1px solid rgba(74,222,128,.2);margin-bottom:8px;"></div>
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
-<span style="font-size:.65rem;font-weight:700;color:#4ade80;">📅 マイイベント</span><button onclick="_showMyEvInfo()" style="background:transparent;border:none;color:#4ade80;font-size:.72rem;cursor:pointer;padding:0 0 0 4px;line-height:1;opacity:.8;">ℹ️</button>
-<span id="myev-info-tip" style="font-size:.6rem;color:#86efac;display:none;margin-left:6px;">自分だけの勉強イベントを設定できます</span>
+<span style="font-size:.65rem;font-weight:700;color:#4ade80;">📅 My Crazy</span><button onclick="_showMyEvInfo()" style="background:transparent;border:none;color:#4ade80;font-size:.72rem;cursor:pointer;padding:0 0 0 4px;line-height:1;opacity:.8;">ℹ️</button>
+<span id="myev-info-tip" style="font-size:.6rem;color:#86efac;display:none;margin-left:6px;">自分だけのMy Crazyを設定できます</span>
 </div>
 <div id="crazy10-my-list" style="display:flex;flex-direction:column;gap:3px;margin-bottom:6px;"></div>
 <div id="myev-acc-hd" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:4px 6px;margin-bottom:4px;background:rgba(0,0,0,.15);border-radius:7px;" onclick="_toggleMyEventAcc()">
@@ -199,6 +199,10 @@
 <div id="myev-acc-body" style="display:none;">
 <div style="background:rgba(0,0,0,.15);border-radius:8px;padding:9px;display:flex;flex-direction:column;gap:6px;">
 <div style="font-size:.63rem;font-weight:700;color:#86efac;">追加フォーム</div>
+<div style="display:flex;align-items:center;gap:5px;">
+<span style="font-size:.62rem;color:var(--text-muted);min-width:48px;">名前</span>
+<input type="text" id="myev-name" class="cust-input" maxlength="20" placeholder="例：My Crazy" style="flex:1;font-size:.68rem;">
+</div>
 <div style="display:flex;align-items:center;gap:5px;">
 <span style="font-size:.62rem;color:var(--text-muted);min-width:48px;">開催日</span>
 <input type="date" id="myev-date" class="cust-input" style="flex:1;font-size:.68rem;">
@@ -212,7 +216,7 @@
 <div id="myev-breaks-wrap" style="display:flex;flex-direction:column;gap:4px;"></div>
 <button id="myev-add-brk-btn" style="background:transparent;border:1px dashed rgba(74,222,128,.4);color:#4ade80;border-radius:6px;padding:4px;font-size:.62rem;font-weight:700;cursor:pointer;width:100%;">＋ 休憩を追加（最大3回）</button>
 <div id="myev-calc" style="font-size:.63rem;color:#4ade80;font-weight:700;min-height:13px;"></div>
-<button id="myev-add-btn" style="background:#4ade80;color:#052e16;border:none;border-radius:7px;padding:6px;font-size:.7rem;font-weight:800;cursor:pointer;width:100%;">+ マイイベントを追加</button>
+<button id="myev-add-btn" style="background:#4ade80;color:#052e16;border:none;border-radius:7px;padding:6px;font-size:.7rem;font-weight:800;cursor:pointer;width:100%;">+ My Crazyを追加</button>
 </div>
 </div>
 </div>
@@ -1244,7 +1248,7 @@ function save(){LS.set('study-data',JSON.stringify(data));saveToCloud();}
 
 let notes={};
 function loadNotes(){try{notes=JSON.parse(LS.get('study-notes','{}'));}catch{notes={};}}
-function saveNote(ds,text){if(text){notes[ds]=text;}else{delete notes[ds];}LS.set('study-notes',JSON.stringify(notes));saveToCloud();}
+function saveNote(ds,text){if(text){notes[ds]=text;}else{delete notes[ds];}LS.set('study-notes',JSON.stringify(notes));}
 function refreshDiary(){
   const input=$('diary-input');
   const label=$('diary-date-label');
@@ -2047,8 +2051,10 @@ function updateNowBlock(){
     const isNow=isToday&&h===nowH&&m===nowM&&!div.classList.contains('checked');
     div.classList.toggle('now-time',isNow);
     if(isNow&&_swIsRunning){
+      div.style.animation='none';
       div.style.background=`linear-gradient(to right,rgba(255,133,161,.60) 0%,rgba(255,133,161,.60) ${pct}%,var(--block-bg) ${pct}%)`;
     }else{
+      div.style.animation='';
       div.style.background='';
     }
   });
@@ -2648,8 +2654,9 @@ function buildGrid(){
     // Crazy10：イベント判定に問題があっても、通常の10分表は必ず表示する。
     let _c10=false,_c10ev=null,_c10evBreaks=[],_c10inEvent=false;
     try{
-      _c10=_isCrazy10Active();
-      _c10ev=_getCrazy10EventNow();
+      const _c10ds=(typeof currentDate!=='undefined'&&currentDate)?currentDate:_toLocalDateStr(new Date());
+      _c10=_isCrazy10DayDisplayActive(_c10ds);
+      _c10ev=_getAnyEvent(_c10ds);
       _c10evBreaks=_c10ev?((Array.isArray(_c10ev.breaks)&&_c10ev.breaks.length)?_c10ev.breaks:(_c10ev.breakEnd>_c10ev.breakStart?[{s:_c10ev.breakStart,e:_c10ev.breakEnd}]:[])):[];
       _c10inEvent=_c10&&_c10ev&&(h+1)>_c10ev.start&&h<_c10ev.end;
     }catch(e){
@@ -2734,6 +2741,8 @@ function onHourBtn(h){
     MINS.forEach(m=>{data[currentDate][h+':'+m]=true;});
   }
   save();refreshGrid();updateStats();
+  if(typeof renderCrazy10Stars==='function')renderCrazy10Stars();
+  if(typeof renderAsajukuStars==='function')renderAsajukuStars();
   // 一括チェック時にコンボ発生（チェック入力のときのみ）
   if(!allChecked){
     const hBtn=document.querySelector('.hour-btn[data-h="'+h+'"]');
@@ -2901,7 +2910,6 @@ $('import-file-input').addEventListener('change',function(){
       lastBloomPct=-1;lastWeeklyPct=-1;lastMonthlyPct=-1;lastLv=0;
       switchView('daily');if(window.refreshCustomGoalBtns)window.refreshCustomGoalBtns();
       showToast('✅ データを復元しました！');
-      if(typeof saveToCloudNow==='function')saveToCloudNow();
     }catch(err){showToast('❌ 読み込みに失敗しました',true);}
   };
   reader.readAsText(file);this.value='';
@@ -3193,7 +3201,7 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
   function getBlockForNow(){const now=new Date();const h=now.getHours(),mm=now.getMinutes();const blockMin=(mm===0)?10:Math.ceil(mm/10)*10;return{h,blockMin,ds:toStudyDateStr(now)};}
   function autoCheck(){
     const{h,blockMin,ds}=getBlockForNow();if(!data[ds])data[ds]={};const key=h+':'+blockMin;
-    if(!data[ds][key]){data[ds][key]=true;save();if(currentView==='daily'&&currentDate===ds){refreshGrid();updateStats();}
+    if(!data[ds][key]){data[ds][key]=true;save();if(currentView==='daily'&&currentDate===ds){refreshGrid();updateStats();if(typeof renderCrazy10Stars==='function')renderCrazy10Stars();if(typeof renderAsajukuStars==='function')renderAsajukuStars();}
       hintEl.textContent=String(h===0?24:h).padStart(2,'0')+':'+String(blockMin).padStart(2,'0')+' '+(CUST.checkEmoji||'🌸');
       playCheckSound();setTimeout(()=>hintEl.textContent='10分ごとに '+(CUST.checkEmoji||'🌸'),3000);}
     swCheckedCount++;
@@ -3203,7 +3211,7 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
   const _sm=getStoryText('startMsg');if(_sm){showEasterToast('📖 '+_sm);}
   _swIsRunning=true;if(_nowProgressTimer)clearInterval(_nowProgressTimer);_nowProgressTimer=setInterval(()=>{if(currentView==='daily')updateNowBlock();},500);
 }
-  function swStop(){if(!swRunning)return;swElapsed+=Date.now()-swLastStart;swRunning=false;clearInterval(swInterval);dispEl.classList.remove('running');startBtn.disabled=false;stopBtn.disabled=true;resetBtn.disabled=false;hintEl.textContent='一時停止中 — スタートで再開';_swIsRunning=false;if(_nowProgressTimer){clearInterval(_nowProgressTimer);_nowProgressTimer=null;}document.querySelectorAll('.block.now-time').forEach(b=>b.style.background='');}
+  function swStop(){if(!swRunning)return;swElapsed+=Date.now()-swLastStart;swRunning=false;clearInterval(swInterval);dispEl.classList.remove('running');startBtn.disabled=false;stopBtn.disabled=true;resetBtn.disabled=false;hintEl.textContent='一時停止中 — スタートで再開';_swIsRunning=false;if(_nowProgressTimer){clearInterval(_nowProgressTimer);_nowProgressTimer=null;}document.querySelectorAll('.block.now-time').forEach(b=>{b.style.animation='';b.style.background='';});}
   function swReset(){if(swRunning)swStop();swElapsed=0;swCheckedCount=0;dispEl.textContent='00:00';dispEl.classList.remove('running');startBtn.disabled=false;stopBtn.disabled=true;resetBtn.disabled=false;hintEl.textContent='10分ごとに '+(CUST.checkEmoji||'🌸');nextTimeEl.textContent='--:--';nextTimeEl.classList.remove('soon');}
   function _swBind(el,fn){
     el.addEventListener('click',fn);
@@ -3885,6 +3893,16 @@ function _isCrazy10Period(){const ev=_getCrazy10EventNow();if(!ev)return false;c
 function _isCrazy10Joined(dateStr){return !!(CUST.crazy10Joined&&CUST.crazy10Joined[dateStr]);}
 function _setCrazy10Joined(dateStr,val){if(!CUST.crazy10Joined)CUST.crazy10Joined={};CUST.crazy10Joined[dateStr]=val;saveCust();}
 function _isCrazy10Active(){const ev=_getCrazy10EventNow();if(!ev)return false;if(!ev.isOfficial)return _isCrazy10Period();return _isCrazy10Joined(ev.dateStr)&&_isCrazy10Period();}
+function _isCrazy10DayDisplayActive(dateStr){
+  const ev=_getAnyEvent(dateStr);
+  if(!ev)return false;
+  if(ev.isOfficial&&!_isCrazy10Joined(dateStr))return false;
+  const todayStr=_toLocalDateStr(new Date());
+  if(dateStr!==todayStr)return false;
+  const now=new Date();
+  const h=now.getHours()+now.getMinutes()/60;
+  return h>=4;
+}
 function _getCrazy10SetCount(dateStr){
   const ev=_getAnyEvent(dateStr);
   if(!ev)return 0;
@@ -3917,7 +3935,7 @@ function _getCrazy10SetCount(dateStr){
 function _crazy10PopupKey(dateStr){return 'crazy10-popup-'+dateStr;}
 function _crazy10PreviewKey(dateStr){return 'crazy10-preview-'+dateStr;}
 
-// マイイベントを含めた全イベント一覧を返す
+// My Crazyを含めた全イベント一覧を返す
 function _getAllCrazy10Events(){
   const official=CRAZY10_EVENTS.map(e=>({...e,isOfficial:true}));
   const myEvents=Array.isArray(CUST.myEvents)?CUST.myEvents:[];
@@ -4833,16 +4851,6 @@ loadCust();load();loadNotes();loadGoal();loadBadges();loadMilestones();loadCount
   if (ok && currentView === 'daily') { refreshGrid(); updateDateLabel(); updateStats(); renderForecast(); }
 })();
 initSyncUI();
-// ④ 初回利用者向け：同期コードを控えるよう案内（一度だけ表示）
-(function(){
-  const INTRO_KEY='kotsusaku-sync-intro-shown';
-  if(!localStorage.getItem(INTRO_KEY)){
-    localStorage.setItem(INTRO_KEY,'1');
-    setTimeout(()=>{
-      showToast('📋 同期コードをメモしておくと、端末を替えてもデータを引き継げます（設定画面で確認できます）');
-    },2500);
-  }
-})();
 function _syncHeaderHeight(){
   const h=document.querySelector("header");
   if(h)document.documentElement.style.setProperty("--header-h",h.offsetHeight+"px");
@@ -5137,7 +5145,10 @@ function checkStudyDateChanged() {
     if (wasOnToday) {
       currentDate = newStudyDate;
       if (currentView === 'daily') {
+        buildGrid();
         refreshGrid();
+        if(typeof renderCrazy10Stars==='function')renderCrazy10Stars();
+        if(typeof renderAsajukuStars==='function')renderAsajukuStars();
         updateDateLabel();
         updateStats();
         applyLuckyBlock();
@@ -5182,14 +5193,19 @@ function _renderCrazy10Stars(dateStr){
   const _starColor=_isMyEv?'#38bdf8':'#4ade80';
   const _starSubColor=_isMyEv?'#7dd3fc':'#86efac';
   let html='<div id="crazy10-stars-wrap" style="margin:8px 0 4px;padding:8px 12px;background:'+_starBg+';border:1px solid '+_starBorder+';border-radius:10px;">';
-  const _evTitle=ev.isOfficial?'🥦 ITACHACHA House Crazy10':'📅 マイイベント';
-  html+='<div style="font-size:.6rem;font-weight:700;color:'+_starColor+';letter-spacing:.05em;margin-bottom:6px;">'+_evTitle+'</div>';
+  const _myEvName=(!ev.isOfficial&&ev.name)?ev.name:'My Crazy';
+  const _evTitle=ev.isOfficial?'🥦 ITACHACHA House Crazy10':'📅 '+_escapeHtml(_myEvName);
+  const _timeLabel=(!ev.isOfficial&&isFinite(ev.start)&&isFinite(ev.end))?_hToTimeStr(ev.start)+'〜'+_hToTimeStr(ev.end):'';
+  html+='<div style="font-size:.6rem;font-weight:700;color:'+_starColor+';letter-spacing:.05em;margin-bottom:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">'
+    +'<span>'+_evTitle+'</span>'
+    +(_timeLabel?'<span style="font-size:.56rem;font-weight:700;color:'+_starSubColor+';letter-spacing:0;background:rgba(56,189,248,.10);border:1px solid rgba(56,189,248,.24);border-radius:999px;padding:1px 7px;">'+_timeLabel+'</span>':'')
+    +'</div>';
   html+='<div style="display:flex;flex-wrap:wrap;gap:3px;align-items:center;">';
   for(let i=0;i<maxSets;i++){
     if(i<sets){
       html+='<span style="font-size:16px;line-height:1;">⭐</span>';
     } else if(i===sets&&isActive){
-      html+='<span style="font-size:16px;line-height:1;animation:starPulseC10 1.2s ease-in-out infinite;display:inline-block;">⭐</span>';
+      html+='<span title="次のSET" style="font-size:16px;line-height:1;animation:starPulseC10 1.2s ease-in-out infinite;display:inline-block;opacity:.45;filter:grayscale(.35);">⭐</span>';
     } else {
       html+='<span style="font-size:16px;line-height:1;opacity:.15;filter:grayscale(1);">⭐</span>';
     }
@@ -5483,18 +5499,20 @@ function _showCrazy10PreviewToastIfNeeded(){
   const key=_crazy10PreviewKey(ds);
   if(localStorage.getItem(key)==='1')return;
   localStorage.setItem(key,'1');
-  // 明日がマイイベントの前日かどうかを判定
+  // 明日がMy Crazyの前日かどうかを判定
   const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
   const tmStr=_toLocalDateStr(tomorrow);
-  const isMyEv=(CUST.myEvents||[]).some(e=>e.dateStr===tmStr);
+  const tmMyEv=(CUST.myEvents||[]).find(e=>e.dateStr===tmStr);
+  const isMyEv=!!tmMyEv;
+  const tmEvName=isMyEv&&tmMyEv.name?tmMyEv.name:'My Crazy';
   let msgs;
   if(isMyEv){
-    // マイイベント用メッセージ
+    // My Crazy用メッセージ
     msgs=[
-      '📅 ニヤニヤ……明日はあなたが決めた特別な日だ。ワクワクしてきた？',
-      '📅 明日は自分だけのイベント日！今夜は早めに休んで、全力で挑もう！',
-      '📅 ドキドキしてきた？明日がついにやってくる。あなたのイベント、全力で楽しんで！',
-      '📅 明日、あなたが決めたその日がやってくる。ニヤニヤ……準備はいい？',
+      '📅 ニヤニヤ……明日は「'+tmEvName+'」だ。ワクワクしてきた？',
+      '📅 明日は「'+tmEvName+'」！今夜は早めに休んで、全力で挑もう！',
+      '📅 ドキドキしてきた？明日は「'+tmEvName+'」。全力で楽しんで！',
+      '📅 明日、「'+tmEvName+'」がやってくる。ニヤニヤ……準備はいい？',
     ];
   } else {
     // 公式イベント用メッセージ（既存のまま）
@@ -5649,7 +5667,7 @@ function crazy10TestFinale(){
 }
 
 // ══════════════════════════════════════════════
-// マイイベント管理
+// My Crazy管理
 // ══════════════════════════════════════════════
 
 // 公式イベント一覧を描画
@@ -5678,14 +5696,14 @@ function _renderOfficialEventList(){
   }).join('');
 }
 
-// マイイベントのbreaksを正規化（旧形式後方互換）
+// My Crazyのbreaksを正規化（旧形式後方互換）
 function _normalizeBreaks(ev){
   if(ev.breaks&&Array.isArray(ev.breaks))return ev.breaks;
   if(ev.breakStart!=null&&ev.breakEnd!=null&&ev.breakEnd>ev.breakStart)return [{s:ev.breakStart,e:ev.breakEnd}];
   return[];
 }
 
-// マイイベント一覧を描画
+// My Crazy一覧を描画
 function _renderMyEventList(){
   const el=document.getElementById('crazy10-my-list');
   if(!el)return;
@@ -5697,9 +5715,10 @@ function _renderMyEventList(){
     const totalBreak=_calcTotalBreak(breaks);
     const study=(ev.end-ev.start)-totalBreak;
     const bkTxt=breaks.length?breaks.map(b=>_hToTimeStr(b.s)+'〜'+_hToTimeStr(b.e)).join('、'):'なし';
+    const evName=_escapeHtml(ev.name?ev.name:'My Crazy');
     return '<div style="background:rgba(74,222,128,.05);border:1px solid rgba(74,222,128,.2);border-radius:7px;padding:6px 10px;display:flex;align-items:center;gap:8px;">'
       +'<div style="flex:1;min-width:0;">'
-      +'<div style="font-size:.7rem;font-weight:700;color:var(--text);">'+ev.dateStr+'</div>'
+      +'<div style="font-size:.7rem;font-weight:700;color:var(--text);">📅 '+evName+'　<span style="font-weight:400;color:var(--text-muted);">'+ev.dateStr+'</span></div>'
       +'<div style="font-size:.6rem;color:var(--text-muted);margin-top:2px;">'+sh+' 〜 '+eh+'　休憩 '+bkTxt+'　実質 '+_hDiffStr(study)+'</div>'
       +'</div>'
       +'<button onclick="_deleteMyEvent('+i+')" style="background:transparent;border:1px solid rgba(248,113,113,.5);color:#f87171;border-radius:6px;font-size:.6rem;padding:3px 8px;cursor:pointer;white-space:nowrap;flex-shrink:0;">削除</button>'
@@ -5707,7 +5726,7 @@ function _renderMyEventList(){
   }).join('');
 }
 
-// マイイベント削除
+// My Crazy削除
 function _deleteMyEvent(idx){
   if(!CUST.myEvents)return;
   CUST.myEvents.splice(idx,1);
@@ -5759,6 +5778,7 @@ function _timeToH(t){if(!t||t==='none')return NaN;const[h,m]=t.split(':').map(Nu
 function _hToTimeStr(h){const hh=Math.floor(h),mm=Math.round((h-hh)*60);return String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0');}
 // 小数時刻差 → "Xh Ym"
 function _hDiffStr(h){const hh=Math.floor(h),mm=Math.round((h-hh)*60);return hh>0?(hh+'h'+(mm>0?' '+mm+'m':'')):(mm+'m');}
+function _escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
 // 休憩行のselect要素を生成（動的追加用）
 function _buildBreakSelectHTML(idx){
@@ -5852,9 +5872,10 @@ function _calcMyEventStudyTime(){
   calc.style.color='#4ade80';
 }
 
-// マイイベント追加ボタン処理
+// My Crazy追加ボタン処理
 function _addMyEvent(){
   const dateVal=document.getElementById('myev-date')?.value;
+  const nameVal=(document.getElementById('myev-name')?.value||'').trim();
   const s=_timeToH(document.getElementById('myev-start')?.value);
   const e=_timeToH(document.getElementById('myev-end')?.value);
   if(!dateVal){showToast('開催日を入力してください','error');return;}
@@ -5867,16 +5888,20 @@ function _addMyEvent(){
   if(all.some(ev=>ev.dateStr===dateVal)){showToast('その日付はすでに登録されています','error');return;}
   if(!CUST.myEvents)CUST.myEvents=[];
   // 新形式で保存（breaks配列）
-  CUST.myEvents.push({dateStr:dateVal,start:s,end:e,breaks:breaks});
+  CUST.myEvents.push({dateStr:dateVal,name:nameVal,start:s,end:e,breaks:breaks});
   CUST.myEvents.sort((a,b)=>a.dateStr.localeCompare(b.dateStr));
   saveCust();
   _renderMyEventList();
+  if(typeof refreshGrid==='function')refreshGrid();
+  if(typeof renderCrazy10Stars==='function')renderCrazy10Stars();
   // フォームリセット
+  const nameInpR=document.getElementById('myev-name');
+  if(nameInpR)nameInpR.value='';
   const wrap=document.getElementById('myev-breaks-wrap');
   if(wrap)wrap.innerHTML='';
   const addBrkBtn=document.getElementById('myev-add-brk-btn');
   if(addBrkBtn)addBrkBtn.style.display='';
-  showToast('マイイベントを追加しました');
+  showToast('My Crazyを追加しました');
 }
 
 // 設定パネルでのCrazy10セクション同期（拡張版）
@@ -5890,17 +5915,19 @@ _syncCrazy10SettingsSec=function(){
   _buildTimeOptions('myev-end','16:00');
   // フォームイベント登録（重複防止）
   const dateInp=document.getElementById('myev-date');
+  const nameInp=document.getElementById('myev-name');
   const startInp=document.getElementById('myev-start');
   const endInp=document.getElementById('myev-end');
   const addBrkBtn=document.getElementById('myev-add-brk-btn');
   const addBtn=document.getElementById('myev-add-btn');
   if(dateInp&&!dateInp.dataset.c10bound){dateInp.dataset.c10bound='1';dateInp.addEventListener('change',_calcMyEventStudyTime);}
+  if(nameInp&&!nameInp.dataset.c10bound){nameInp.dataset.c10bound='1';nameInp.addEventListener('change',_calcMyEventStudyTime);}
   if(startInp&&!startInp.dataset.c10bound){startInp.dataset.c10bound='1';startInp.addEventListener('change',_onMyEvStartChange);}
   if(endInp&&!endInp.dataset.c10bound){endInp.dataset.c10bound='1';endInp.addEventListener('change',_calcMyEventStudyTime);}
   if(addBrkBtn&&!addBrkBtn.dataset.c10bound){addBrkBtn.dataset.c10bound='1';addBrkBtn.addEventListener('click',_addBreakRow);}
   if(addBtn&&!addBtn.dataset.c10bound){addBtn.dataset.c10bound='1';addBtn.addEventListener('click',_addMyEvent);}
   _calcMyEventStudyTime();
-  // 設定パネルがマイイベントのない非イベント日でも常に表示
+  // 設定パネルがMy Crazyのない非イベント日でも常に表示
   const sec=document.getElementById('crazy10-settings-sec');
   if(sec)sec.style.display='block';
 };
@@ -5915,7 +5942,7 @@ function _toggleMyEventAcc(){
   arrow.style.transform=open?'':'rotate(180deg)';
 }
 
-// マイイベント ℹ️ボタン：3秒後に自動で消える
+// My Crazy ℹ️ボタン：3秒後に自動で消える
 let _myEvInfoTimer=null;
 function _showMyEvInfo(){
   const tip=document.getElementById('myev-info-tip');
