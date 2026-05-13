@@ -889,7 +889,7 @@
 </div>
 <div class="all-time-wrap">
 <div id="all-time-card"></div>
-</div><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script><script>
+</div><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script><script>
 
 const $=id=>document.getElementById(id);
 
@@ -915,6 +915,7 @@ const $=id=>document.getElementById(id);
 // === Firebase 初期化 ===
 // Firebase CDNが読めない場合（オフライン・SW古いキャッシュ）でもアプリを動かすためtry-catchで保護
 let db = null;
+let analytics = null;
 try {
   if (typeof firebase !== 'undefined') {
     firebase.initializeApp({
@@ -926,9 +927,35 @@ try {
       appId: "1:394043383608:web:433cc0d00b59ec71e86bcd"
     });
     db = firebase.firestore();
+    analytics = firebase.analytics ? firebase.analytics() : null;
+    if (analytics) {
+      analytics.setAnalyticsCollectionEnabled(true);
+      analytics.setUserProperties({ app_name: "kotsusaku", app_platform: "web_pwa" });
+    }
   }
 } catch(e) {
   console.warn('Firebase初期化エラー（オフライン時は正常）:', e);
+}
+function trackEvent(name, params) {
+  if (!analytics) return;
+  try {
+    analytics.logEvent(name, Object.assign({ app_platform: "web_pwa" }, params || {}));
+  } catch(e) {
+    console.warn('Analytics送信スキップ:', name, e);
+  }
+}
+function trackScreen(view) {
+  const screenName = 'study_' + view;
+  trackEvent('screen_view', {
+    firebase_screen: screenName,
+    firebase_screen_class: 'kotsusaku_web',
+    screen_name: screenName
+  });
+}
+function trackAppOpen() {
+  trackEvent('kotsusaku_open', {
+    display_mode: window.matchMedia && window.matchMedia('(display-mode: standalone)').matches ? 'standalone' : 'browser'
+  });
 }
 
 // === 同期コード ===
@@ -1042,6 +1069,7 @@ function initSyncUI() {
       if (currentView === 'daily') { refreshGrid(); updateDateLabel(); updateStats(); applyLuckyBlock(); }
       else { updateStats(); }
       renderForecast();
+      trackEvent('cloud_sync_imported');
     } else {
       showSyncStatus('⚠️ そのコードのデータが見つかりません', 'err');
     }
@@ -2747,6 +2775,11 @@ function onHourBtn(h){
     MINS.forEach(m=>{data[currentDate][h+':'+m]=true;});
   }
   save();refreshGrid();updateStats();
+  trackEvent(allChecked ? 'study_hour_unchecked' : 'study_hour_checked', {
+    view: currentView,
+    minutes: MINS.length * 10,
+    hour: h
+  });
   if(typeof renderCrazy10Stars==='function')renderCrazy10Stars();
   if(typeof renderAsajukuStars==='function')renderAsajukuStars();
   // 一括チェック時にコンボ発生（チェック入力のときのみ）
@@ -2768,7 +2801,13 @@ function onBlock(e){
   const h=+div.dataset.h,m=+div.dataset.m;
   const wasChecked=isChecked(currentDate,h,m);
   toggle(currentDate,h,m);
+  const isNowChecked=isChecked(currentDate,h,m);
   div.classList.toggle('checked',isChecked(currentDate,h,m));
+  trackEvent(isNowChecked ? 'study_block_checked' : 'study_block_unchecked', {
+    view: currentView,
+    minutes: 10,
+    hour: h
+  });
   // ラッキーブロック判定
   if(!wasChecked)onLuckyCheck(h,m);
   // コンボ
@@ -3070,6 +3109,7 @@ function switchView(view){
   else if(view==='weekly'){weekOff=0;renderWeekly();}
   else if(view==='monthly'){monthOff=0;renderMonthly();}
   updateStats();renderAllTimeCard();renderForecast();
+  trackScreen(view);
   const isMonthly=view==='monthly';
 }
 
@@ -3101,6 +3141,10 @@ document.querySelectorAll('.goal-btn:not([data-custom])').forEach(btn=>{
     document.querySelectorAll('.goal-btn[data-type="'+type+'"]:not([data-custom])').forEach(b=>b.classList.toggle('active',+b.dataset.h===+btn.dataset.h));
     if(window.refreshCustomGoalBtns)window.refreshCustomGoalBtns();
     updateStats();
+    trackEvent('goal_changed', {
+      goal_type: type,
+      goal_minutes: val
+    });
   });
 });
 
@@ -3181,6 +3225,10 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
           saveGoal();
           document.querySelectorAll(`.goal-btn[data-type="${type}"]:not([data-custom])`).forEach(b=>b.classList.toggle('active',+b.dataset.h*60===getGoal()));
           updateStats();
+          trackEvent('goal_changed', {
+            goal_type: type,
+            goal_minutes: h * 60
+          });
         }
         inp.replaceWith(btn);refreshBtn();
       }
@@ -3208,17 +3256,19 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
   function autoCheck(){
     const{h,blockMin,ds}=getBlockForNow();if(!data[ds])data[ds]={};const key=h+':'+blockMin;
     if(!data[ds][key]){data[ds][key]=true;save();if(currentView==='daily'&&currentDate===ds){refreshGrid();updateStats();if(typeof renderCrazy10Stars==='function')renderCrazy10Stars();if(typeof renderAsajukuStars==='function')renderAsajukuStars();}
+      trackEvent('study_block_auto_checked', { view: currentView, minutes: 10, hour: h });
       hintEl.textContent=String(h===0?24:h).padStart(2,'0')+':'+String(blockMin).padStart(2,'0')+' '+(CUST.checkEmoji||'🌸');
       playCheckSound();setTimeout(()=>hintEl.textContent='10分ごとに '+(CUST.checkEmoji||'🌸'),3000);}
     swCheckedCount++;
   }
   function tick(){const elapsed=swElapsed+(Date.now()-swLastStart);dispEl.textContent=fmtSw(elapsed);const newBlocks=Math.floor(elapsed/600000);while(swCheckedCount<newBlocks)autoCheck();updateNext(elapsed);}
   function swStart(){if(swRunning)return;swRunning=true;swLastStart=Date.now();swInterval=setInterval(tick,500);dispEl.classList.add('running');startBtn.disabled=true;stopBtn.disabled=false;resetBtn.disabled=true;hintEl.textContent='計測中… 10分ごとに '+(CUST.checkEmoji||'🌸');if(isUnlocked('startBloom')&&Math.random()<0.25)setTimeout(()=>launchPetals(),300);
+  trackEvent('timer_start', { view: currentView });
   const _sm=getStoryText('startMsg');if(_sm){showEasterToast('📖 '+_sm);}
   _swIsRunning=true;if(_nowProgressTimer)clearInterval(_nowProgressTimer);_nowProgressTimer=setInterval(()=>{if(currentView==='daily')updateNowBlock();},500);
 }
-  function swStop(){if(!swRunning)return;swElapsed+=Date.now()-swLastStart;swRunning=false;clearInterval(swInterval);dispEl.classList.remove('running');startBtn.disabled=false;stopBtn.disabled=true;resetBtn.disabled=false;hintEl.textContent='一時停止中 — スタートで再開';_swIsRunning=false;if(_nowProgressTimer){clearInterval(_nowProgressTimer);_nowProgressTimer=null;}document.querySelectorAll('.block.now-time').forEach(b=>{b.style.animation='';b.style.background='';});}
-  function swReset(){if(swRunning)swStop();swElapsed=0;swCheckedCount=0;dispEl.textContent='00:00';dispEl.classList.remove('running');startBtn.disabled=false;stopBtn.disabled=true;resetBtn.disabled=false;hintEl.textContent='10分ごとに '+(CUST.checkEmoji||'🌸');nextTimeEl.textContent='--:--';nextTimeEl.classList.remove('soon');}
+  function swStop(){if(!swRunning)return;swElapsed+=Date.now()-swLastStart;swRunning=false;clearInterval(swInterval);dispEl.classList.remove('running');startBtn.disabled=false;stopBtn.disabled=true;resetBtn.disabled=false;hintEl.textContent='一時停止中 — スタートで再開';trackEvent('timer_stop', { view: currentView, elapsed_seconds: Math.round(swElapsed / 1000) });_swIsRunning=false;if(_nowProgressTimer){clearInterval(_nowProgressTimer);_nowProgressTimer=null;}document.querySelectorAll('.block.now-time').forEach(b=>{b.style.animation='';b.style.background='';});}
+  function swReset(){if(swRunning)swStop();trackEvent('timer_reset', { view: currentView, elapsed_seconds: Math.round(swElapsed / 1000) });swElapsed=0;swCheckedCount=0;dispEl.textContent='00:00';dispEl.classList.remove('running');startBtn.disabled=false;stopBtn.disabled=true;resetBtn.disabled=false;hintEl.textContent='10分ごとに '+(CUST.checkEmoji||'🌸');nextTimeEl.textContent='--:--';nextTimeEl.classList.remove('soon');}
   function _swBind(el,fn){
     el.addEventListener('click',fn);
     el.addEventListener('touchend',function(e){
@@ -4900,6 +4950,7 @@ buildGrid();
   const{year:_iy,month:_im}=monthInfo(_todayStr,0);lastMonthlyPct=Math.min(100,Math.round(monthTotal(_iy,_im)/MONTH_GOAL*100));
   lastLv=getLevelData(allTimeTotal()).lv;
 })();
+trackAppOpen();
 switchView('daily');
 updateBadgeCount();
 renderLevelBar();
