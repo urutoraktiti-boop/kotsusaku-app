@@ -199,7 +199,7 @@
 </div>
 <div id="myev-acc-body" style="display:none;">
 <div style="background:rgba(0,0,0,.15);border-radius:8px;padding:9px;display:flex;flex-direction:column;gap:6px;">
-<div style="font-size:.63rem;font-weight:700;color:#86efac;">追加フォーム</div>
+<div id="myev-form-title" style="font-size:.63rem;font-weight:700;color:#86efac;">追加フォーム</div>
 <div style="display:flex;align-items:center;gap:5px;">
 <span style="font-size:.62rem;color:var(--text-muted);min-width:48px;">名前</span>
 <input type="text" id="myev-name" class="cust-input" maxlength="20" placeholder="例：My Crazy" style="flex:1;font-size:.68rem;">
@@ -218,6 +218,7 @@
 <button id="myev-add-brk-btn" style="background:transparent;border:1px dashed rgba(74,222,128,.4);color:#4ade80;border-radius:6px;padding:4px;font-size:.62rem;font-weight:700;cursor:pointer;width:100%;">＋ 休憩を追加（最大3回）</button>
 <div id="myev-calc" style="font-size:.63rem;color:#4ade80;font-weight:700;min-height:13px;"></div>
 <button id="myev-add-btn" style="background:#4ade80;color:#052e16;border:none;border-radius:7px;padding:6px;font-size:.7rem;font-weight:800;cursor:pointer;width:100%;">+ My Crazyを追加</button>
+<button id="myev-cancel-edit-btn" style="display:none;background:transparent;color:var(--text-muted);border:1px solid var(--border);border-radius:7px;padding:6px;font-size:.68rem;font-weight:700;cursor:pointer;width:100%;">修正をキャンセル</button>
 </div>
 </div>
 </div>
@@ -5773,6 +5774,8 @@ function _normalizeBreaks(ev){
   return[];
 }
 
+let _myEvEditIdx=-1;
+
 // My Crazy一覧を描画
 function _renderMyEventList(){
   const el=document.getElementById('crazy10-my-list');
@@ -5791,7 +5794,10 @@ function _renderMyEventList(){
       +'<div style="font-size:.7rem;font-weight:700;color:var(--text);">📅 '+evName+'　<span style="font-weight:400;color:var(--text-muted);">'+ev.dateStr+'</span></div>'
       +'<div style="font-size:.6rem;color:var(--text-muted);margin-top:2px;">'+sh+' 〜 '+eh+'　休憩 '+bkTxt+'　実質 '+_hDiffStr(study)+'</div>'
       +'</div>'
-      +'<button onclick="_deleteMyEvent('+i+')" style="background:transparent;border:1px solid rgba(248,113,113,.5);color:#f87171;border-radius:6px;font-size:.6rem;padding:3px 8px;cursor:pointer;white-space:nowrap;flex-shrink:0;">削除</button>'
+      +'<div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">'
+      +'<button onclick="_editMyEvent('+i+')" style="background:transparent;border:1px solid rgba(56,189,248,.55);color:#7dd3fc;border-radius:6px;font-size:.6rem;padding:3px 8px;cursor:pointer;white-space:nowrap;">修正</button>'
+      +'<button onclick="_deleteMyEvent('+i+')" style="background:transparent;border:1px solid rgba(248,113,113,.5);color:#f87171;border-radius:6px;font-size:.6rem;padding:3px 8px;cursor:pointer;white-space:nowrap;">削除</button>'
+      +'</div>'
       +'</div>';
   }).join('');
 }
@@ -5800,9 +5806,73 @@ function _renderMyEventList(){
 function _deleteMyEvent(idx){
   if(!CUST.myEvents)return;
   CUST.myEvents.splice(idx,1);
+  _resetMyEventForm();
   saveCust();
   _renderMyEventList();
   refreshGrid();renderCrazy10Stars();
+}
+
+function _setMyEventAccordionOpen(open){
+  const body=document.getElementById('myev-acc-body');
+  const arrow=document.getElementById('myev-acc-arrow');
+  if(body)body.style.display=open?'block':'none';
+  if(arrow)arrow.style.transform=open?'rotate(180deg)':'';
+}
+
+function _setMyEventFormMode(editing){
+  const title=document.getElementById('myev-form-title');
+  const addBtn=document.getElementById('myev-add-btn');
+  const cancelBtn=document.getElementById('myev-cancel-edit-btn');
+  if(title)title.textContent=editing?'修正フォーム':'追加フォーム';
+  if(addBtn)addBtn.textContent=editing?'変更を保存':'+ My Crazyを追加';
+  if(cancelBtn)cancelBtn.style.display=editing?'block':'none';
+}
+
+function _resetMyEventForm(){
+  _myEvEditIdx=-1;
+  _setMyEventFormMode(false);
+  const nameInp=document.getElementById('myev-name');
+  const wrap=document.getElementById('myev-breaks-wrap');
+  const addBrkBtn=document.getElementById('myev-add-brk-btn');
+  if(nameInp)nameInp.value='';
+  if(wrap)wrap.innerHTML='';
+  if(addBrkBtn)addBrkBtn.style.display='';
+  _buildTimeOptions('myev-start','05:00');
+  _buildTimeOptions('myev-end','16:00','05:10',null);
+  _calcMyEventStudyTime();
+}
+
+function _editMyEvent(idx){
+  const ev=CUST.myEvents&&CUST.myEvents[idx];
+  if(!ev)return;
+  _myEvEditIdx=idx;
+  _setMyEventAccordionOpen(true);
+  _setMyEventFormMode(true);
+  const nameInp=document.getElementById('myev-name');
+  const dateInp=document.getElementById('myev-date');
+  const wrap=document.getElementById('myev-breaks-wrap');
+  if(nameInp)nameInp.value=ev.name||'';
+  if(dateInp)dateInp.value=ev.dateStr||'';
+  const startVal=_hToTimeStr(ev.start);
+  const endVal=_hToTimeStr(ev.end);
+  const startMin=_timeToMinutes(startVal);
+  const minEndMin=startMin+10;
+  const minEndVal=String(Math.floor(minEndMin/60)).padStart(2,'0')+':'+String(minEndMin%60).padStart(2,'0');
+  _buildTimeOptions('myev-start',startVal);
+  _buildTimeOptions('myev-end',endVal,minEndVal,null);
+  if(wrap)wrap.innerHTML='';
+  const breaks=_normalizeBreaks(ev).slice(0,3);
+  breaks.forEach((b,i)=>{
+    if(!wrap)return;
+    wrap.insertAdjacentHTML('beforeend',_buildBreakSelectHTML(i));
+    _buildTimeOptions('myev-bs-'+i,_hToTimeStr(b.s));
+    _buildTimeOptions('myev-be-'+i,_hToTimeStr(b.e));
+    document.getElementById('myev-bs-'+i)?.addEventListener('change',_calcMyEventStudyTime);
+    document.getElementById('myev-be-'+i)?.addEventListener('change',_calcMyEventStudyTime);
+  });
+  const addBrkBtn=document.getElementById('myev-add-brk-btn');
+  if(addBrkBtn)addBrkBtn.style.display=breaks.length>=3?'none':'';
+  _calcMyEventStudyTime();
 }
 
 // 10分刻みselect選択肢生成（04:00〜翌4:00）
@@ -5954,24 +6024,27 @@ function _addMyEvent(){
   const totalBreak=_calcTotalBreak(breaks);
   const study=(e-s)-totalBreak;
   if(study<=0){showToast('実質学習時間が0以下です','error');return;}
-  const all=_getAllCrazy10Events();
-  if(all.some(ev=>ev.dateStr===dateVal)){showToast('その日付はすでに登録されています','error');return;}
+  const officialConflict=CRAZY10_EVENTS.some(ev=>ev.dateStr===dateVal);
+  const myConflict=(CUST.myEvents||[]).some((ev,i)=>i!==_myEvEditIdx&&ev.dateStr===dateVal);
+  if(officialConflict||myConflict){showToast('その日付はすでに登録されています','error');return;}
   if(!CUST.myEvents)CUST.myEvents=[];
-  // 新形式で保存（breaks配列）
-  CUST.myEvents.push({dateStr:dateVal,name:nameVal,start:s,end:e,breaks:breaks});
+  const nextEvent={dateStr:dateVal,name:nameVal,start:s,end:e,breaks:breaks};
+  const isEditing=_myEvEditIdx>=0;
+  if(isEditing){
+    if(!CUST.myEvents[_myEvEditIdx]){showToast('修正するMy Crazyが見つかりません','error');_resetMyEventForm();return;}
+    CUST.myEvents[_myEvEditIdx]=nextEvent;
+  }else{
+    // 新形式で保存（breaks配列）
+    CUST.myEvents.push(nextEvent);
+  }
   CUST.myEvents.sort((a,b)=>a.dateStr.localeCompare(b.dateStr));
   saveCust();
   _renderMyEventList();
   if(typeof refreshGrid==='function')refreshGrid();
   if(typeof renderCrazy10Stars==='function')renderCrazy10Stars();
   // フォームリセット
-  const nameInpR=document.getElementById('myev-name');
-  if(nameInpR)nameInpR.value='';
-  const wrap=document.getElementById('myev-breaks-wrap');
-  if(wrap)wrap.innerHTML='';
-  const addBrkBtn=document.getElementById('myev-add-brk-btn');
-  if(addBrkBtn)addBrkBtn.style.display='';
-  showToast('My Crazyを追加しました');
+  _resetMyEventForm();
+  showToast(isEditing?'My Crazyを修正しました':'My Crazyを追加しました');
 }
 
 // 設定パネルでのCrazy10セクション同期（拡張版）
@@ -5990,12 +6063,14 @@ _syncCrazy10SettingsSec=function(){
   const endInp=document.getElementById('myev-end');
   const addBrkBtn=document.getElementById('myev-add-brk-btn');
   const addBtn=document.getElementById('myev-add-btn');
+  const cancelBtn=document.getElementById('myev-cancel-edit-btn');
   if(dateInp&&!dateInp.dataset.c10bound){dateInp.dataset.c10bound='1';dateInp.addEventListener('change',_calcMyEventStudyTime);}
   if(nameInp&&!nameInp.dataset.c10bound){nameInp.dataset.c10bound='1';nameInp.addEventListener('change',_calcMyEventStudyTime);}
   if(startInp&&!startInp.dataset.c10bound){startInp.dataset.c10bound='1';startInp.addEventListener('change',_onMyEvStartChange);}
   if(endInp&&!endInp.dataset.c10bound){endInp.dataset.c10bound='1';endInp.addEventListener('change',_calcMyEventStudyTime);}
   if(addBrkBtn&&!addBrkBtn.dataset.c10bound){addBrkBtn.dataset.c10bound='1';addBrkBtn.addEventListener('click',_addBreakRow);}
   if(addBtn&&!addBtn.dataset.c10bound){addBtn.dataset.c10bound='1';addBtn.addEventListener('click',_addMyEvent);}
+  if(cancelBtn&&!cancelBtn.dataset.c10bound){cancelBtn.dataset.c10bound='1';cancelBtn.addEventListener('click',_resetMyEventForm);}
   _calcMyEventStudyTime();
   // 設定パネルがMy Crazyのない非イベント日でも常に表示
   const sec=document.getElementById('crazy10-settings-sec');
