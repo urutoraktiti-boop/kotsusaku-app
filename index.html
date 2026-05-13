@@ -9,6 +9,7 @@
 .block.c10-set2:not(.checked):not(.lucky){animation:crazy10SetGlow 2s ease-in-out infinite;animation-delay:1s;border-color:rgba(74,222,128,.3);background:rgba(74,222,128,.06);}
 .block.c10-set1:not(.checked):not(.lucky)::after{content:'🥦';font-size:9px;line-height:1;opacity:.4;}
 .block.c10-set2:not(.checked):not(.lucky)::after{content:'🥦';font-size:9px;line-height:1;opacity:.4;}
+.block.c10-my:not(.checked):not(.lucky)::after{content:var(--check-emoji,'🌸') !important;font-size:9px;line-height:1;opacity:.55;}
 .block.c10-set1.checked:not(.lucky)::after,.block.c10-set2.checked:not(.lucky)::after{content:var(--check-emoji,'🌸') !important;}
 /* Crazy10 フィナーレボタン */
 @keyframes c10FinalePulse{0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,.6)}50%{box-shadow:0 0 0 8px rgba(74,222,128,0)}}
@@ -19,8 +20,8 @@
 @keyframes asajukuSetGlow{0%,100%{box-shadow:inset 0 0 0 rgba(56,189,248,0);border-color:rgba(56,189,248,.3);background:rgba(56,189,248,.06);}50%{box-shadow:inset 0 0 5px rgba(56,189,248,.25);border-color:rgba(56,189,248,.8);background:rgba(56,189,248,.16);}}
 .block.asa-set1:not(.checked):not(.lucky){animation:asajukuSetGlow 2s ease-in-out infinite;border-color:rgba(56,189,248,.3);background:rgba(56,189,248,.06);}
 .block.asa-set2:not(.checked):not(.lucky){animation:asajukuSetGlow 2s ease-in-out infinite;animation-delay:1s;border-color:rgba(56,189,248,.3);background:rgba(56,189,248,.06);}
-.block.asa-set1:not(.checked):not(.lucky)::after{content:'🌅';font-size:9px;line-height:1;opacity:.4;}
-.block.asa-set2:not(.checked):not(.lucky)::after{content:'🌅';font-size:9px;line-height:1;opacity:.4;}
+.block.asa-set1:not(.checked):not(.lucky)::after{content:var(--check-emoji,'🌸');font-size:9px;line-height:1;opacity:.55;}
+.block.asa-set2:not(.checked):not(.lucky)::after{content:var(--check-emoji,'🌸');font-size:9px;line-height:1;opacity:.55;}
 .block.asa-set1.last-asa-set1{border-right:3px solid rgba(56,189,248,.75)!important;}
 
 </style><link rel="manifest" href="manifest.json">
@@ -2677,8 +2678,13 @@ function buildGrid(){
         const _blkEnd=h+m/60;
         // 休憩と重なるブロックは除外（ブロックが完全に休憩内に含まれる場合のみ除外）
         const _inBreak=_c10evBreaks.some(b=>_blkStart>=b.s&&_blkEnd<=b.e);
-        _c10hour=!_inBreak&&(h+1)>_c10ev.start&&h<_c10ev.end;
+        if(_c10ev&&!_c10ev.isOfficial){
+          _c10hour=!_inBreak&&_blkStart>=_c10ev.start&&_blkEnd<=_c10ev.end;
+        }else{
+          _c10hour=!_inBreak&&(h+1)>_c10ev.start&&h<_c10ev.end;
+        }
         if(_c10hour){
+          if(_c10ev&&!_c10ev.isOfficial)cls+=' c10-my';
           if(m<=30){cls+=' c10-set1';if(m===30)cls+=' last-set1';}
           else{cls+=' c10-set2';}
         }
@@ -3891,6 +3897,7 @@ function _isCrazy10PreviewNight(){const now=new Date();const ds=_toLocalDateStr(
 function _getCrazy10EventNow(){return _getAnyEventNow();}
 function _isCrazy10Period(){const ev=_getCrazy10EventNow();if(!ev)return false;const now=new Date();const h=now.getHours()+now.getMinutes()/60;return h>=ev.start&&h<ev.end;}
 function _isCrazy10Joined(dateStr){return !!(CUST.crazy10Joined&&CUST.crazy10Joined[dateStr]);}
+function _hasCrazy10JoinChoice(dateStr){return !!(CUST.crazy10Joined&&Object.prototype.hasOwnProperty.call(CUST.crazy10Joined,dateStr));}
 function _setCrazy10Joined(dateStr,val){if(!CUST.crazy10Joined)CUST.crazy10Joined={};CUST.crazy10Joined[dateStr]=val;saveCust();}
 function _isCrazy10Active(){const ev=_getCrazy10EventNow();if(!ev)return false;if(!ev.isOfficial)return _isCrazy10Period();return _isCrazy10Joined(ev.dateStr)&&_isCrazy10Period();}
 function _isCrazy10DayDisplayActive(dateStr){
@@ -3903,11 +3910,36 @@ function _isCrazy10DayDisplayActive(dateStr){
   const h=now.getHours()+now.getMinutes()/60;
   return h>=4;
 }
+function _getMyCrazyEligibleBlockKeys(ev){
+  if(!ev||ev.isOfficial)return [];
+  const breaks=_normalizeBreaks(ev);
+  const keys=[];
+  for(let h=Math.floor(ev.start);h<Math.ceil(ev.end);h++){
+    MINS.forEach(m=>{
+      const blkStart=h+(m-10)/60;
+      const blkEnd=h+m/60;
+      const inRange=blkStart>=ev.start&&blkEnd<=ev.end;
+      const inBreak=breaks.some(b=>blkStart>=b.s&&blkEnd<=b.e);
+      if(inRange&&!inBreak)keys.push(h+':'+m);
+    });
+  }
+  return keys;
+}
+function _getCrazy10MaxSetCount(ev){
+  if(!ev)return 0;
+  if(!ev.isOfficial)return Math.floor(_getMyCrazyEligibleBlockKeys(ev).length/3);
+  const studyHours=(ev.end-ev.start)-_calcTotalBreak(_normalizeBreaks(ev));
+  return Math.round(studyHours*2);
+}
 function _getCrazy10SetCount(dateStr){
   const ev=_getAnyEvent(dateStr);
   if(!ev)return 0;
   if(ev.isOfficial&&!_isCrazy10Joined(dateStr))return 0;
   const dayData=data[dateStr]||{};
+  if(!ev.isOfficial){
+    const checkedBlocks=_getMyCrazyEligibleBlockKeys(ev).filter(key=>dayData[key]).length;
+    return Math.floor(checkedBlocks/3);
+  }
   let sets=0;
   const evBreaks=ev.breaks&&ev.breaks.length?ev.breaks:(ev.breakEnd>ev.breakStart?[{s:ev.breakStart,e:ev.breakEnd}]:[]);
   for(let h=Math.floor(ev.start);h<ev.end;h++){
@@ -5181,9 +5213,7 @@ function _renderCrazy10Stars(dateStr){
   if(!ev)return null;
   if(ev.isOfficial&&!_isCrazy10Joined(dateStr))return null;
   const sets=_getCrazy10SetCount(dateStr);
-  // 最大SET数 = (ev.end - ev.start - (breakEnd-breakStart)) * 2
-  const studyHours=(ev.end-ev.start)-_calcTotalBreak(_normalizeBreaks(ev));
-  const maxSets=Math.round(studyHours*2);
+  const maxSets=_getCrazy10MaxSetCount(ev);
   // 表示中のdateStrが今日かつイベント期間中なら点滅星を表示
   const todayStr=_toLocalDateStr(new Date());
   const isActive=dateStr===todayStr&&_isCrazy10Period()&&!!_getAnyEvent(dateStr);
@@ -5200,19 +5230,23 @@ function _renderCrazy10Stars(dateStr){
     +'<span>'+_evTitle+'</span>'
     +(_timeLabel?'<span style="font-size:.56rem;font-weight:700;color:'+_starSubColor+';letter-spacing:0;background:rgba(56,189,248,.10);border:1px solid rgba(56,189,248,.24);border-radius:999px;padding:1px 7px;">'+_timeLabel+'</span>':'')
     +'</div>';
-  html+='<div style="display:flex;flex-wrap:wrap;gap:3px;align-items:center;">';
-  for(let i=0;i<maxSets;i++){
-    if(i<sets){
-      html+='<span style="font-size:16px;line-height:1;">⭐</span>';
+	  const _ytLiveBtn=ev.isOfficial?'<a href="https://www.youtube.com/@Cteamchannel/streams" target="_blank" rel="noopener" style="margin-left:auto;display:inline-flex;align-items:center;gap:4px;background:rgba(255,0,0,.15);border:1px solid rgba(255,80,80,.35);border-radius:7px;padding:5px 9px;text-decoration:none;color:#fca5a5;font-size:.58rem;font-weight:800;white-space:nowrap;"><svg width=\"16\" height=\"12\" viewBox=\"0 0 28 20\" aria-hidden=\"true\"><rect width=\"28\" height=\"20\" rx=\"5\" fill=\"#ff0033\"/><path d=\"M11 6v8l7-4z\" fill=\"#fff\"/></svg>ライブ配信</a>':'';
+	  html+='<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">';
+	  html+='<div style="display:flex;flex-wrap:wrap;gap:3px;align-items:center;">';
+	  for(let i=0;i<maxSets;i++){
+	    if(i<sets){
+	      html+='<span style="font-size:16px;line-height:1;">⭐</span>';
     } else if(i===sets&&isActive){
       html+='<span title="次のSET" style="font-size:16px;line-height:1;animation:starPulseC10 1.2s ease-in-out infinite;display:inline-block;opacity:.45;filter:grayscale(.35);">⭐</span>';
     } else {
       html+='<span style="font-size:16px;line-height:1;opacity:.15;filter:grayscale(1);">⭐</span>';
     }
-  }
-  if(sets>=maxSets)html+='<span style="font-size:18px;line-height:1;margin-left:2px;">🏆</span>';
-  html+='</div>';
-  html+='<div style="font-size:.58rem;color:'+_starSubColor+';margin-top:5px;">'+sets+' / '+maxSets+' SET完了</div>';
+	  }
+	  if(maxSets>0&&sets>=maxSets)html+='<span style="font-size:18px;line-height:1;margin-left:2px;">🏆</span>';
+	  html+='</div>';
+	  html+=_ytLiveBtn;
+	  html+='</div>';
+	  html+='<div style="font-size:.58rem;color:'+_starSubColor+';margin-top:5px;">'+sets+' / '+maxSets+' SET完了</div>';
   html+='</div>';
   return html;
 }
@@ -5284,7 +5318,7 @@ function _isAsajukuActive(){
 }
 function _asajukuPopupKey(ds){return 'asajuku-popup-'+ds;}
 const ASAJUKU_YT_URL='https://www.youtube.com/@Cteamchannel/streams';
-const ASAJUKU_YT_BTN='<a href="'+ASAJUKU_YT_URL+'" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,0,0,.15);border:1px solid rgba(255,80,80,.35);border-radius:7px;padding:7px 11px;text-decoration:none;color:#fca5a5;font-size:.65rem;font-weight:700;"><svg width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"#fca5a5\"><path d=\"M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.7 15.5V8.5l6.3 3.5-6.3 3.5z\"/></svg>最新のライブ配信をチェック →</a><div style=\"font-size:.52rem;color:#7dd3fc;opacity:.7;margin-top:5px;line-height:1.6;\">※ライブがない日はプレミア配信をご確認ください</div>';
+const ASAJUKU_YT_BTN='<a href="'+ASAJUKU_YT_URL+'" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,0,0,.15);border:1px solid rgba(255,80,80,.35);border-radius:7px;padding:7px 11px;text-decoration:none;color:#fca5a5;font-size:.65rem;font-weight:700;"><svg width=\"16\" height=\"12\" viewBox=\"0 0 28 20\" aria-hidden=\"true\"><rect width=\"28\" height=\"20\" rx=\"5\" fill=\"#ff0033\"/><path d=\"M11 6v8l7-4z\" fill=\"#fff\"/></svg>ライブ配信</a>';
 
 
 
@@ -5342,15 +5376,18 @@ function _renderAsajukuStars(ds){
   const isActive=ds===todayStr&&_isAsajukuPeriod();
   let html='<div id="asajuku-stars-wrap" style="margin:8px 0 4px;padding:8px 12px;background:rgba(56,189,248,.07);border:1px solid rgba(56,189,248,.3);border-radius:10px;">';
   html+='<div style="font-size:.6rem;font-weight:700;color:#38bdf8;letter-spacing:.05em;margin-bottom:6px;">🌅 早朝自習室</div>';
-  html+='<div style="display:flex;flex-wrap:wrap;gap:3px;align-items:center;">';
-  for(let i=0;i<maxSets;i++){
-    if(i<sets){html+='<span style="font-size:16px;line-height:1;">⭐</span>';}
-    else if(i===sets&&isActive){html+='<span style="font-size:16px;line-height:1;animation:starPulseC10 1.2s ease-in-out infinite;display:inline-block;">⭐</span>';}
+	  html+='<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">';
+	  html+='<div style="display:flex;flex-wrap:wrap;gap:3px;align-items:center;">';
+	  for(let i=0;i<maxSets;i++){
+	    if(i<sets){html+='<span style="font-size:16px;line-height:1;">⭐</span>';}
+	    else if(i===sets&&isActive){html+='<span style="font-size:16px;line-height:1;animation:starPulseC10 1.2s ease-in-out infinite;display:inline-block;">⭐</span>';}
     else{html+='<span style="font-size:16px;line-height:1;opacity:.15;filter:grayscale(1);">⭐</span>';}
-  }
-  if(sets>=maxSets)html+='<span style="font-size:18px;line-height:1;margin-left:2px;">🏆</span>';
-  html+='</div>';
-  html+='<div style="font-size:.58rem;color:#7dd3fc;margin-top:5px;">'+sets+' / '+maxSets+' SET完了</div>';
+	  }
+	  if(sets>=maxSets)html+='<span style="font-size:18px;line-height:1;margin-left:2px;">🏆</span>';
+	  html+='</div>';
+	  html+='<a href="https://www.youtube.com/@Cteamchannel/streams" target="_blank" rel="noopener" style="margin-left:auto;display:inline-flex;align-items:center;gap:4px;background:rgba(255,0,0,.15);border:1px solid rgba(255,80,80,.35);border-radius:7px;padding:5px 9px;text-decoration:none;color:#fca5a5;font-size:.58rem;font-weight:800;white-space:nowrap;"><svg width=\"16\" height=\"12\" viewBox=\"0 0 28 20\" aria-hidden=\"true\"><rect width=\"28\" height=\"20\" rx=\"5\" fill=\"#ff0033\"/><path d=\"M11 6v8l7-4z\" fill=\"#fff\"/></svg>ライブ配信</a>';
+	  html+='</div>';
+	  html+='<div style="font-size:.58rem;color:#7dd3fc;margin-top:5px;">'+sets+' / '+maxSets+' SET完了</div>';
   html+='</div>';
   return html;
 }
@@ -5467,10 +5504,11 @@ function _closeCrazy10Overlay(){var o=document.getElementById("crazy10-overlay")
 // ── ポップアップを表示すべきか判定・表示 ──
 function _showCrazy10PopupIfNeeded(){
   const ev=_getCrazy10EventNow();
-  if(!ev||!_isCrazy10Period())return;
-  if(!ev.isOfficial)return; // MyEventは参加/不参加ポップアップ不要
-  const key=_crazy10PopupKey(ev.dateStr);
-  if(localStorage.getItem(key)==='1')return; // 今日すでに見た
+	  if(!ev||!_isCrazy10Period())return;
+	  if(!ev.isOfficial)return; // MyEventは参加/不参加ポップアップ不要
+	  const key=_crazy10PopupKey(ev.dateStr);
+	  if(_hasCrazy10JoinChoice(ev.dateStr))return; // 設定画面などで事前選択済みなら二度聞きしない
+	  if(localStorage.getItem(key)==='1')return; // 今日すでに見た
   const overlay=document.getElementById('crazy10-overlay');
   if(!overlay)return;
   overlay.style.display='flex';
@@ -5484,8 +5522,7 @@ function _showCrazy10PopupIfNeeded(){
       +'<div style="font-size:.9rem;font-weight:800;color:#4ade80;margin-bottom:8px;">Crazy10、発動。</div>'
       +'<div style="font-size:.7rem;color:#86efac;margin-bottom:14px;line-height:1.8;">10時間の旅が始まる。<br>ニヤニヤ、楽しむぞ!!</div>'
       +'<div style="border-top:1px solid rgba(74,222,128,.2);padding-top:10px;margin-top:4px;">'
-      +'<a href="https://www.youtube.com/@Cteamchannel/streams" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,0,0,.15);border:1px solid rgba(255,80,80,.35);border-radius:7px;padding:7px 11px;text-decoration:none;color:#fca5a5;font-size:.65rem;font-weight:700;"><svg width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"#fca5a5\"><path d=\"M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.7 15.5V8.5l6.3 3.5-6.3 3.5z\"/></svg>最新のライブ配信をチェック →</a>'
-      +'<div style="font-size:.52rem;color:#86efac;opacity:.7;margin-top:5px;line-height:1.6;">※ライブがない日はプレミア配信をご確認ください</div>'
+	      +'<a href="https://www.youtube.com/@Cteamchannel/streams" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,0,0,.15);border:1px solid rgba(255,80,80,.35);border-radius:7px;padding:7px 11px;text-decoration:none;color:#fca5a5;font-size:.65rem;font-weight:700;"><svg width=\"16\" height=\"12\" viewBox=\"0 0 28 20\" aria-hidden=\"true\"><rect width=\"28\" height=\"20\" rx=\"5\" fill=\"#ff0033\"/><path d=\"M11 6v8l7-4z\" fill=\"#fff\"/></svg>ライブ配信</a>'
       +'</div>'
       +'<button onclick="_closeCrazy10Overlay()" style=\"background:transparent;color:#6b7280;border:none;font-size:.63rem;cursor:pointer;padding:4px 8px;margin-top:8px;\">閉じる ✕</button>';}
   };
@@ -5539,10 +5576,11 @@ function _showCrazy10PreviewToastIfNeeded(){
 (function initCrazy10(){
   // 前夜告知
   _showCrazy10PreviewToastIfNeeded();
-  // 参加確認ポップアップ（少し遅延して表示）
-  setTimeout(_showCrazy10PopupIfNeeded, 1500);
-  // 星バッジ初期描画
-  setTimeout(renderCrazy10Stars, 800);
+	  // 参加確認ポップアップ（少し遅延して表示）
+	  setTimeout(_showCrazy10PopupIfNeeded, 1500);
+	  setTimeout(_showAsajukuPopupIfNeeded, 1900);
+	  // 星バッジ初期描画
+	  setTimeout(renderCrazy10Stars, 800);
   // 設定パネル同期（パネルを開くたびに実行）
   const origOpen=window.openCustPanel;
   window.openCustPanel=function(){if(origOpen)origOpen();_syncCrazy10SettingsSec();};
@@ -5603,12 +5641,12 @@ function _buildFinaleStars(sets,maxSets){
     }
     starsEl.appendChild(sp);
   }
-  if(sets>=maxSets){
+  if(maxSets>0&&sets>=maxSets){
     const trophy=document.createElement('span');
     trophy.textContent='\u{1F3C6}';trophy.style.fontSize='16px';trophy.style.marginLeft='3px';
     starsEl.appendChild(trophy);
   }
-  if(sets>=maxSets){
+  if(maxSets>0&&sets>=maxSets){
     countEl.textContent=maxSets+' / '+maxSets+' SET \u5b8c\u8d70\uff01';
     countEl.style.color='#BA7517';countEl.style.fontWeight='700';
   }else{
@@ -5624,8 +5662,7 @@ function showCrazy10Finale(){
   const ds=ev.dateStr;
   // 星バッジ構築
   const sets=_getCrazy10SetCount(ds);
-  const studyHours=(ev.end-ev.start)-_calcTotalBreak(_normalizeBreaks(ev));
-  const maxSets=Math.round(studyHours*2);
+  const maxSets=_getCrazy10MaxSetCount(ev);
   _buildFinaleStars(sets,maxSets);
   // オーバーレイ表示
   const overlay=document.getElementById('crazy10-finale-overlay');
