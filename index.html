@@ -5250,6 +5250,7 @@ function checkStudyDateChanged() {
         refreshGrid();
         if(typeof renderCrazy10Stars==='function')renderCrazy10Stars();
         if(typeof renderAsajukuStars==='function')renderAsajukuStars();
+        if(typeof _showAsajukuPopupIfNeeded==='function')setTimeout(_showAsajukuPopupIfNeeded,500);
         updateDateLabel();
         updateStats();
         applyLuckyBlock();
@@ -5262,12 +5263,16 @@ function checkStudyDateChanged() {
 setInterval(checkStudyDateChanged, 30000);
 
 // アプリに戻ってきた時にも確認
-window.addEventListener('focus', checkStudyDateChanged);
+window.addEventListener('focus', function(){
+  checkStudyDateChanged();
+  if(typeof _showAsajukuPopupIfNeeded==='function')setTimeout(_showAsajukuPopupIfNeeded,300);
+});
 
 // 画面が再表示された時にも確認
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) {
     checkStudyDateChanged();
+    if(typeof _showAsajukuPopupIfNeeded==='function')setTimeout(_showAsajukuPopupIfNeeded,300);
   }
 });
 
