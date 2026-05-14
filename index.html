@@ -2048,13 +2048,8 @@ function _setScrollText(containerEl, text){
   _applyScrollAnim(containerEl,inner);
 }
 
-// タイマー動作中チェック付きリロード（更新ボタン・保存して閉じるで共用）
+// タイマー状態は保存・復元されるため、確認なしでリロードする
 function _reloadWithCheck(){
-  if(_swIsRunning){
-    if(!window.confirm('⏱ タイマーが動作中です。\nリロードするとタイマーがリセットされますが、よろしいですか？')){
-      return;
-    }
-  }
   window.location.reload(true);
 }
 function updateNowBlock(){
