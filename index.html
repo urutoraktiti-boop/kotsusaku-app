@@ -120,7 +120,7 @@
 <div style="font-size:2.2rem;line-height:1;margin-bottom:10px;">🆕</div>
 <div style="font-size:1.05rem;font-weight:800;color:#fde8f7;margin-bottom:6px;">新しいバージョンがあります</div>
 <div id="update-version-text" style="font-size:.78rem;color:#c084fc;margin-bottom:10px;">最新版に更新してください</div>
-<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">ちょっちゅ休憩時間変更したねん</div>
+<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">時計まわり、ちょっちゅ整えました</div>
 <button id="update-reload-btn" style="display:block;width:100%;background:#f472b6;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:800;cursor:pointer;margin-bottom:12px;letter-spacing:.03em;">
 ✅ 今すぐ更新する
 </button>
@@ -970,7 +970,7 @@ function saveToCloud() {
 }
 // 設定保存など即時同期が必要な場面で使う（遅延なし版）
 async function saveToCloudNow() {
-  if (!db) return;
+  if (!db) return false;
   if (_cloudSaveTimer) { clearTimeout(_cloudSaveTimer); _cloudSaveTimer = null; }
   try {
     await db.collection('users').doc(getSyncCode()).set({
@@ -985,7 +985,8 @@ async function saveToCloudNow() {
       examDate: LS.get('exam-date',''),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-  } catch(e) { console.warn('クラウド即時保存エラー:', e); }
+    return true;
+  } catch(e) { console.warn('クラウド即時保存エラー:', e); return false; }
 }
 async function loadFromCloud(code) {
   if (!db) return false; // Firebase未初期化（オフライン時）はスキップ
@@ -1021,6 +1022,22 @@ function copySyncCode() {
     () => showSyncStatus('✅ コピーしました！', 'ok'),
     () => showSyncStatus('コード: ' + code, '')
   );
+}
+function showInitialSyncGuideIfNeeded() {
+  if (localStorage.getItem('kotsusaku-sync-guide-shown')) return;
+  const hasLocalData = Object.keys(data || {}).length > 0 || Object.keys(notes || {}).length > 0;
+  if (hasLocalData) return;
+  const code = getSyncCode();
+  const ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:12000;display:flex;align-items:center;justify-content:center;padding:18px;';
+  ov.innerHTML = '<div style="width:min(420px,100%);background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px;color:var(--text);box-shadow:0 12px 40px rgba(0,0,0,.35);"><div style="font-size:1rem;font-weight:800;margin-bottom:8px;">☁️ 同期コードを控えておこう</div><div style="font-size:.72rem;color:var(--text-muted);line-height:1.8;margin-bottom:12px;">端末を替えるときや、別の端末で使うときは、このコードでデータを取り込めます。設定画面からいつでも確認できます。</div><div style="background:var(--surface2);border:1.5px solid var(--accent);border-radius:10px;padding:12px;text-align:center;font-size:1.25rem;font-weight:900;color:var(--accent);letter-spacing:.16em;font-family:monospace;margin-bottom:12px;">'+code+'</div><div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;"><button id="sync-guide-later" style="background:transparent;border:1px solid var(--border);color:var(--text-muted);border-radius:8px;padding:8px 12px;font-weight:700;">あとで</button><button id="sync-guide-copy" style="background:var(--accent);border:none;color:#fff;border-radius:8px;padding:8px 12px;font-weight:800;">コピーして閉じる</button></div></div>';
+  const close = () => { localStorage.setItem('kotsusaku-sync-guide-shown','1'); ov.remove(); };
+  document.body.appendChild(ov);
+  ov.querySelector('#sync-guide-later').onclick = close;
+  ov.querySelector('#sync-guide-copy').onclick = () => {
+    const copy = navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(code) : Promise.resolve();
+    copy.finally(close);
+  };
 }
 function initSyncUI() {
   const disp = $('sync-code-display');
@@ -1250,7 +1267,7 @@ function save(){LS.set('study-data',JSON.stringify(data));saveToCloud();}
 
 let notes={};
 function loadNotes(){try{notes=JSON.parse(LS.get('study-notes','{}'));}catch{notes={};}}
-function saveNote(ds,text){if(text){notes[ds]=text;}else{delete notes[ds];}LS.set('study-notes',JSON.stringify(notes));}
+function saveNote(ds,text){if(text){notes[ds]=text;}else{delete notes[ds];}LS.set('study-notes',JSON.stringify(notes));saveToCloud();}
 function refreshDiary(){
   const input=$('diary-input');
   const label=$('diary-date-label');
@@ -2895,7 +2912,7 @@ $('import-btn').addEventListener('click',()=>$('import-file-input').click());
 $('import-file-input').addEventListener('change',function(){
   const file=this.files[0];if(!file)return;
   const reader=new FileReader();
-  reader.onload=function(e){
+    reader.onload=async function(e){
     try{
       const backup=JSON.parse(e.target.result);
       if(typeof backup.version==='undefined'||!backup.studyData){showToast('❌ ファイルの形式が正しくありません',true);return;}
@@ -2916,7 +2933,8 @@ $('import-file-input').addEventListener('change',function(){
       applyAllCust();
       lastBloomPct=-1;lastWeeklyPct=-1;lastMonthlyPct=-1;lastLv=0;
       switchView('daily');if(window.refreshCustomGoalBtns)window.refreshCustomGoalBtns();
-      showToast('✅ データを復元しました！');
+      const cloudOk = await saveToCloudNow();
+      showToast(cloudOk ? '✅ データを復元し、クラウドにも同期しました！' : '✅ データを復元しました！（クラウドはオンライン時に同期されます）');
     }catch(err){showToast('❌ 読み込みに失敗しました',true);}
   };
   reader.readAsText(file);this.value='';
@@ -3200,26 +3218,76 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
 
 (function(){
   let swRunning=false,swElapsed=0,swLastStart=0,swInterval=null,swCheckedCount=0;
+  let swCheckedBoundaries=[];
+  const SW_STATE_KEY='kotsusaku-stopwatch-state';
   const dispEl=$('sw-display'),hintEl=$('sw-hint'),nextTimeEl=$('sw-next-time');
   const startBtn=$('sw-start-btn'),stopBtn=$('sw-stop-btn'),resetBtn=$('sw-reset-btn');
   function fmtSw(ms){const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;if(h>0)return h+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');}
   function fmtNext(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60),sec=s%60;return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');}
-  function updateNext(elapsed){const nextMs=(swCheckedCount+1)*600000;const rem=Math.max(0,nextMs-elapsed);nextTimeEl.textContent=fmtNext(rem);nextTimeEl.classList.toggle('soon',rem<60000);}
-  function getBlockForNow(){const now=new Date();const h=now.getHours(),mm=now.getMinutes();const blockMin=(mm===0)?10:Math.ceil(mm/10)*10;return{h,blockMin,ds:toStudyDateStr(now)};}
-  function autoCheck(){
-    const{h,blockMin,ds}=getBlockForNow();if(!data[ds])data[ds]={};const key=h+':'+blockMin;
+  function nextClockBoundary(ms){return Math.floor(ms/600000)*600000+600000;}
+  function boundaryToBlock(boundaryMs){
+    const d=new Date(boundaryMs-1);
+    const h=d.getHours(),mm=d.getMinutes();
+    const blockMin=Math.ceil((mm+1)/10)*10;
+    return{h,blockMin,ds:toStudyDateStr(d)};
+  }
+  function setNextHidden(){nextTimeEl.textContent='--:--';nextTimeEl.classList.remove('soon');}
+  function updateNext(){
+    if(!swRunning){setNextHidden();return;}
+    const rem=Math.max(0,nextClockBoundary(Date.now())-Date.now());
+    nextTimeEl.textContent=fmtNext(rem);
+    nextTimeEl.classList.toggle('soon',rem<60000);
+  }
+  function updateSwHint(){
+    const e=CUST.checkEmoji||'🌸';
+    hintEl.textContent=swRunning?'チェック済み '+e+'×'+swCheckedCount:(swElapsed>0?'一時停止中 — '+e+'×'+swCheckedCount:'10分ごとに '+e);
+  }
+  function persistSw(){
+    localStorage.setItem(SW_STATE_KEY,JSON.stringify({running:swRunning,elapsed:swElapsed,lastStart:swLastStart,checkedBoundaries:swCheckedBoundaries}));
+  }
+  function autoCheck(boundaryMs){
+    const{h,blockMin,ds}=boundaryToBlock(boundaryMs);if(!data[ds])data[ds]={};const key=h+':'+blockMin;
     if(!data[ds][key]){data[ds][key]=true;save();if(currentView==='daily'&&currentDate===ds){refreshGrid();updateStats();if(typeof renderCrazy10Stars==='function')renderCrazy10Stars();if(typeof renderAsajukuStars==='function')renderAsajukuStars();}
       hintEl.textContent=String(h===0?24:h).padStart(2,'0')+':'+String(blockMin).padStart(2,'0')+' '+(CUST.checkEmoji||'🌸');
-      playCheckSound();setTimeout(()=>hintEl.textContent='10分ごとに '+(CUST.checkEmoji||'🌸'),3000);}
+      playCheckSound();setTimeout(updateSwHint,3000);}
     swCheckedCount++;
+    swCheckedBoundaries.push(boundaryMs);
+    persistSw();
   }
-  function tick(){const elapsed=swElapsed+(Date.now()-swLastStart);dispEl.textContent=fmtSw(elapsed);const newBlocks=Math.floor(elapsed/600000);while(swCheckedCount<newBlocks)autoCheck();updateNext(elapsed);}
-  function swStart(){if(swRunning)return;swRunning=true;swLastStart=Date.now();swInterval=setInterval(tick,500);dispEl.classList.add('running');startBtn.disabled=true;stopBtn.disabled=false;resetBtn.disabled=true;hintEl.textContent='計測中… 10分ごとに '+(CUST.checkEmoji||'🌸');if(isUnlocked('startBloom')&&Math.random()<0.25)setTimeout(()=>launchPetals(),300);
+  function processClockBoundaries(){
+    if(!swRunning)return;
+    const lastChecked=swCheckedBoundaries.length?swCheckedBoundaries[swCheckedBoundaries.length-1]:0;
+    let boundary=Math.max(nextClockBoundary(swLastStart),lastChecked+600000);
+    const now=Date.now();
+    while(boundary<=now){autoCheck(boundary);boundary+=600000;}
+  }
+  function tick(){const elapsed=swElapsed+(swRunning?Date.now()-swLastStart:0);dispEl.textContent=fmtSw(elapsed);processClockBoundaries();updateNext();if(swRunning)persistSw();}
+  function swStart(){if(swRunning)return;swRunning=true;swLastStart=Date.now();swInterval=setInterval(tick,500);dispEl.classList.add('running');startBtn.disabled=true;stopBtn.disabled=false;resetBtn.disabled=true;updateSwHint();updateNext();persistSw();if(isUnlocked('startBloom')&&Math.random()<0.25)setTimeout(()=>launchPetals(),300);
   const _sm=getStoryText('startMsg');if(_sm){showEasterToast('📖 '+_sm);}
   _swIsRunning=true;if(_nowProgressTimer)clearInterval(_nowProgressTimer);_nowProgressTimer=setInterval(()=>{if(currentView==='daily')updateNowBlock();},500);
 }
-  function swStop(){if(!swRunning)return;swElapsed+=Date.now()-swLastStart;swRunning=false;clearInterval(swInterval);dispEl.classList.remove('running');startBtn.disabled=false;stopBtn.disabled=true;resetBtn.disabled=false;hintEl.textContent='一時停止中 — スタートで再開';_swIsRunning=false;if(_nowProgressTimer){clearInterval(_nowProgressTimer);_nowProgressTimer=null;}document.querySelectorAll('.block.now-time').forEach(b=>{b.style.animation='';b.style.background='';});}
-  function swReset(){if(swRunning)swStop();swElapsed=0;swCheckedCount=0;dispEl.textContent='00:00';dispEl.classList.remove('running');startBtn.disabled=false;stopBtn.disabled=true;resetBtn.disabled=false;hintEl.textContent='10分ごとに '+(CUST.checkEmoji||'🌸');nextTimeEl.textContent='--:--';nextTimeEl.classList.remove('soon');}
+  function swStop(){if(!swRunning)return;tick();swElapsed+=Date.now()-swLastStart;swRunning=false;clearInterval(swInterval);dispEl.classList.remove('running');startBtn.disabled=false;stopBtn.disabled=true;resetBtn.disabled=false;setNextHidden();updateSwHint();persistSw();_swIsRunning=false;if(_nowProgressTimer){clearInterval(_nowProgressTimer);_nowProgressTimer=null;}document.querySelectorAll('.block.now-time').forEach(b=>{b.style.animation='';b.style.background='';});}
+  function swReset(){if(swRunning)swStop();swElapsed=0;swCheckedCount=0;swCheckedBoundaries=[];dispEl.textContent='00:00';dispEl.classList.remove('running');startBtn.disabled=false;stopBtn.disabled=true;resetBtn.disabled=false;updateSwHint();setNextHidden();localStorage.removeItem(SW_STATE_KEY);}
+  function restoreSw(){
+    try{
+      const st=JSON.parse(localStorage.getItem(SW_STATE_KEY)||'null');
+      if(!st)return;
+      swElapsed=Number(st.elapsed)||0;
+      swLastStart=Number(st.lastStart)||0;
+      swCheckedBoundaries=Array.isArray(st.checkedBoundaries)?st.checkedBoundaries.filter(Number).sort((a,b)=>a-b):[];
+      swCheckedCount=swCheckedBoundaries.length;
+      swRunning=!!st.running&&swLastStart>0;
+      if(swRunning){
+        dispEl.classList.add('running');startBtn.disabled=true;stopBtn.disabled=false;resetBtn.disabled=true;_swIsRunning=true;
+        swInterval=setInterval(tick,500);
+        if(_nowProgressTimer)clearInterval(_nowProgressTimer);
+        _nowProgressTimer=setInterval(()=>{if(currentView==='daily')updateNowBlock();},500);
+        tick();
+      }else{
+        dispEl.textContent=fmtSw(swElapsed);startBtn.disabled=false;stopBtn.disabled=true;resetBtn.disabled=false;setNextHidden();updateSwHint();
+      }
+    }catch(e){localStorage.removeItem(SW_STATE_KEY);}
+  }
   function _swBind(el,fn){
     el.addEventListener('click',fn);
     el.addEventListener('touchend',function(e){
@@ -3228,7 +3296,7 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
       fn();
     });
   }
-  _swBind(startBtn,swStart);_swBind(stopBtn,swStop);_swBind(resetBtn,swReset);
+  _swBind(startBtn,swStart);_swBind(stopBtn,swStop);_swBind(resetBtn,swReset);restoreSw();
 })();
 
 const STORY_DEF=[
@@ -4398,7 +4466,7 @@ function applyAllCust(){
   renderQuote();
   updateStoryMainCard();
   const swHint=$('sw-hint');
-  if(swHint&&!swHint.textContent.includes('中'))swHint.textContent='10分ごとに '+(CUST.checkEmoji||'🌸');
+  if(swHint&&!_swIsRunning&&!swHint.textContent.includes('中'))swHint.textContent='10分ごとに '+(CUST.checkEmoji||'🌸');
   const swNextLbl=document.querySelector('.sw-next-lbl');
   if(swNextLbl)swNextLbl.textContent=(CUST.checkEmoji||'🌸')+'まであと';
   applyAppIcon(CUST.appIcon||'A');
@@ -4767,7 +4835,7 @@ function _renderCheckGrid(){
         CUST.checkEmoji=e;saveCust();applyCheckEmojiCSS(e);
         const inp=$('cust-check-inp');if(inp)inp.value=e;
         document.querySelectorAll('.hour-btn').forEach(hb=>hb.textContent=e);
-        const sh=$('sw-hint');if(sh&&!sh.textContent.includes('中'))sh.textContent='10分ごとに '+e;
+        const sh=$('sw-hint');if(sh&&!_swIsRunning&&!sh.textContent.includes('中'))sh.textContent='10分ごとに '+e;
         const nl=document.querySelector('.sw-next-lbl');if(nl)nl.textContent=e+'まであと';
         _renderCheckGrid();
       });
@@ -4813,7 +4881,7 @@ function _renderQuotesList(){
     const e=[...this.value.trim()].slice(0,2).join('')||'🌸';
     CUST.checkEmoji=e;saveCust();applyCheckEmojiCSS(e);
     document.querySelectorAll('.hour-btn').forEach(hb=>hb.textContent=e);
-    const sh=$('sw-hint');if(sh&&!sh.textContent.includes('中'))sh.textContent='10分ごとに '+e;
+    const sh=$('sw-hint');if(sh&&!_swIsRunning&&!sh.textContent.includes('中'))sh.textContent='10分ごとに '+e;
     const nl=document.querySelector('.sw-next-lbl');if(nl)nl.textContent=e+'まであと';
     _renderCheckGrid();
   });
@@ -4885,6 +4953,7 @@ loadCust();load();loadNotes();loadGoal();loadBadges();loadMilestones();loadCount
   if (ok && currentView === 'daily') { refreshGrid(); updateDateLabel(); updateStats(); renderForecast(); }
 })();
 initSyncUI();
+showInitialSyncGuideIfNeeded();
 function _syncHeaderHeight(){
   const h=document.querySelector("header");
   if(h)document.documentElement.style.setProperty("--header-h",h.offsetHeight+"px");
@@ -5027,7 +5096,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v74'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v76'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
 
@@ -5114,28 +5183,31 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
   // 手動「更新」ボタンから呼ばれる
   window.checkAppUpdate = function() {
     var btn = document.getElementById('refresh-btn');
-    if (btn){ btn.textContent='⏳'; btn.disabled=true; }
+    function setRefreshState(text, disabled, resetDelay){
+      if(!btn)return;
+      btn.textContent=text;
+      btn.disabled=!!disabled;
+      if(resetDelay){
+        setTimeout(function(){btn.textContent='更新';btn.disabled=false;},resetDelay);
+      }
+    }
+    setRefreshState('確認中…', true);
     fetch('./version.json?_=' + Date.now(), { cache: 'no-store' })
       .then(function(r){ return r.json(); })
       .then(function(data){
         var latest = data && data.version;
         if (latest && latest !== CURRENT_VERSION) {
           // 新バージョンあり → 更新バナーを表示
-          if (btn){ btn.textContent='更新'; btn.disabled=false; }
+          setRefreshState('更新あり', false, 2000);
           showUpdateBanner(latest, null);
         } else {
-          // 最新版 → タイマーチェック付きでリロード
-          if (btn){ btn.textContent='更新'; btn.disabled=false; }
-          if (typeof _reloadWithCheck==='function'){
-            _reloadWithCheck();
-          } else {
-            window.location.reload(true);
-          }
+          // 最新版 → 状態だけ表示してリロードしない
+          setRefreshState('最新版です', false, 1800);
         }
       })
       .catch(function(){
         if (typeof showToast==='function') showToast('⚠️ ネットワークに接続して確認してください');
-        if (btn){ btn.textContent='更新'; btn.disabled=false; }
+        setRefreshState('確認できません', false, 2200);
       });
   };
 
