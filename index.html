@@ -45,17 +45,21 @@
 <div id="easter-toast" class="easter-toast"></div>
 <div id="backup-toast" class="backup-toast"></div>
 <div id="crazy10-finale-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:10200;align-items:center;justify-content:center;padding:16px;">
-<div id="crazy10-finale-popup" style="background:#0d1f13;border:2px solid #4ade80;border-radius:20px;padding:22px 20px;max-width:320px;width:100%;text-align:center;position:relative;z-index:1;">
+<div id="crazy10-finale-popup" style="background:#0d1f13;border:2px solid #4ade80;border-radius:20px;padding:22px 20px;max-width:340px;width:100%;text-align:center;position:relative;z-index:1;box-shadow:0 16px 50px rgba(0,0,0,.45);">
 <div style="font-size:2.2rem;margin-bottom:6px;">&#x1F966;</div>
 <div style="font-size:.92rem;font-weight:800;color:#bbf7d0;letter-spacing:.03em;margin-bottom:4px;">ITACHACHA House Crazy10</div>
-<div style="font-size:.78rem;color:#86efac;margin-bottom:10px;line-height:1.6;">お疲れ様でした！<br>頑張ったね。</div>
-<div style="font-size:.65rem;color:#4ade80;font-style:italic;margin-bottom:14px;line-height:1.6;">「続けてきたことは、裏切らない。」</div>
+<div id="crazy10-finale-date" style="font-size:.64rem;color:#4ade80;font-weight:800;letter-spacing:.08em;margin-bottom:8px;"></div>
+<div id="crazy10-finale-message" style="font-size:.78rem;color:#86efac;margin-bottom:10px;line-height:1.7;">お疲れ様でした！<br>頑張ったね。</div>
+<div style="font-size:.65rem;color:#4ade80;font-weight:800;margin-bottom:12px;line-height:1.6;">📸 スクショタイム</div>
 <div id="crazy10-finale-badge" style="background:rgba(0,0,0,.3);border:1px solid rgba(74,222,128,.3);border-radius:10px;padding:8px 10px;margin-bottom:14px;text-align:left;">
 <div style="font-size:.55rem;font-weight:700;color:#4ade80;letter-spacing:.05em;margin-bottom:5px;">&#x1F966; Crazy10 — あなたの記録</div>
 <div id="crazy10-finale-stars" style="display:flex;flex-wrap:wrap;gap:2px;line-height:1;"></div>
 <div id="crazy10-finale-count" style="font-size:.55rem;color:#86efac;margin-top:4px;"></div>
 </div>
-<button id="crazy10-finale-close" style="background:#4ade80;color:#052e16;border:none;border-radius:99px;padding:8px 32px;font-size:.82rem;font-weight:800;cursor:pointer;">ありがとう！</button>
+<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+<button id="crazy10-finale-save" style="background:transparent;color:#86efac;border:1.5px solid rgba(74,222,128,.5);border-radius:99px;padding:8px 18px;font-size:.78rem;font-weight:800;cursor:pointer;">📸 記念に保存</button>
+<button id="crazy10-finale-close" style="background:#4ade80;color:#052e16;border:none;border-radius:99px;padding:8px 28px;font-size:.82rem;font-weight:800;cursor:pointer;">閉じる</button>
+</div>
 </div>
 </div>
 <div id="crazy10-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:10100;align-items:center;justify-content:center;padding:16px;">
@@ -120,7 +124,7 @@
 <div style="font-size:2.2rem;line-height:1;margin-bottom:10px;">🆕</div>
 <div style="font-size:1.05rem;font-weight:800;color:#fde8f7;margin-bottom:6px;">新しいバージョンがあります</div>
 <div id="update-version-text" style="font-size:.78rem;color:#c084fc;margin-bottom:10px;">最新版に更新してください</div>
-<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">時計まわり、ちょっちゅ整えました</div>
+<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">時計まわり、ちょっちゅ整えました vol.2</div>
 <button id="update-reload-btn" style="display:block;width:100%;background:#f472b6;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:800;cursor:pointer;margin-bottom:12px;letter-spacing:.03em;">
 ✅ 今すぐ更新する
 </button>
@@ -178,10 +182,10 @@
 <div style="font-size:.75rem;font-weight:800;color:#4ade80;letter-spacing:.05em;margin-bottom:6px;">🎯 Crazy10イベント</div>
 <div style="font-size:.62rem;color:#86efac;background:rgba(74,222,128,.1);border-radius:6px;padding:5px 8px;margin-bottom:8px;line-height:1.6;">Crazy10を各自で設定できます。公式イベントの参加やMy Crazyの登録・管理をここで行えます。</div>
 <div class="cust-tog-row">
-<span style="font-size:.75rem;color:var(--text);">Crazy10 に参加する</span>
+<span id="crazy10-tog-label" style="font-size:.75rem;color:var(--text);">Crazy10 に参加する</span>
 <label class="tog-sw"><input type="checkbox" id="crazy10-tog"><span class="tog-slider"></span></label>
 </div>
-<div style="font-size:.6rem;color:var(--text-muted);margin-top:2px;margin-bottom:8px;line-height:1.5;">参加するとグリッド演出・星バッジなどの特別モードが有効になります</div>
+<div id="crazy10-tog-help" style="font-size:.6rem;color:var(--text-muted);margin-top:2px;margin-bottom:8px;line-height:1.5;">途中からON/OFFできます。記録は消えません。</div>
 <div style="border-top:1px solid rgba(74,222,128,.2);margin-bottom:8px;"></div>
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
 <span style="font-size:.65rem;font-weight:700;color:#4ade80;">📢 公式イベント</span>
@@ -890,7 +894,7 @@
 </div>
 <div class="all-time-wrap">
 <div id="all-time-card"></div>
-</div><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script><script>
+</div><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script><script>
 
 const $=id=>document.getElementById(id);
 
@@ -916,6 +920,7 @@ const $=id=>document.getElementById(id);
 // === Firebase 初期化 ===
 // Firebase CDNが読めない場合（オフライン・SW古いキャッシュ）でもアプリを動かすためtry-catchで保護
 let db = null;
+let analytics = null;
 try {
   if (typeof firebase !== 'undefined') {
     firebase.initializeApp({
@@ -924,13 +929,26 @@ try {
       projectId: "kotsusaku-app",
       storageBucket: "kotsusaku-app.firebasestorage.app",
       messagingSenderId: "394043383608",
-      appId: "1:394043383608:web:433cc0d00b59ec71e86bcd"
+      appId: "1:394043383608:web:433cc0d00b59ec71e86bcd",
+      measurementId: "G-SXRPF97MYX"
     });
     db = firebase.firestore();
+    if (typeof firebase.analytics === 'function') analytics = firebase.analytics();
   }
 } catch(e) {
   console.warn('Firebase初期化エラー（オフライン時は正常）:', e);
 }
+function trackEvent(name, params) {
+  if (!analytics || !name) return;
+  try {
+    analytics.logEvent(name, Object.assign({
+      app_version: 'kotsusaku-v77'
+    }, params || {}));
+  } catch(e) {
+    console.warn('Analytics送信エラー:', e);
+  }
+}
+setTimeout(() => trackEvent('app_open'), 0);
 
 // === 同期コード ===
 function generateSyncCode() {
@@ -3243,6 +3261,7 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
   function autoCheck(boundaryMs){
     const{h,blockMin,ds}=boundaryToBlock(boundaryMs);if(!data[ds])data[ds]={};const key=h+':'+blockMin;
     if(!data[ds][key]){data[ds][key]=true;save();if(currentView==='daily'&&currentDate===ds){refreshGrid();updateStats();if(typeof renderCrazy10Stars==='function')renderCrazy10Stars();if(typeof renderAsajukuStars==='function')renderAsajukuStars();}
+      if(typeof trackEvent==='function')trackEvent('ten_min_check',{source:'stopwatch'});
       hintEl.textContent=String(h===0?24:h).padStart(2,'0')+':'+String(blockMin).padStart(2,'0')+' '+(CUST.checkEmoji||'🌸');
       playCheckSound();setTimeout(updateSwHint,3000);}
     swCheckedCount++;
@@ -3258,6 +3277,7 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
   }
   function tick(){const elapsed=swElapsed+(swRunning?Date.now()-swLastStart:0);dispEl.textContent=fmtSw(elapsed);processClockBoundaries();updateNext();if(swRunning)persistSw();}
   function swStart(){if(swRunning)return;swRunning=true;swLastStart=Date.now();swInterval=setInterval(tick,500);dispEl.classList.add('running');startBtn.disabled=true;stopBtn.disabled=false;resetBtn.disabled=true;updateSwHint();updateNext();persistSw();if(isUnlocked('startBloom')&&Math.random()<0.25)setTimeout(()=>launchPetals(),300);
+  if(typeof trackEvent==='function')trackEvent('stopwatch_start');
   const _sm=getStoryText('startMsg');if(_sm){showEasterToast('📖 '+_sm);}
   _swIsRunning=true;if(_nowProgressTimer)clearInterval(_nowProgressTimer);_nowProgressTimer=setInterval(()=>{if(currentView==='daily')updateNowBlock();},500);
 }
@@ -3951,11 +3971,19 @@ const CUST_DEFAULTS={appName:'コツコツ✏️サクサク🌸',checkEmoji:'�
 
 // ── ITACHACHA House Crazy10 イベント定義 ──
 const CRAZY10_EVENTS=[
-  {dateStr:'2026-05-16',start:5,end:16,breakStart:11.5,breakEnd:12.5},
-  {dateStr:'2026-05-17',start:5,end:16,breakStart:11.5,breakEnd:12.5},
+  {dateStr:'2026-05-16',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60},
+  {dateStr:'2026-05-17',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60},
 ];
 const CRAZY10_PREVIEW_DATES=['2026-05-15','2026-05-16'];
 function _toLocalDateStr(d){const y=d.getFullYear(),mo=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');return y+'-'+mo+'-'+dd;}
+function _formatEventDateShort(dateStr){const p=(dateStr||'').split('-');return p.length===3?(Number(p[1])+'/'+Number(p[2])):dateStr;}
+function _formatEventFinaleDate(ev){
+  if(!ev)return '';
+  const p=(ev.dateStr||'').split('-');
+  const base=p.length===3?(Number(p[0])+'.'+Number(p[1])+'.'+Number(p[2])):ev.dateStr;
+  const official=CRAZY10_EVENTS.findIndex(e=>e.dateStr===ev.dateStr);
+  return base+(official>=0?' DAY '+(official+1):'');
+}
 function _getCrazy10Event(dateStr){return CRAZY10_EVENTS.find(e=>e.dateStr===dateStr)||null;}
 function _isCrazy10PreviewNight(){const now=new Date();const ds=_toLocalDateStr(now);const h=now.getHours();return _getAllPreviewDates().includes(ds)&&h>=18;}
 function _getCrazy10EventNow(){return _getAnyEventNow();}
@@ -4483,6 +4511,7 @@ async function saveCustAndClose(){
   if(checkInp&&comboInp) comboInp.value=checkInp.value;
   if(CUST.checkEmoji) CUST.comboEmoji=CUST.checkEmoji;
   saveCust(); // 現在のCUST（targetTotalH含む）をlocalStorageに保存
+  if(typeof trackEvent==='function')trackEvent('settings_save');
   _custSnapshot=null;
   $('cust-overlay').classList.remove('show');
   // Firebaseへの書き込み完了を待ってからリロード
@@ -4490,7 +4519,7 @@ async function saveCustAndClose(){
   if(typeof saveToCloudNow==='function'){
     await saveToCloudNow();
   }
-  // タイマーチェック付きリロード
+  // タイマー状態は保存・復元されるため、確認なしでリロード
   if(typeof _reloadWithCheck==='function'){
     _reloadWithCheck();
   } else {
@@ -5091,7 +5120,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v76'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v77'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
 
@@ -5251,6 +5280,7 @@ function checkStudyDateChanged() {
         if(typeof renderCrazy10Stars==='function')renderCrazy10Stars();
         if(typeof renderAsajukuStars==='function')renderAsajukuStars();
         if(typeof _showAsajukuPopupIfNeeded==='function')setTimeout(_showAsajukuPopupIfNeeded,500);
+        if(typeof checkCrazy10EventDisplay==='function')setTimeout(checkCrazy10EventDisplay,700);
         updateDateLabel();
         updateStats();
         applyLuckyBlock();
@@ -5344,6 +5374,26 @@ function renderCrazy10Stars(){
     btnEl.onclick=function(){showCrazy10Finale();};
     container.appendChild(btnEl);
   }
+  if(typeof _syncCrazy10FinaleButtonVisibility==='function')_syncCrazy10FinaleButtonVisibility();
+}
+
+function _shouldShowCrazy10FinaleButton(){
+  const ev=_getCrazy10EventNow();
+  if(!ev||!ev.isOfficial)return false;
+  if(_toLocalDateStr(new Date())!==ev.dateStr)return false;
+  if(!_isCrazy10Joined(ev.dateStr))return false;
+  return _isCrazy10FinaleTime();
+}
+function _syncCrazy10FinaleButtonVisibility(){
+  const btn=document.getElementById('crazy10-finale-btn');
+  if(!btn)return;
+  btn.classList.toggle('show',_shouldShowCrazy10FinaleButton());
+}
+function checkCrazy10EventDisplay(){
+  if(typeof _showCrazy10PopupIfNeeded==='function')_showCrazy10PopupIfNeeded();
+  if(typeof renderCrazy10Stars==='function')renderCrazy10Stars();
+  if(typeof _syncCrazy10SettingsSec==='function')_syncCrazy10SettingsSec();
+  _syncCrazy10FinaleButtonVisibility();
 }
 
 // ── 設定パネルのCrazy10トグルを表示制御・同期 ──
@@ -5356,11 +5406,16 @@ function _syncCrazy10SettingsSec(){
   if(!tog)return;
   const ev=_getCrazy10EventNow();
   const ds=ev?ev.dateStr:_toLocalDateStr(new Date());
+  const label=document.getElementById('crazy10-tog-label');
+  const help=document.getElementById('crazy10-tog-help');
+  if(label)label.textContent=ev&&ev.isOfficial?_formatEventDateShort(ds)+' Crazy10に参加する':'Crazy10 に参加する';
+  if(help)help.textContent='途中からON/OFFできます。記録は消えません。';
   tog.checked=_isCrazy10Joined(ds);
   tog.onchange=function(){
     _setCrazy10Joined(ds,this.checked);
     buildGrid();
     renderCrazy10Stars();
+    if(typeof _syncCrazy10FinaleButtonVisibility==='function')_syncCrazy10FinaleButtonVisibility();
   };
 }
 
@@ -5522,6 +5577,7 @@ function checkAsajukuDisplayWindowChanged(){
   if(skipBtn)skipBtn.onclick=function(){_setAsajukuJoined(ds,false);close();};
   if(joinBtn)joinBtn.onclick=function(){
     _setAsajukuJoined(ds,true);buildGrid();renderAsajukuStars();
+    if(typeof trackEvent==='function')trackEvent('asajuku_join');
     localStorage.setItem(key,'1');
     var popup=document.getElementById('asajuku-popup');
     if(popup){popup.innerHTML='<div style="font-size:2rem;margin-bottom:8px;">⚡</div>'
@@ -5610,17 +5666,30 @@ function _showCrazy10PopupIfNeeded(){
 	  if(!ev.isOfficial)return; // MyEventは参加/不参加ポップアップ不要
 	  const key=_crazy10PopupKey(ev.dateStr);
 	  if(_hasCrazy10JoinChoice(ev.dateStr))return; // 設定画面などで事前選択済みなら二度聞きしない
-	  if(localStorage.getItem(key)==='1')return; // 今日すでに見た
+  if(localStorage.getItem(key)==='1')return; // 今日すでに見た
   const overlay=document.getElementById('crazy10-overlay');
   if(!overlay)return;
+  const popup=document.getElementById('crazy10-popup');
+  if(popup){
+    popup.innerHTML='<div style="font-size:2rem;margin-bottom:6px;">🥦</div>'
+      +'<div style="font-size:1rem;font-weight:800;color:#bbf7d0;letter-spacing:.04em;margin-bottom:4px;">ITACHACHA House Crazy10</div>'
+      +'<div style="font-size:.64rem;color:#4ade80;font-weight:800;letter-spacing:.08em;margin-bottom:8px;">本日 '+_formatEventDateShort(ev.dateStr)+'</div>'
+      +'<div style="font-size:.75rem;color:#86efac;margin-bottom:14px;line-height:1.6;">朝5時〜16時、10時間の特別自習室<br>開催中です！参加しますか？</div>'
+      +'<div style="display:flex;gap:10px;justify-content:center;margin-bottom:14px;">'
+      +'<button id="crazy10-join-btn" style="background:#4ade80;color:#052e16;border:none;border-radius:10px;padding:10px 28px;font-size:.9rem;font-weight:800;cursor:pointer;">参加</button>'
+      +'<button id="crazy10-skip-btn" style="background:transparent;color:#6ee7b7;border:1.5px solid #4ade80;border-radius:10px;padding:10px 28px;font-size:.9rem;font-weight:800;cursor:pointer;">不参加</button>'
+      +'</div>'
+      +'<div style="font-size:.62rem;color:#4ade80;opacity:.7;line-height:1.7;">設定画面から途中でON/OFFできます<br>記録は消えません</div>';
+  }
   overlay.style.display='flex';
   const joinBtn=document.getElementById('crazy10-join-btn');
   const skipBtn=document.getElementById('crazy10-skip-btn');
   function close(){overlay.style.display='none';localStorage.setItem(key,'1');}
   if(joinBtn)joinBtn.onclick=function(){
-    _setCrazy10Joined(ev.dateStr,true);buildGrid();renderCrazy10Stars();_syncCrazy10SettingsSec();
+    _setCrazy10Joined(ev.dateStr,true);buildGrid();renderCrazy10Stars();_syncCrazy10SettingsSec();if(typeof _syncCrazy10FinaleButtonVisibility==='function')_syncCrazy10FinaleButtonVisibility();
     var popup=document.getElementById('crazy10-popup');
     if(popup){popup.innerHTML='<div style="font-size:2rem;margin-bottom:8px;">🥦</div>'
+      +'<div style="font-size:.64rem;color:#4ade80;font-weight:800;letter-spacing:.08em;margin-bottom:8px;">'+_formatEventDateShort(ev.dateStr)+'</div>'
       +'<div style="font-size:.9rem;font-weight:800;color:#4ade80;margin-bottom:8px;">Crazy10、発動。</div>'
       +'<div style="font-size:.7rem;color:#86efac;margin-bottom:14px;line-height:1.8;">10時間の旅が始まる。<br>ニヤニヤ、楽しむぞ!!</div>'
       +'<div style="border-top:1px solid rgba(74,222,128,.2);padding-top:10px;margin-top:4px;">'
@@ -5628,7 +5697,7 @@ function _showCrazy10PopupIfNeeded(){
       +'</div>'
       +'<button onclick="_closeCrazy10Overlay()" style=\"background:transparent;color:#6b7280;border:none;font-size:.63rem;cursor:pointer;padding:4px 8px;margin-top:8px;\">閉じる ✕</button>';}
   };
-  if(skipBtn)skipBtn.onclick=function(){_setCrazy10Joined(ev.dateStr,false);close();_syncCrazy10SettingsSec();};
+  if(skipBtn)skipBtn.onclick=function(){_setCrazy10Joined(ev.dateStr,false);close();_syncCrazy10SettingsSec();if(typeof _syncCrazy10FinaleButtonVisibility==='function')_syncCrazy10FinaleButtonVisibility();};
 }
 
 // ── 前夜告知トーストを表示すべきか判定・表示 ──
@@ -5685,8 +5754,10 @@ function _showCrazy10PreviewToastIfNeeded(){
 	  setTimeout(renderCrazy10Stars, 800);
 	  setTimeout(renderAsajukuStars, 900);
 	  setInterval(checkAsajukuDisplayWindowChanged, 30000);
+	  setInterval(checkCrazy10EventDisplay, 30000);
 	  window.addEventListener('focus',checkAsajukuDisplayWindowChanged);
-	  document.addEventListener('visibilitychange',function(){if(!document.hidden)checkAsajukuDisplayWindowChanged();});
+	  window.addEventListener('focus',checkCrazy10EventDisplay);
+	  document.addEventListener('visibilitychange',function(){if(!document.hidden){checkAsajukuDisplayWindowChanged();checkCrazy10EventDisplay();}});
 	  // 設定パネル同期（パネルを開くたびに実行）
 	  const origOpen=window.openCustPanel;
   window.openCustPanel=function(){if(origOpen)origOpen();_syncCrazy10SettingsSec();};
@@ -5711,13 +5782,25 @@ function _isCrazy10FinaleShown(dateStr){return localStorage.getItem(_crazy10Fina
 function _markCrazy10FinaleShown(dateStr){localStorage.setItem(_crazy10FinaleKey(dateStr),'1');}
 
 // フィナーレ時間帯判定（互換性のため残す）
-function _isCrazy10FinaleTime(){return false;}
+function _isCrazy10FinaleTime(){
+  const ev=_getCrazy10EventNow();
+  if(!ev||!ev.isOfficial)return false;
+  const now=new Date();
+  if(_toLocalDateStr(now)!==ev.dateStr)return false;
+  const h=now.getHours()+now.getMinutes()/60;
+  const finaleAt=isFinite(ev.finaleAt)?ev.finaleAt:(ev.end-5/60);
+  return h>=finaleAt;
+}
+
+let _crazy10BroccoliFinaleRunning=false;
+let _crazy10BroccoliFinaleTimer=null;
 
 // ブロッコリ大量降下演出
 function _launchBroccoli(){
-  const total=40;let count=0;
+  _crazy10BroccoliFinaleRunning=true;
+  const total=999;let count=0;
   function spawn(){
-    if(count>=total)return;
+    if(!_crazy10BroccoliFinaleRunning||count>=total)return;
     count++;
     const el=document.createElement('span');el.className='falling-petal';
     const sz=14+Math.random()*20,dur=2.0+Math.random()*2.5;
@@ -5726,9 +5809,13 @@ function _launchBroccoli(){
     el.textContent='\u{1F966}';
     document.body.appendChild(el);
     el.addEventListener('animationend',function(){el.remove();});
-    setTimeout(spawn,80+Math.random()*180);
+    _crazy10BroccoliFinaleTimer=setTimeout(spawn,80+Math.random()*180);
   }
   spawn();
+}
+function _stopCrazy10BroccoliFinale(){
+  _crazy10BroccoliFinaleRunning=false;
+  if(_crazy10BroccoliFinaleTimer){clearTimeout(_crazy10BroccoliFinaleTimer);_crazy10BroccoliFinaleTimer=null;}
 }
 
 // バッジエリアに星を描画
@@ -5770,17 +5857,63 @@ function showCrazy10Finale(){
   const sets=_getCrazy10SetCount(ds);
   const maxSets=_getCrazy10MaxSetCount(ev);
   _buildFinaleStars(sets,maxSets);
+  const dateEl=document.getElementById('crazy10-finale-date');
+  if(dateEl)dateEl.textContent=_formatEventFinaleDate(ev);
+  const msgEl=document.getElementById('crazy10-finale-message');
+  if(msgEl){
+    msgEl.innerHTML=(maxSets>0&&sets>=maxSets)
+      ?'今日の10分の積み重ねが<br>未来を動かす。'
+      :'今日のコツコツが<br>未来につながる。';
+  }
   // オーバーレイ表示
   const overlay=document.getElementById('crazy10-finale-overlay');
   if(!overlay)return;
   overlay.style.display='flex';
   // 閉じるボタン
   const closeBtn=document.getElementById('crazy10-finale-close');
-  if(closeBtn)closeBtn.onclick=function(){overlay.style.display='none';};
+  if(closeBtn)closeBtn.onclick=function(){overlay.style.display='none';_stopCrazy10BroccoliFinale();};
+  const saveBtn=document.getElementById('crazy10-finale-save');
+  if(saveBtn)saveBtn.onclick=function(){saveCrazy10FinaleShot();};
   // ブロッコリ降下（少し遅延）
+  _stopCrazy10BroccoliFinale();
   setTimeout(_launchBroccoli,300);
   // 花火（既存のlaunchFireworksを流用）
-  setTimeout(function(){launchFireworks('monthly');},500);
+  [350,900,1450,2100,2850].forEach(function(delay){
+    setTimeout(function(){launchFireworks('monthly');},delay);
+  });
+}
+
+function _loadHtml2Canvas(){
+  if(window.html2canvas)return Promise.resolve(window.html2canvas);
+  return new Promise(function(resolve,reject){
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+    s.onload=function(){resolve(window.html2canvas);};
+    s.onerror=function(){reject(new Error('html2canvas load failed'));};
+    document.head.appendChild(s);
+  });
+}
+async function saveCrazy10FinaleShot(){
+  const saveBtn=document.getElementById('crazy10-finale-save');
+  const closeBtn=document.getElementById('crazy10-finale-close');
+  try{
+    if(saveBtn)saveBtn.style.visibility='hidden';
+    if(closeBtn)closeBtn.style.visibility='hidden';
+    const h2c=await _loadHtml2Canvas();
+    const canvas=await h2c(document.body,{backgroundColor:null,scale:Math.min(2,window.devicePixelRatio||1),useCORS:true});
+    const a=document.createElement('a');
+    a.href=canvas.toDataURL('image/png');
+    a.download='crazy10-finale-'+_toLocalDateStr(new Date())+'.png';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    showToast('📸 記念画像を保存しました');
+  }catch(e){
+    showToast('📸 保存できない場合はスクショタイムで残してね');
+  }finally{
+    if(saveBtn)saveBtn.style.visibility='';
+    if(closeBtn)closeBtn.style.visibility='';
+  }
 }
 
 // フィナーレ発動判定：30秒ごとの定期チェックから呼び出す
@@ -6111,6 +6244,7 @@ function _addMyEvent(){
   }
   CUST.myEvents.sort((a,b)=>a.dateStr.localeCompare(b.dateStr));
   saveCust();
+  if(typeof trackEvent==='function')trackEvent(isEditing?'my_crazy_update':'my_crazy_add');
   _renderMyEventList();
   if(typeof refreshGrid==='function')refreshGrid();
   if(typeof renderCrazy10Stars==='function')renderCrazy10Stars();
@@ -6181,7 +6315,7 @@ function _triggerCrazy10FinaleBtn(h,m){
   const ev=_getAnyEventNow();
   if(!ev)return;
   if(!_isCrazy10Joined(ev.dateStr))return;
-  if(!_isLastSetLastBlock(ev,h,m))return;
+  if(!_shouldShowCrazy10FinaleButton())return;
   // ボタンを表示
   const btn=document.getElementById('crazy10-finale-btn');
   if(btn){btn.classList.add('show');}
