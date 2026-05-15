@@ -24,6 +24,9 @@
 .block.asa-set2:not(.checked):not(.lucky)::after{content:var(--check-emoji,'🌸');font-size:9px;line-height:1;opacity:.55;}
 .block.asa-set1.last-asa-set1{border-right:3px solid rgba(56,189,248,.75)!important;}
 
+.forecast-target-edit-btn.has-target{background:transparent!important;border:none!important;color:var(--checked)!important;font-size:1.55rem!important;font-weight:800!important;line-height:1.15!important;padding:0!important;border-radius:0!important;box-shadow:none!important;}
+.forecast-target-edit-btn.has-target:hover{background:transparent!important;color:var(--checked)!important;border:none!important;}
+.date-header-grid{border-top:1px solid var(--border);padding:6px 0 7px;display:flex;flex-direction:column;gap:5px}.date-header-line{display:grid;grid-template-columns:68px minmax(150px,1fr) auto;align-items:center;gap:8px;min-height:34px;border-radius:11px;padding:7px 9px}.date-header-line.today-line{border:1px solid rgba(62,207,142,.23);background:linear-gradient(135deg,rgba(62,207,142,.14),rgba(187,247,208,.06) 55%,rgba(79,142,247,.05));box-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 0 14px rgba(62,207,142,.055)}.date-header-line.bloom-line{border:1px solid rgba(244,114,182,.28);background:linear-gradient(135deg,rgba(244,114,182,.18),rgba(251,207,232,.08) 55%,rgba(79,142,247,.06));box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 0 16px rgba(244,114,182,.08)}.date-line-label{font-size:.72rem;font-weight:900;color:var(--text-muted);letter-spacing:.08em;white-space:nowrap}.date-line-label.bloom{color:#f9a8d4}.today-line .date-line-label{color:#86efac}.date-display-btn{appearance:none;-webkit-appearance:none;border:none;background:transparent;color:var(--text);font-family:inherit;display:inline-flex;align-items:center;justify-content:flex-start;gap:6px;font-size:.9rem;font-weight:900;line-height:1.1;white-space:nowrap;cursor:pointer;padding:5px 4px;border-radius:8px;min-width:0}.date-display-btn:hover{background:var(--surface2)}.today-line .date-display-btn:hover{background:rgba(62,207,142,.10)}.bloom-line .date-display-btn:hover{background:rgba(244,114,182,.12)}.date-display-text{font-variant-numeric:tabular-nums}.date-symbol{font-size:.88rem;line-height:1;filter:drop-shadow(0 0 6px rgba(255,255,255,.12))}.exam-days-pill{font-size:.68rem;font-weight:900;color:#fbcfe8;background:rgba(244,114,182,.14);border:1px solid rgba(244,114,182,.32);border-radius:999px;padding:2px 7px;margin-left:4px}.date-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px}.today-line .date-actions{column-gap:6px}.today-line #today-btn{margin-right:12px}.date-action-btn{width:auto!important;min-width:44px;height:28px;padding:0 10px;border-radius:7px;font-size:.7rem;font-weight:800}.date-action-btn.today{color:#86efac!important;border-color:rgba(62,207,142,.5)!important;background:rgba(62,207,142,.08)!important}.date-action-btn.today:hover{background:rgba(62,207,142,.16)!important}.date-action-btn.bloom{color:#fbcfe8!important;border-color:rgba(244,114,182,.55)!important;background:rgba(244,114,182,.12)!important}.date-action-btn.bloom:hover{background:rgba(244,114,182,.2)!important}.header-controls{height:auto;display:block}.countdown-bar{position:absolute!important;left:-9999px!important;width:1px!important;height:1px!important;overflow:hidden!important;padding:0!important;border:0!important}@media(max-width:560px){header{padding:0 10px}.date-header-line{grid-template-columns:54px minmax(112px,1fr) auto;gap:5px;padding:6px 7px}.date-line-label{font-size:.62rem;letter-spacing:.04em}.date-display-btn{font-size:.74rem;gap:3px;padding:5px 2px}.date-symbol{font-size:.72rem}.exam-days-pill{font-size:.58rem;padding:1px 5px;margin-left:2px}.date-actions{gap:4px}.today-line #today-btn{margin-right:7px}.date-action-btn{min-width:38px;height:26px;padding:0 7px;font-size:.62rem}.date-actions .cust-gear-btn{height:26px;padding:0 7px;font-size:.62rem}}
 </style><link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#4f8ef7">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -124,7 +127,7 @@
 <div style="font-size:2.2rem;line-height:1;margin-bottom:10px;">🆕</div>
 <div style="font-size:1.05rem;font-weight:800;color:#fde8f7;margin-bottom:6px;">新しいバージョンがあります</div>
 <div id="update-version-text" style="font-size:.78rem;color:#c084fc;margin-bottom:10px;">最新版に更新してください</div>
-<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">表示まわり、ちょっちゅ整えました</div>
+<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">Crazy Crazy 特別バージョン🥦🐘🐣🦍🥸</div>
 <div id="update-data-note" style="font-size:.66rem;color:#fca5a5;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.22);border-radius:8px;padding:7px 10px;margin-bottom:12px;line-height:1.65;text-align:left;">※キャッシュ・サイトデータを削除すると、端末内の記録が消える場合があります。</div>
 <button id="update-reload-btn" style="display:block;width:100%;background:#f472b6;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:800;cursor:pointer;margin-bottom:12px;letter-spacing:.03em;">
 ✅ 今すぐ更新する
@@ -455,6 +458,11 @@
 🔒 同期機能を使用すると、学習データはGoogleのクラウドサービス（Firebase）に保存されます。コードを他人に教えない限り、あなた以外はデータにアクセスできません。
 </div>
 </div>
+<div class="cust-sec" style="margin:10px 0 0;">
+<a href="https://urutoraktiti-boop.github.io/kotsusaku-homepage/" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);text-decoration:none;border-radius:10px;padding:10px 12px;font-size:.76rem;font-weight:800;">
+🌐 コツサク🌸公式ページ
+</a>
+</div>
 </div>
 </div>
 </div>
@@ -468,14 +476,27 @@
 </div>
 <div class="quote-bar" id="quote-bar"></div>
 <div class="header-controls">
+<div class="date-header-grid">
+<div class="date-header-line today-line">
+<div class="date-line-label">今　日</div>
+<button class="date-display-btn" id="current-date-display" type="button" title="表示する日を選ぶ"><span class="date-symbol">☘️</span><span class="date-display-text" id="date-label"></span><span class="date-symbol">☘️</span></button>
+<div class="date-actions">
+<button class="nav-btn date-action-btn today" id="today-btn">今日</button>
+<button class="cust-gear-btn" id="refresh-btn" onclick="checkAppUpdate()" title="アプリを最新の状態に更新">更新</button>
 <button class="cust-gear-btn" id="cust-gear-btn" onclick="openCustPanel()" title="設定">設定</button>
-<button class="cust-gear-btn" id="refresh-btn" onclick="checkAppUpdate()" title="アプリを最新の状態に更新" style="margin-left:4px;">更新</button>
-<div class="date-nav">
-<button class="nav-btn" id="prev-btn">&#8249;</button>
-<span id="date-label"></span>
-<button class="nav-btn" id="next-btn">&#8250;</button>
-<button class="nav-btn" id="today-btn">今日</button>
 </div>
+</div>
+<div class="date-header-line bloom-line">
+<div class="date-line-label bloom">開花日</div>
+<button class="date-display-btn bloom-date-btn" id="exam-date-display" type="button" title="開花日を設定"><span class="date-symbol">🌸</span><span class="date-display-text" id="exam-date-text">開花日を設定</span><span class="date-symbol">🌸</span><span class="exam-days-pill" id="exam-date-days" style="display:none"></span></button>
+<div class="date-actions">
+<button class="nav-btn date-action-btn bloom" id="exam-date-change-btn">設定</button>
+</div>
+</div>
+</div>
+<input type="date" id="current-date-input" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:.01;">
+<button class="nav-btn" id="prev-btn" style="display:none" aria-hidden="true">&#8249;</button>
+<button class="nav-btn" id="next-btn" style="display:none" aria-hidden="true">&#8250;</button>
 </div>
 <div class="countdown-bar">
 <div></div>
@@ -961,7 +982,7 @@
       var gauge=s.querySelector('.forecast-gauge-wrap');
       if(num&&!num.innerHTML.trim())num.innerHTML='--';
       if(pace&&!pace.textContent.trim())pace.textContent='設定 → 試験日を入力してください';
-      if(target&&!target.textContent.trim())target.textContent='✏';
+      if(target&&!target.textContent.trim())target.textContent='✏ 目標入力';
       if(diff&&!diff.textContent.trim())diff.textContent='✏ ボタンから目標時間を入力';
       if(gauge&&!gauge.innerHTML.trim())gauge.style.display='none';
     });
@@ -1019,7 +1040,7 @@ function trackEvent(name, params) {
   if (!analytics || !name) return;
   try {
     analytics.logEvent(name, Object.assign({
-      app_version: 'kotsusaku-v80'
+      app_version: 'kotsusaku-v82'
     }, params || {}));
   } catch(e) {
     console.warn('Analytics送信エラー:', e);
@@ -2303,7 +2324,7 @@ function renderForecast(){
     const gaugePct=s.querySelector('.forecast-gauge-pct');
     const adviceEl=s.querySelector('.forecast-advice');
     if(!targetH||predictedMin==null){
-      if(targetBtnEl){targetBtnEl.textContent='✏';targetBtnEl.classList.remove('active');}
+      if(targetBtnEl){targetBtnEl.textContent='✏ 目標入力';targetBtnEl.classList.remove('active','has-target');}
       if(targetDiffEl){targetDiffEl.textContent='✏ ボタンから目標時間を入力';targetDiffEl.className='forecast-target-diff';}
       if(gaugeWrap)gaugeWrap.style.display='none';
       return;
@@ -2312,7 +2333,7 @@ function renderForecast(){
     const pct=Math.min(Math.round(predictedH/targetH*100),999);
     const diffH=predictedH-targetH;
     const status=pct>=100?'ok':pct>=95?'close':'ng';
-    if(targetBtnEl){targetBtnEl.textContent='✏'+targetH+'h';targetBtnEl.classList.add('active');}
+    if(targetBtnEl){targetBtnEl.textContent=targetH+'h';targetBtnEl.classList.add('active','has-target');}
     if(targetDiffEl){
       targetDiffEl.className='forecast-target-diff '+status;
       if(status==='ok'){
@@ -3178,10 +3199,50 @@ function updateStats(){
   renderChallenge();
 }
 
+function _formatMonthDayWeek(dateStr){
+  if(!dateStr)return '';
+  const[y,mo,d]=dateStr.split('-').map(Number);
+  const dt=new Date(y,mo-1,d);
+  return String(mo).padStart(2,'0')+'/'+String(d).padStart(2,'0')+'('+WD[dt.getDay()]+')';
+}
+function _openNativeDatePicker(input){
+  if(!input)return;
+  try{if(input.showPicker){input.showPicker();return;}}catch(e){}
+  input.focus();
+  try{input.click();}catch(e){}
+}
+function _setExamDateValue(v){
+  if(v)LS.set('exam-date',v);else LS.del('exam-date');
+  const main=$('cd-input');if(main)main.value=v||'';
+  const cust=$('cust-cd-input');if(cust)cust.value=v||'';
+  updateCountdown();safeRenderForecast();
+}
+function updateHeaderExamDate(){
+  const val=LS.get('exam-date')||(($('cd-input')&&$('cd-input').value)||'');
+  const txt=$('exam-date-text'),days=$('exam-date-days'),btn=$('exam-date-change-btn');
+  if(!txt)return;
+  if(!val){
+    txt.textContent='開花日を設定';
+    if(days)days.style.display='none';
+    if(btn)btn.textContent='設定';
+    return;
+  }
+  txt.textContent=_formatMonthDayWeek(val);
+  if(btn)btn.textContent='変更';
+  const today=new Date();today.setHours(0,0,0,0);
+  const target=new Date(val);target.setHours(0,0,0,0);
+  const diff=Math.round((target-today)/(1000*60*60*24));
+  if(days){
+    days.style.display='inline-flex';
+    days.textContent=diff>0?'あと'+diff+'日':(diff===0?'今日':'+'+Math.abs(diff)+'日');
+  }
+}
 function updateDateLabel(){
-  const[y,mo,d]=currentDate.split('-').map(Number);const dt=new Date(y,mo-1,d);
   const isToday=currentDate===toStudyDateStr(new Date());
-  $('date-label').textContent=String(mo).padStart(2,'0')+'/'+String(d).padStart(2,'0')+' ('+WD[dt.getDay()]+')'+(isToday?' 今日':'');
+  const label=$('date-label');
+  if(label)label.textContent=_formatMonthDayWeek(currentDate)+(isToday?' 今日':'');
+  const picker=$('current-date-input');if(picker)picker.value=currentDate;
+  updateHeaderExamDate();
   refreshDiary();
 }
 
@@ -3215,6 +3276,21 @@ $('today-btn').addEventListener('click',()=>{
   resetCombo();
   switchView('daily');
 });
+const _currentDateDisplay=$('current-date-display');
+const _currentDateInput=$('current-date-input');
+if(_currentDateDisplay&&_currentDateInput){
+  _currentDateDisplay.addEventListener('click',()=>{
+    _currentDateInput.value=currentDate;
+    _openNativeDatePicker(_currentDateInput);
+  });
+  _currentDateInput.addEventListener('change',()=>{
+    if(!_currentDateInput.value)return;
+    currentDate=_currentDateInput.value;
+    weekOff=0;monthOff=0;lastBloomPct=-1;lastWeeklyPct=-1;lastMonthlyPct=-1;
+    resetCombo();
+    switchView('daily');
+  });
+}
 $('week-prev').addEventListener('click',()=>{weekOff--;renderWeekly();});
 $('week-next').addEventListener('click',()=>{weekOff++;renderWeekly();});
 $('month-prev').addEventListener('click',()=>{monthOff--;renderMonthly();});
@@ -3233,37 +3309,40 @@ document.querySelectorAll('.goal-btn:not([data-custom])').forEach(btn=>{
 function updateCountdown(){
   const val=$('cd-input').value;
   const daysEl=$('cd-days'),unitEl=$('cd-unit'),labelEl=$('cd-label');
-  if(!val){daysEl.textContent='--';daysEl.className='countdown-days';unitEl.textContent='日';labelEl.textContent='🌸 開花するまで';return;}
+  if(!val){daysEl.textContent='--';daysEl.className='countdown-days';unitEl.textContent='日';labelEl.textContent='🌸 開花するまで';updateHeaderExamDate();return;}
   const today=new Date();today.setHours(0,0,0,0);const target=new Date(val);target.setHours(0,0,0,0);
   const diff=Math.round((target-today)/(1000*60*60*24));
   if(diff>0){labelEl.textContent='🌸 開花するまであと';daysEl.textContent=diff;daysEl.className='countdown-days';unitEl.textContent='日';}
   else if(diff===0){labelEl.textContent='未来を';daysEl.textContent='今日';daysEl.className='countdown-days';unitEl.textContent='🌸開花🌸させる！';}
   else{labelEl.textContent='🌸 開花した日から';daysEl.textContent=Math.abs(diff);daysEl.className='countdown-passed';unitEl.textContent='日経過🌸';}
+  updateHeaderExamDate();
 }
-function loadCountdown(){const saved=LS.get('exam-date');if(saved)$('cd-input').value=saved;updateCountdown();}
+function loadCountdown(){const saved=LS.get('exam-date')||'';$('cd-input').value=saved;const _ci=$('cust-cd-input');if(_ci)_ci.value=saved;updateCountdown();}
 $('cd-input').addEventListener('change',()=>{
-  LS.set('exam-date',$('cd-input').value);
-  const _ci=$('cust-cd-input');if(_ci)_ci.value=$('cd-input').value;
-  updateCountdown();safeRenderForecast();
+  _setExamDateValue($('cd-input').value);
 });
-$('cd-clear').addEventListener('click',()=>{$('cd-input').value='';LS.del('exam-date');updateCountdown();safeRenderForecast();});
+$('cd-clear').addEventListener('click',()=>{_setExamDateValue('');});
 const _custCdInp=$('cust-cd-input');
 if(_custCdInp){
   _custCdInp.addEventListener('change',()=>{
-    const v=_custCdInp.value;
-    if(v){LS.set('exam-date',v);$('cd-input').value=v;}
-    else{LS.del('exam-date');$('cd-input').value='';}
-    updateCountdown();safeRenderForecast();
+    _setExamDateValue(_custCdInp.value);
   });
 }
 const _custCdClear=$('cust-cd-clear');
 if(_custCdClear){
   _custCdClear.addEventListener('click',()=>{
-    $('cust-cd-input').value='';$('cd-input').value='';
-    LS.del('exam-date');updateCountdown();
-    safeRenderForecast();
+    _setExamDateValue('');
   });
 }
+function openExamDatePicker(){
+  const inp=$('cd-input');if(!inp)return;
+  inp.value=LS.get('exam-date')||inp.value||'';
+  _openNativeDatePicker(inp);
+}
+const _examDisplay=$('exam-date-display');
+const _examChange=$('exam-date-change-btn');
+if(_examDisplay)_examDisplay.addEventListener('click',openExamDatePicker);
+if(_examChange)_examChange.addEventListener('click',openExamDatePicker);
 
 
 function applyTheme(theme){
@@ -4090,11 +4169,7 @@ function _isCrazy10DayDisplayActive(dateStr){
   const ev=_getAnyEvent(dateStr);
   if(!ev)return false;
   if(ev.isOfficial&&!_isCrazy10Joined(dateStr))return false;
-  const todayStr=_toLocalDateStr(new Date());
-  if(dateStr!==todayStr)return false;
-  const now=new Date();
-  const h=now.getHours()+now.getMinutes()/60;
-  return h>=4;
+  return dateStr===toStudyDateStr(new Date());
 }
 function _getMyCrazyEligibleBlockKeys(ev){
   if(!ev||ev.isOfficial)return [];
@@ -4166,7 +4241,7 @@ function _getAnyEvent(dateStr){
 }
 // 現在日のイベント（全種）
 function _getAnyEventNow(){
-  return _getAnyEvent(_toLocalDateStr(new Date()));
+  return _getAnyEvent(toStudyDateStr(new Date()));
 }
 // プレビュー履歴（前日の対象日）— 公式の前日を1日前として生成
 function _getAllPreviewDates(){
@@ -4258,13 +4333,14 @@ function syncStopwatchIconLabels(){
     inp.type='number';inp.className='goal-input-custom';
     inp.min='1';inp.max='9999';inp.value=currentH;
     inp.placeholder='例:300';inp.title='時間数を入力してEnterで確定';
-    inp.style.cssText='width:64px;font-size:.85rem;';
+    inp.style.cssText='width:96px;font-size:1.35rem;font-weight:800;line-height:1.15;';
     btn.replaceWith(inp);inp.focus();inp.select();
     let done=false;
     function restoreBtn(){
       inp.replaceWith(btn);
-      btn.textContent=CUST.targetTotalH>0?'✏'+CUST.targetTotalH+'h':'✏';
+      btn.textContent=CUST.targetTotalH>0?CUST.targetTotalH+'h':'✏ 目標入力';
       btn.classList.toggle('active',CUST.targetTotalH>0);
+      btn.classList.toggle('has-target',CUST.targetTotalH>0);
       delete colEl.dataset.editing;
     }
     function commit(){
@@ -5233,7 +5309,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v80'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v82'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
 
@@ -5462,7 +5538,7 @@ function _renderCrazy10Stars(dateStr){
   const sets=_getCrazy10SetCount(dateStr);
   const maxSets=_getCrazy10MaxSetCount(ev);
   // 表示中のdateStrが今日かつイベント期間中なら点滅星を表示
-  const todayStr=_toLocalDateStr(new Date());
+  const todayStr=toStudyDateStr(new Date());
   const isActive=dateStr===todayStr&&_isCrazy10Period()&&!!_getAnyEvent(dateStr);
     const _isMyEv=ev&&!ev.isOfficial;
   const _starBg=_isMyEv?'rgba(56,189,248,.07)':'rgba(74,222,128,.07)';
@@ -5493,7 +5569,7 @@ function renderCrazy10Stars(){
   const container=document.querySelector('.story-main-card');
   if(!container)return;
   // currentDateを優先して使用（テスト・過去日付閲覧対応）
-  const ds=(typeof currentDate!=='undefined'&&currentDate)?currentDate:_toLocalDateStr(new Date());
+  const ds=(typeof currentDate!=='undefined'&&currentDate)?currentDate:toStudyDateStr(new Date());
   const html=_renderCrazy10Stars(ds);
   if(!html){if(existing)existing.remove();return;}
   if(existing){existing.outerHTML=html;}
@@ -5512,7 +5588,7 @@ function renderCrazy10Stars(){
 function _shouldShowCrazy10FinaleButton(){
   const ev=_getCrazy10EventNow();
   if(!ev||!ev.isOfficial)return false;
-  if(_toLocalDateStr(new Date())!==ev.dateStr)return false;
+  if(toStudyDateStr(new Date())!==ev.dateStr)return false;
   if(!_isCrazy10Joined(ev.dateStr))return false;
   return _isCrazy10FinaleTime();
 }
@@ -5537,7 +5613,7 @@ function _syncCrazy10SettingsSec(){
   const tog=document.getElementById('crazy10-tog');
   if(!tog)return;
   const ev=_getCrazy10EventNow();
-  const ds=ev?ev.dateStr:_toLocalDateStr(new Date());
+  const ds=ev?ev.dateStr:toStudyDateStr(new Date());
   const label=document.getElementById('crazy10-tog-label');
   const help=document.getElementById('crazy10-tog-help');
   if(label)label.textContent=ev&&ev.isOfficial?_formatEventDateShort(ds)+' Crazy10に参加する':'Crazy10 に参加する';
@@ -5573,7 +5649,7 @@ function _isAsajukuJoined(ds){return localStorage.getItem('asajuku-joined-'+ds)=
 function _setAsajukuJoined(ds,v){localStorage.setItem('asajuku-joined-'+ds,v?'1':'0');}
 function _isAsajukuActive(){
   const now=new Date();const h=now.getHours()+now.getMinutes()/60;
-  const ds=_toLocalDateStr(now);
+  const ds=toStudyDateStr(now);
   if(typeof _isItachachaMode==='function'&&_isItachachaMode())return h>=4&&h<ASAJUKU_END;
   return _isAsajukuJoined(ds)&&h>=4&&h<ASAJUKU_END;
 }
@@ -5628,12 +5704,12 @@ function _getAsajukuSetCount(ds){
 
 // 星バッジHTML
 function _renderAsajukuStars(ds){
-  if(!_isAsajukuActive()&&ds===_toLocalDateStr(new Date()))return null;
+  if(ds!==toStudyDateStr(new Date()))return null;
   const joined=_isItachachaMode()||_isAsajukuJoined(ds);
   if(!joined)return null;
   const sets=_getAsajukuSetCount(ds);
   const maxSets=(ASAJUKU_END-ASAJUKU_START)*2;
-  const todayStr=_toLocalDateStr(new Date());
+  const todayStr=toStudyDateStr(new Date());
   const isActive=ds===todayStr&&_isAsajukuPeriod();
   let html='<div id="asajuku-stars-wrap" style="margin:8px 0 4px;padding:8px 12px;background:rgba(56,189,248,.07);border:1px solid rgba(56,189,248,.3);border-radius:10px;">';
   html+='<div style="font-size:.6rem;font-weight:700;color:#38bdf8;letter-spacing:.05em;margin-bottom:6px;">🌅 早朝自習室</div>';
@@ -5650,7 +5726,7 @@ function renderAsajukuStars(){
   const existing=document.getElementById('asajuku-stars-wrap');
   const container=document.querySelector('.story-main-card');
   if(!container)return;
-  const ds=(typeof currentDate!=='undefined'&&currentDate)?currentDate:_toLocalDateStr(new Date());
+  const ds=(typeof currentDate!=='undefined'&&currentDate)?currentDate:toStudyDateStr(new Date());
   const html=_renderAsajukuStars(ds);
   if(!html){if(existing)existing.remove();return;}
 	  if(existing){existing.outerHTML=html;}
@@ -5660,7 +5736,7 @@ function renderAsajukuStars(){
 let _lastAsajukuDisplayState=null;
 function checkAsajukuDisplayWindowChanged(){
   if(typeof currentView==='undefined'||currentView!=='daily')return;
-  const today=_toLocalDateStr(new Date());
+  const today=toStudyDateStr(new Date());
   const state=[
     today,
     typeof currentDate!=='undefined'?currentDate:'',
@@ -5689,7 +5765,7 @@ function checkAsajukuDisplayWindowChanged(){
 	function _showAsajukuPopupIfNeeded(){
   const now=new Date();const h=now.getHours()+now.getMinutes()/60;
   if(h<4||h>=ASAJUKU_END)return;
-  const ds=_toLocalDateStr(now);
+  const ds=toStudyDateStr(now);
   if(_isItachachaMode()){_setAsajukuJoined(ds,true);buildGrid();renderAsajukuStars();return;}
   const key=_asajukuPopupKey(ds);
   if(localStorage.getItem(key)==='1')return;
@@ -5719,7 +5795,7 @@ function checkAsajukuDisplayWindowChanged(){
 function _checkAsajukuBadges(){
   const count=_getAsajukuCount();
   const streak=_getAsajukuStreak();
-  const today=_toLocalDateStr(new Date());
+  const today=toStudyDateStr(new Date());
   const maxSets=(ASAJUKU_END-ASAJUKU_START)*2;
   const todaySets=_getAsajukuSetCount(today);
   const defs=[
@@ -5750,7 +5826,7 @@ function _checkAsajukuBadges(){
 function _renderAsajukuBadgeGrid(){
   const count=_getAsajukuCount();
   const streak=_getAsajukuStreak();
-  const today=_toLocalDateStr(new Date());
+  const today=toStudyDateStr(new Date());
   const maxSets=(ASAJUKU_END-ASAJUKU_START)*2;
   const todaySets=_getAsajukuSetCount(today);
   const defs=[
