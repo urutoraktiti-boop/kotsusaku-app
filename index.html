@@ -790,7 +790,7 @@
 </div>
 <div class="forecast-col forecast-col-target" id="">
 <div class="forecast-col-lbl">🎯 目標総時間</div>
-<div class="forecast-target-inline"><span class="forecast-target-num">--</span><button class="forecast-target-edit-btn" title="目標を編集">✏</button></div>
+<div class="forecast-target-inline"><button class="goal-btn forecast-target-edit-btn" title="目標を編集">✏</button></div>
 <div class="forecast-target-diff"></div>
 </div>
 </div>
@@ -831,7 +831,7 @@
 </div>
 <div class="forecast-col forecast-col-target">
 <div class="forecast-col-lbl">🎯 目標総時間</div>
-<div class="forecast-target-inline"><span class="forecast-target-num">--</span><button class="forecast-target-edit-btn" title="目標を編集">✏</button></div>
+<div class="forecast-target-inline"><button class="goal-btn forecast-target-edit-btn" title="目標を編集">✏</button></div>
 <div class="forecast-target-diff"></div>
 </div>
 </div>
@@ -885,7 +885,7 @@
 </div>
 <div class="forecast-col forecast-col-target">
 <div class="forecast-col-lbl">🎯 目標総時間</div>
-<div class="forecast-target-inline"><span class="forecast-target-num">--</span><button class="forecast-target-edit-btn" title="目標を編集">✏</button></div>
+<div class="forecast-target-inline"><button class="goal-btn forecast-target-edit-btn" title="目標を編集">✏</button></div>
 <div class="forecast-target-diff"></div>
 </div>
 </div>
@@ -956,12 +956,12 @@
       }
       var num=s.querySelector('.forecast-num');
       var pace=s.querySelector('.forecast-pace');
-      var target=s.querySelector('.forecast-target-num');
+      var target=s.querySelector('.forecast-target-edit-btn');
       var diff=s.querySelector('.forecast-target-diff');
       var gauge=s.querySelector('.forecast-gauge-wrap');
       if(num&&!num.innerHTML.trim())num.innerHTML='--';
       if(pace&&!pace.textContent.trim())pace.textContent='設定 → 試験日を入力してください';
-      if(target&&!target.textContent.trim())target.textContent='未設定';
+      if(target&&!target.textContent.trim())target.textContent='✏';
       if(diff&&!diff.textContent.trim())diff.textContent='✏ ボタンから目標時間を入力';
       if(gauge&&!gauge.innerHTML.trim())gauge.style.display='none';
     });
@@ -2296,14 +2296,14 @@ function renderForecast(){
     if(numEl)numEl.innerHTML=predictedMin!=null?fmtLongHtml(predictedMin):'--';
     if(paceEl)paceEl.textContent=msg||'';
     // 目標列
-    const targetNumEl=s.querySelector('.forecast-target-num');
+    const targetBtnEl=s.querySelector('.forecast-target-edit-btn');
     const targetDiffEl=s.querySelector('.forecast-target-diff');
     const gaugeWrap=s.querySelector('.forecast-gauge-wrap');
     const gaugeFill=s.querySelector('.forecast-gauge-fill');
     const gaugePct=s.querySelector('.forecast-gauge-pct');
     const adviceEl=s.querySelector('.forecast-advice');
     if(!targetH||predictedMin==null){
-      if(targetNumEl)targetNumEl.textContent='未設定';
+      if(targetBtnEl){targetBtnEl.textContent='✏';targetBtnEl.classList.remove('active');}
       if(targetDiffEl){targetDiffEl.textContent='✏ ボタンから目標時間を入力';targetDiffEl.className='forecast-target-diff';}
       if(gaugeWrap)gaugeWrap.style.display='none';
       return;
@@ -2312,7 +2312,7 @@ function renderForecast(){
     const pct=Math.min(Math.round(predictedH/targetH*100),999);
     const diffH=predictedH-targetH;
     const status=pct>=100?'ok':pct>=95?'close':'ng';
-    if(targetNumEl)targetNumEl.textContent=targetH+'h';
+    if(targetBtnEl){targetBtnEl.textContent='✏'+targetH+'h';targetBtnEl.classList.add('active');}
     if(targetDiffEl){
       targetDiffEl.className='forecast-target-diff '+status;
       if(status==='ok'){
@@ -3346,7 +3346,7 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
     nextTimeEl.classList.toggle('soon',rem<60000);
   }
   function updateSwHint(){
-    const e=CUST.checkEmoji||'🌸';
+    const e=getActiveCheckEmoji();
     hintEl.textContent=swRunning?'チェック済み '+e+'×'+swCheckedCount:(swElapsed>0?'一時停止中 — '+e+'×'+swCheckedCount:'10分ごとに '+e);
   }
   function persistSw(){
@@ -3356,7 +3356,7 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
     const{h,blockMin,ds}=boundaryToBlock(boundaryMs);if(!data[ds])data[ds]={};const key=h+':'+blockMin;
     if(!data[ds][key]){data[ds][key]=true;save();if(currentView==='daily'&&currentDate===ds){refreshGrid();updateStats();if(typeof renderCrazy10Stars==='function')renderCrazy10Stars();if(typeof renderAsajukuStars==='function')renderAsajukuStars();}
       if(typeof trackEvent==='function')trackEvent('ten_min_check',{source:'stopwatch'});
-      hintEl.textContent=String(h===0?24:h).padStart(2,'0')+':'+String(blockMin).padStart(2,'0')+' '+(CUST.checkEmoji||'🌸');
+      hintEl.textContent=String(h===0?24:h).padStart(2,'0')+':'+String(blockMin).padStart(2,'0')+' '+getActiveCheckEmoji();
       playCheckSound();setTimeout(updateSwHint,3000);}
     swCheckedCount++;
     swCheckedBoundaries.push(boundaryMs);
@@ -4202,6 +4202,14 @@ const COMBO_EMOJI_LIST=['✨','🔥','⚡','💥','🌟','🎯','🚀','💫','�
 
 function loadCust(){try{const s=LS.get('study-cust');if(s)CUST=Object.assign({},CUST_DEFAULTS,JSON.parse(s));}catch(e){CUST={...CUST_DEFAULTS};}}
 function saveCust(){LS.set('study-cust',JSON.stringify(CUST));}
+function getActiveCheckEmoji(){return (CUST&&CUST.checkEmoji)||'🌸';}
+function syncStopwatchIconLabels(){
+  const e=getActiveCheckEmoji();
+  const hint=$('sw-hint');
+  if(hint&&!_swIsRunning&&!hint.textContent.includes('中'))hint.textContent='10分ごとに '+e;
+  const lbl=document.querySelector('.sw-next-lbl');
+  if(lbl)lbl.textContent=e+'まであと';
+}
 
 // ── 目標総学習時間ボタン（✏ボタン→input方式）──
 (function(){
@@ -4245,36 +4253,33 @@ function saveCust(){LS.set('study-cust',JSON.stringify(CUST));}
     const colEl=btn.closest('.forecast-col-target');
     if(!colEl||colEl.dataset.editing==='1')return;
     colEl.dataset.editing='1';
-    const numEl=colEl.querySelector('.forecast-target-num');
-    if(!numEl)return;
     const currentH=CUST.targetTotalH>0?CUST.targetTotalH:'';
     const inp=document.createElement('input');
     inp.type='number';inp.className='goal-input-custom';
     inp.min='1';inp.max='9999';inp.value=currentH;
     inp.placeholder='例:300';inp.title='時間数を入力してEnterで確定';
     inp.style.cssText='width:64px;font-size:.85rem;';
-    btn.style.display='none';
-    numEl.replaceWith(inp);inp.focus();inp.select();
+    btn.replaceWith(inp);inp.focus();inp.select();
     let done=false;
+    function restoreBtn(){
+      inp.replaceWith(btn);
+      btn.textContent=CUST.targetTotalH>0?'✏'+CUST.targetTotalH+'h':'✏';
+      btn.classList.toggle('active',CUST.targetTotalH>0);
+      delete colEl.dataset.editing;
+    }
     function commit(){
       if(done)return;done=true;
       const v=parseInt(inp.value);
       CUST.targetTotalH=(v>0&&v<=9999)?v:0;
       saveCust();renderLevelBar();safeRenderForecast();safeRenderAllTimeCard();
       if(window._refreshTargetBtn)window._refreshTargetBtn();
-      btn.style.display='';
-      delete colEl.dataset.editing;
+      restoreBtn();
     }
     inp.addEventListener('keydown',function(e){
       if(e.key==='Enter'){e.preventDefault();commit();}
       if(e.key==='Escape'){
         done=true;
-        const restored=document.createElement('span');
-        restored.className='forecast-target-num';
-        restored.textContent=CUST.targetTotalH>0?CUST.targetTotalH+'h':'未設定';
-        inp.replaceWith(restored);
-        btn.style.display='';
-        delete colEl.dataset.editing;
+        restoreBtn();
       }
     });
     inp.addEventListener('blur',function(){setTimeout(commit,150);});
@@ -4583,10 +4588,7 @@ function applyAllCust(){
   applyTreeBg(CUST.showTreeBg);
   renderQuote();
   updateStoryMainCard();
-  const swHint=$('sw-hint');
-  if(swHint&&!_swIsRunning&&!swHint.textContent.includes('中'))swHint.textContent='10分ごとに '+(CUST.checkEmoji||'🌸');
-  const swNextLbl=document.querySelector('.sw-next-lbl');
-  if(swNextLbl)swNextLbl.textContent=(CUST.checkEmoji||'🌸')+'まであと';
+  syncStopwatchIconLabels();
   applyAppIcon(CUST.appIcon||'A');
 }
 
@@ -4603,6 +4605,7 @@ function openCustPanel(){
   $('cust-overlay').classList.add('show');
   // Crazy10設定セクションの表示同期
   if(typeof _syncCrazy10SettingsSec==='function')_syncCrazy10SettingsSec();
+  if(typeof _resetMyEventForm==='function')_resetMyEventForm();
 }
 async function saveCustAndClose(){
   // 保存ボタン：確定して保存
@@ -4959,8 +4962,7 @@ function _renderCheckGrid(){
         CUST.checkEmoji=e;saveCust();applyCheckEmojiCSS(e);
         const inp=$('cust-check-inp');if(inp)inp.value=e;
         document.querySelectorAll('.hour-btn').forEach(hb=>hb.textContent=e);updateGridHeaderIcon();
-        const sh=$('sw-hint');if(sh&&!_swIsRunning&&!sh.textContent.includes('中'))sh.textContent='10分ごとに '+e;
-        const nl=document.querySelector('.sw-next-lbl');if(nl)nl.textContent=e+'まであと';
+        syncStopwatchIconLabels();
         _renderCheckGrid();
       });
     }
@@ -5005,8 +5007,7 @@ function _renderQuotesList(){
     const e=[...this.value.trim()].slice(0,2).join('')||'🌸';
     CUST.checkEmoji=e;saveCust();applyCheckEmojiCSS(e);
     document.querySelectorAll('.hour-btn').forEach(hb=>hb.textContent=e);updateGridHeaderIcon();
-    const sh=$('sw-hint');if(sh&&!_swIsRunning&&!sh.textContent.includes('中'))sh.textContent='10分ごとに '+e;
-    const nl=document.querySelector('.sw-next-lbl');if(nl)nl.textContent=e+'まであと';
+    syncStopwatchIconLabels();
     _renderCheckGrid();
   });
   // コンボ絵文字テキスト入力
@@ -6146,8 +6147,8 @@ function _resetMyEventForm(){
   if(nameInp)nameInp.value='';
   if(wrap)wrap.innerHTML='';
   if(addBrkBtn)addBrkBtn.style.display='';
-  _buildTimeOptions('myev-start','05:00');
-  _buildTimeOptions('myev-end','16:00','05:10',null);
+  _ensureMyEventTimeOptions('05:00','16:00',true);
+  _setMyEventAccordionOpen(false);
   _calcMyEventStudyTime();
 }
 
@@ -6206,6 +6207,25 @@ function _buildTimeOptions(selId, defaultVal, fromVal, toVal){
   else if(sel.options.length)sel.selectedIndex=0;
 }
 
+function _myEventMinEndVal(startVal){
+  const startMin=_timeToMinutes(startVal||'05:00');
+  const minEndMin=startMin+10;
+  return String(Math.floor(minEndMin/60)).padStart(2,'0')+':'+String(minEndMin%60).padStart(2,'0');
+}
+
+function _ensureMyEventTimeOptions(defaultStart,defaultEnd,force){
+  const startSel=document.getElementById('myev-start');
+  const endSel=document.getElementById('myev-end');
+  if(!startSel||!endSel)return;
+  const startVal=force?(defaultStart||'05:00'):(startSel.value||defaultStart||'05:00');
+  if(force||!startSel.options.length)_buildTimeOptions('myev-start',startVal);
+  const activeStart=startSel.value||startVal;
+  const minEndVal=_myEventMinEndVal(activeStart);
+  const rawEnd=force?(defaultEnd||'16:00'):(endSel.value||defaultEnd||'16:00');
+  const safeEnd=_timeToMinutes(rawEnd)>_timeToMinutes(activeStart)?rawEnd:minEndVal;
+  if(force||!endSel.options.length)_buildTimeOptions('myev-end',safeEnd,minEndVal,null);
+}
+
 // 'HH:MM' → 分（整数）変換
 function _timeToMinutes(t){if(!t||t==='none')return 0;const[h,m]=t.split(':').map(Number);return h*60+m;}
 
@@ -6214,8 +6234,7 @@ function _onMyEvStartChange(){
   const startVal=document.getElementById('myev-start')?.value;
   if(!startVal)return;
   const startMin=_timeToMinutes(startVal);
-  const minEndMin=startMin+10;
-  const minEndVal=String(Math.floor(minEndMin/60)).padStart(2,'0')+':'+String(minEndMin%60).padStart(2,'0');
+  const minEndVal=_myEventMinEndVal(startVal);
   const curEnd=document.getElementById('myev-end')?.value;
   _buildTimeOptions('myev-end', curEnd&&_timeToMinutes(curEnd)>startMin?curEnd:minEndVal, minEndVal, null);
   _calcMyEventStudyTime();
@@ -6363,9 +6382,7 @@ _syncCrazy10SettingsSec=function(){
   _origSyncCrazy10();
   _renderOfficialEventList();
   _renderMyEventList();
-  // 10分刻みselect初期化（初回のみ）
-  _buildTimeOptions('myev-start','05:00');
-  _buildTimeOptions('myev-end','16:00');
+  _ensureMyEventTimeOptions('05:00','16:00',false);
   // フォームイベント登録（重複防止）
   const dateInp=document.getElementById('myev-date');
   const nameInp=document.getElementById('myev-name');
