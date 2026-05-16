@@ -36,16 +36,18 @@
 .bloom-line .date-row-btn{background:linear-gradient(120deg,rgba(255,241,248,.98),rgba(248,250,252,.98));border-color:rgba(247,168,207,.52)!important;color:var(--text)}
 .date-center-wrap{grid-column:2;justify-self:center;transform:translateX(var(--date-shift));display:grid;grid-template-columns:28px 150px 28px;align-items:center;justify-content:center;column-gap:5px}
 .date-mark{justify-self:center;font-size:24px;line-height:1;filter:drop-shadow(0 0 6px rgba(255,255,255,.18))}
-.date-center-wrap .date-display-text{justify-self:center;text-align:center;min-width:0!important;font-size:29px!important;font-weight:950!important;letter-spacing:.01em;font-variant-numeric:tabular-nums;color:var(--text)}
+.date-center-wrap .date-display-text{justify-self:center;text-align:center;min-width:0!important;font-size:29px!important;font-weight:1000!important;letter-spacing:.01em;font-variant-numeric:tabular-nums;color:#172033!important;text-shadow:0 1px 0 rgba(255,255,255,.55)}
+.today-line .date-center-wrap .date-display-text,#date-label,#date-label .date-num{color:#172033!important;font-weight:1000!important;text-shadow:0 1px 0 rgba(255,255,255,.55)}
 .date-center-wrap .date-num{font-size:1em;font-weight:950;letter-spacing:.01em}
 .date-center-wrap .date-week{font-size:.72em;font-weight:900;color:#58647a;margin-left:1px}
-[data-theme="dark"] .date-center-wrap .date-week,[data-theme="forest"] .date-center-wrap .date-week,[data-theme="ocean"] .date-center-wrap .date-week,[data-theme="sunset"] .date-center-wrap .date-week{color:var(--text-muted)}
+.today-line .date-center-wrap .date-week,#date-label .date-week{color:#485368!important}
+[data-theme="dark"] .date-center-wrap .date-week,[data-theme="forest"] .date-center-wrap .date-week,[data-theme="ocean"] .date-center-wrap .date-week,[data-theme="sunset"] .date-center-wrap .date-week{color:#485368}
 .date-side{position:absolute;left:calc(50% + 116px);top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:flex-start}
 .date-side .today-date-pill{display:inline-flex;align-items:center;justify-content:center;min-width:86px;border-radius:999px;padding:7px 10px;margin-left:0;font-size:17px;font-weight:950;background:#eafcf1;color:#2fc773;border:1px solid #a8e9c0}
 .date-side .exam-days-pill{display:inline-flex!important;align-items:baseline;justify-content:center;min-width:146px;border-radius:999px;padding:7px 10px;margin-left:0;background:#fff0f8;color:#df70aa;border:1px solid #ffc0dd;font-size:14px;font-weight:950;letter-spacing:.01em}
 .date-side .exam-days-pill .count-num{font-size:26px;line-height:1;margin:0 3px;color:#ef8fc2;vertical-align:-1px}
 .date-side .exam-days-pill .count-small{font-size:1em;font-weight:950}
-@media(max-width:560px){.date-header-table{border-spacing:0 7px;padding:3px 0 6px}.date-row-btn{--date-shift:-28px;min-height:48px;border-radius:14px!important;padding:6px 8px!important}.date-center-wrap{grid-template-columns:20px 112px 20px;column-gap:3px}.date-mark{font-size:18px}.date-center-wrap .date-display-text{font-size:21px!important}.date-side{left:calc(50% + 54px)}.date-side .today-date-pill{min-width:58px;font-size:14px;padding:6px 8px}.date-side .exam-days-pill{min-width:108px;font-size:11px;padding:6px 8px}.date-side .exam-days-pill .count-num{font-size:21px;margin:0 2px}}
+@media(max-width:560px){.date-header-table{border-spacing:0 7px;padding:3px 0 6px}.date-row-btn{--date-shift:-46px;min-height:48px;border-radius:14px!important;padding:6px 8px!important}.date-center-wrap{grid-template-columns:20px 112px 20px;column-gap:3px}.date-mark{font-size:18px}.date-center-wrap .date-display-text{font-size:21px!important}.date-side{left:calc(50% + 36px)}.date-side .today-date-pill{min-width:58px;font-size:14px;padding:6px 8px}.date-side .exam-days-pill{min-width:108px;font-size:11px;padding:6px 8px}.date-side .exam-days-pill .count-num{font-size:21px;margin:0 2px}}
 </style><link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#4f8ef7">
 <meta name="apple-mobile-web-app-capable" content="yes">
