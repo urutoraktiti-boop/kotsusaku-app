@@ -1202,6 +1202,26 @@ setTimeout(() => trackEvent('app_open'), 0);
     } catch(e) { return 'samurai'; }
   }
 
+  // 資格カテゴリを取得（storyIdから資格系を判別して返す）
+  function getLicenseCategory() {
+    try {
+      const cust = JSON.parse(localStorage.getItem('study-cust') || '{}');
+      const id = cust.storyId || '';
+      const map = {
+        boki3:      'tax_accountant',
+        boki2:      'tax_accountant',
+        zeirishi:   'tax_accountant',
+        sharoshi:   'tax_accountant',
+        takken:     'real_estate',
+        fp2:        'fp',
+        koumuin:    'civil_servant',
+        shindanshi: 'civil_servant',
+        kaikeishi:  'cpa',
+      };
+      return map[id] || null;
+    } catch(e) { return null; }
+  }
+
   // --- バッジ情報 ---
   function getBadgeInfo() {
     try {
@@ -1256,7 +1276,7 @@ setTimeout(() => trackEvent('app_open'), 0);
     const now = new Date().toISOString();
     const base = {
       userId: getAnonymousId(),
-      appVersion: 'kotsusaku-v84',
+      appVersion: 'kotsusaku-v85',
       lastAccess: now,
       firstAccess: getFirstAccess(),
       os: device.os,
@@ -1271,6 +1291,7 @@ setTimeout(() => trackEvent('app_open'), 0);
       badgeCount: badge.count,
       badgeList: badge.list,
       storyMode: getStoryMode(),
+      licenseCategory: getLicenseCategory(),
       usesStopwatch: getStopwatchUsed(),
       hasMyCrazy10: getMyCrazy10Set(),
       joinsCrazy10: getCrazy10Joined(),
@@ -5646,7 +5667,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v84'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v85'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
 
