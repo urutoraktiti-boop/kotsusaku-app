@@ -1059,13 +1059,307 @@ function trackEvent(name, params) {
   if (!analytics || !name) return;
   try {
     analytics.logEvent(name, Object.assign({
-      app_version: 'kotsusaku-v83'
+      app_version: 'kotsusaku-v84'
     }, params || {}));
   } catch(e) {
     console.warn('Analytics送信エラー:', e);
   }
 }
 setTimeout(() => trackEvent('app_open'), 0);
+
+// ============================================================
+// === コツコツサクサク アナリティクス (v84) ===
+// Firestore /analytics/{userId} にユーザー行動データを送信する
+// 送信タイミング:
+//   1. 起動時 → 前回セッション分の未送信データを送信 + 今回の起動データを送信
+//   2. 毎日4:00 → その場で開いていた場合に日次データを送信
+// ============================================================
+(function() {
+  const ANALYTICS_KEY = 'kotsusaku-analytics-pending'; // 未送信データ保存キー
+  const ANALYTICS_SENT_KEY = 'kotsusaku-analytics-last-sent'; // 最終送信日
+
+  // --- デバイス情報を取得 ---
+  function getDeviceInfo() {
+    const ua = navigator.userAgent || '';
+    let os = 'other';
+    if (/iPhone|iPad|iPod/.test(ua)) os = 'ios';
+    else if (/Android/.test(ua)) os = 'android';
+    else if (/Win/.test(ua)) os = 'windows';
+    else if (/Mac/.test(ua)) os = 'mac';
+    const isMobile = /iPhone|iPad|iPod|Android/.test(ua);
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches
+      || window.navigator.standalone === true;
+    return { os, deviceType: isMobile ? 'mobile' : 'pc', isPWA };
+  }
+
+  // --- 匿名ユーザーIDを生成・取得 ---
+  function getAnonymousId() {
+    let aid = localStorage.getItem('kotsusaku-anonymous-id');
+    if (!aid) {
+      aid = 'anon-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+      localStorage.setItem('kotsusaku-anonymous-id', aid);
+    }
+    return aid;
+  }
+
+  // --- 今日の日付文字列（アプリ基準：4時区切り）---
+  function getAppDate() {
+    const now = new Date();
+    if (now.getHours() < 4) now.setDate(now.getDate() - 1);
+    return now.toISOString().slice(0, 10);
+  }
+
+  // --- 今日の学習時間（分）---
+  function getTodayStudyMin() {
+    try {
+      const d = JSON.parse(localStorage.getItem('study-data') || '{}');
+      const ds = getAppDate();
+      if (!d[ds]) return 0;
+      return Object.values(d[ds]).filter(Boolean).length * 10;
+    } catch(e) { return 0; }
+  }
+
+  // --- 累計学習時間（分）---
+  function getTotalStudyMin() {
+    try {
+      const d = JSON.parse(localStorage.getItem('study-data') || '{}');
+      return Object.values(d).reduce((sum, day) =>
+        sum + Object.values(day).filter(Boolean).length * 10, 0);
+    } catch(e) { return 0; }
+  }
+
+  // --- 学習日数 ---
+  function getStudyDays() {
+    try {
+      const d = JSON.parse(localStorage.getItem('study-data') || '{}');
+      return Object.keys(d).filter(ds => {
+        const day = d[ds];
+        return Object.values(day).filter(Boolean).length > 0;
+      }).length;
+    } catch(e) { return 0; }
+  }
+
+  // --- 連続学習日数 ---
+  function getStreak() {
+    try {
+      const d = JSON.parse(localStorage.getItem('study-data') || '{}');
+      let streak = 0;
+      const now = new Date();
+      if (now.getHours() < 4) now.setDate(now.getDate() - 1);
+      let cur = new Date(now);
+      const toDs = dt => dt.toISOString().slice(0, 10);
+      const dayMin = ds => {
+        if (!d[ds]) return 0;
+        return Object.values(d[ds]).filter(Boolean).length * 10;
+      };
+      if (dayMin(toDs(cur)) <= 0) cur.setDate(cur.getDate() - 1);
+      while (streak < 3650) {
+        if (dayMin(toDs(cur)) > 0) { streak++; cur.setDate(cur.getDate() - 1); }
+        else break;
+      }
+      return streak;
+    } catch(e) { return 0; }
+  }
+
+  // --- 平均学習時間（分/日）---
+  function getAvgDailyMin() {
+    const days = getStudyDays();
+    return days > 0 ? Math.round(getTotalStudyMin() / days) : 0;
+  }
+
+  // --- ストップウォッチ使用有無 ---
+  function getStopwatchUsed() {
+    try {
+      const st = localStorage.getItem('kotsusaku-stopwatch-state');
+      if (!st) return false;
+      const parsed = JSON.parse(st);
+      return (parsed.elapsed || 0) > 0;
+    } catch(e) { return false; }
+  }
+
+  // --- マイCrazy10設定有無 ---
+  function getMyCrazy10Set() {
+    try {
+      const cust = JSON.parse(localStorage.getItem('study-cust') || '{}');
+      return Array.isArray(cust.myEvents) && cust.myEvents.length > 0;
+    } catch(e) { return false; }
+  }
+
+  // --- Crazy10参加有無 ---
+  function getCrazy10Joined() {
+    try {
+      const cust = JSON.parse(localStorage.getItem('study-cust') || '{}');
+      const joined = cust.crazy10Joined || {};
+      return Object.values(joined).some(v => v === true);
+    } catch(e) { return false; }
+  }
+
+  // --- 選択中のストーリーモード ---
+  function getStoryMode() {
+    try {
+      const cust = JSON.parse(localStorage.getItem('study-cust') || '{}');
+      return cust.storyId || 'samurai';
+    } catch(e) { return 'samurai'; }
+  }
+
+  // --- バッジ情報 ---
+  function getBadgeInfo() {
+    try {
+      const badges = JSON.parse(localStorage.getItem('study-badges') || '{}');
+      const list = Object.keys(badges).filter(k => badges[k]);
+      return { count: list.length, list };
+    } catch(e) { return { count: 0, list: [] }; }
+  }
+
+  // --- 現在のレベル ---
+  function getCurrentLevel() {
+    try {
+      if (typeof getLevelData === 'function' && typeof allTimeTotal === 'function') {
+        return getLevelData(allTimeTotal()).lv || 1;
+      }
+    } catch(e) {}
+    return 1;
+  }
+
+  // --- アクセス時間帯 ---
+  function getAccessHour() {
+    return new Date().getHours();
+  }
+
+  // --- 初回アクセス日 ---
+  function getFirstAccess() {
+    let fa = localStorage.getItem('kotsusaku-first-access');
+    if (!fa) {
+      fa = new Date().toISOString().slice(0, 10);
+      localStorage.setItem('kotsusaku-first-access', fa);
+    }
+    return fa;
+  }
+
+  // --- Firestoreにデータを送信 ---
+  async function sendAnalytics(payload) {
+    if (!db) return false;
+    try {
+      const userId = getAnonymousId();
+      await db.collection('analytics').doc(userId).set(payload, { merge: true });
+      return true;
+    } catch(e) {
+      console.warn('アナリティクス送信エラー:', e);
+      return false;
+    }
+  }
+
+  // --- 送信するデータを組み立てる ---
+  function buildPayload(type) {
+    const device = getDeviceInfo();
+    const badge = getBadgeInfo();
+    const now = new Date().toISOString();
+    const base = {
+      userId: getAnonymousId(),
+      appVersion: 'kotsusaku-v84',
+      lastAccess: now,
+      firstAccess: getFirstAccess(),
+      os: device.os,
+      deviceType: device.deviceType,
+      isPWA: device.isPWA,
+      accessHour: getAccessHour(),
+      totalStudyMin: getTotalStudyMin(),
+      studyDays: getStudyDays(),
+      avgDailyMinutes: getAvgDailyMin(),
+      streakDays: getStreak(),
+      level: getCurrentLevel(),
+      badgeCount: badge.count,
+      badgeList: badge.list,
+      storyMode: getStoryMode(),
+      usesStopwatch: getStopwatchUsed(),
+      hasMyCrazy10: getMyCrazy10Set(),
+      joinsCrazy10: getCrazy10Joined(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    };
+    if (type === 'daily') {
+      base.dailyStudyMin = getTodayStudyMin();
+      base.dailyDate = getAppDate();
+    }
+    return base;
+  }
+
+  // --- 未送信データをlocalStorageに保存 ---
+  function savePending() {
+    try {
+      const payload = buildPayload('daily');
+      localStorage.setItem(ANALYTICS_KEY, JSON.stringify({
+        payload,
+        savedAt: new Date().toISOString()
+      }));
+    } catch(e) {}
+  }
+
+  // --- 前回の未送信データを送信 ---
+  async function flushPending() {
+    try {
+      const raw = localStorage.getItem(ANALYTICS_KEY);
+      if (!raw) return;
+      const { payload } = JSON.parse(raw);
+      if (!payload) return;
+      const ok = await sendAnalytics(payload);
+      if (ok) localStorage.removeItem(ANALYTICS_KEY);
+    } catch(e) {}
+  }
+
+  // --- 日次送信（当日分）---
+  async function sendDaily() {
+    const today = getAppDate();
+    const lastSent = localStorage.getItem(ANALYTICS_SENT_KEY);
+    if (lastSent === today) return; // 今日すでに送信済み
+    const payload = buildPayload('daily');
+    const ok = await sendAnalytics(payload);
+    if (ok) {
+      localStorage.setItem(ANALYTICS_SENT_KEY, today);
+      localStorage.removeItem(ANALYTICS_KEY); // 未送信キューをクリア
+    }
+  }
+
+  // --- 起動時処理 ---
+  async function onAppStart() {
+    // 1. 前回セッション分の未送信データを送信
+    await flushPending();
+    // 2. 今回の起動データを送信（起動時は日次データも兼ねる）
+    await sendDaily();
+    // 3. 今回のセッションデータをlocalStorageに保存（次回起動時のフォールバック用）
+    savePending();
+  }
+
+  // --- 4:00 日次送信チェック ---
+  function schedule4amCheck() {
+    const now = new Date();
+    const next4am = new Date(now);
+    next4am.setHours(4, 0, 0, 0);
+    if (now >= next4am) next4am.setDate(next4am.getDate() + 1);
+    const msUntil4am = next4am - now;
+    setTimeout(async () => {
+      await sendDaily();
+      savePending();
+      // 次の4:00もスケジュール
+      setInterval(async () => {
+        await sendDaily();
+        savePending();
+      }, 24 * 60 * 60 * 1000);
+    }, msUntil4am);
+  }
+
+  // --- 実行 ---
+  // Firebaseが初期化されてから少し遅延して実行（アプリ起動完了後）
+  setTimeout(async () => {
+    try {
+      await onAppStart();
+      schedule4amCheck();
+    } catch(e) {
+      console.warn('アナリティクス初期化エラー:', e);
+    }
+  }, 2000);
+
+})();
+// === アナリティクス end ===
 
 // === 同期コード ===
 function generateSyncCode() {
@@ -5352,7 +5646,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v83'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v84'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
 
