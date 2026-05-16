@@ -1059,7 +1059,7 @@ function trackEvent(name, params) {
   if (!analytics || !name) return;
   try {
     analytics.logEvent(name, Object.assign({
-      app_version: 'kotsusaku-v84'
+      app_version: 'kotsusaku-v85'
     }, params || {}));
   } catch(e) {
     console.warn('Analytics送信エラー:', e);
@@ -6334,11 +6334,14 @@ function _showCrazy10PreviewToastIfNeeded(){
 	  // 星バッジ初期描画
 	  setTimeout(renderCrazy10Stars, 800);
 	  setTimeout(renderAsajukuStars, 900);
+	  // フィナーレ自動発動チェック（起動時）
+	  setTimeout(_autoTriggerFinaleIfNeeded, 2500);
 	  setInterval(checkAsajukuDisplayWindowChanged, 30000);
 	  setInterval(checkCrazy10EventDisplay, 30000);
 	  window.addEventListener('focus',checkAsajukuDisplayWindowChanged);
 	  window.addEventListener('focus',checkCrazy10EventDisplay);
-	  document.addEventListener('visibilitychange',function(){if(!document.hidden){checkAsajukuDisplayWindowChanged();checkCrazy10EventDisplay();}});
+	  window.addEventListener('focus',_autoTriggerFinaleIfNeeded);
+	  document.addEventListener('visibilitychange',function(){if(!document.hidden){checkAsajukuDisplayWindowChanged();checkCrazy10EventDisplay();_autoTriggerFinaleIfNeeded();}});
 	  // 設定パネル同期（パネルを開くたびに実行）
 	  const origOpen=window.openCustPanel;
   window.openCustPanel=function(){if(origOpen)origOpen();_syncCrazy10SettingsSec();};
@@ -6429,17 +6432,69 @@ document.addEventListener('click',function(e){
 
 // バッジエリアに星を描画
 function _buildFinaleStars(sets,maxSets){
-  const starsEl=document.getElementById('crazy10-finale-stars');
+  // 旧シグネチャとの互換：引数2個で呼ばれた場合は単日モードとして動く
+  _buildFinaleStarsMulti(null);
+}
+// 多日対応版：dayRows=[{label,sets,maxSets},…] で複数日を描画
+// dayRows=null のときは現在イベント日から自動構築
+function _buildFinaleStarsMulti(dayRows){
+  const badgeEl=document.getElementById('crazy10-finale-stars');
   const countEl=document.getElementById('crazy10-finale-count');
-  if(!starsEl||!countEl)return;
-  starsEl.innerHTML=_buildGroupedStarsHtml(sets,maxSets,false,{starSize:13,trophySize:17,activeDim:true});
-  if(maxSets>0&&sets>=maxSets){
-    countEl.textContent=maxSets+' / '+maxSets+' SET \u5b8c\u8d70\uff01';
-    countEl.style.color='#BA7517';countEl.style.fontWeight='700';
-  }else{
-    countEl.textContent=sets+' / '+maxSets+' SET';
-    countEl.style.color='';
+  if(!badgeEl)return;
+
+  // dayRowsが未指定なら自動構築
+  if(!dayRows){
+    dayRows=[];
+    for(let i=0;i<CRAZY10_EVENTS.length;i++){
+      const ev=CRAZY10_EVENTS[i];
+      if(!_isCrazy10Joined(ev.dateStr))continue;
+      if(!_isCrazy10FinaleAvailable(ev.dateStr))continue;
+      const s=_getCrazy10SetCount(ev.dateStr);
+      const mx=_getCrazy10MaxSetCount(ev);
+      const dayNum=i+1;
+      dayRows.push({label:'DAY'+dayNum+' ('+_formatEventDateShort(ev.dateStr)+')',sets:s,maxSets:mx,dateStr:ev.dateStr});
+    }
   }
+
+  // 単日のときはシンプル表示
+  if(dayRows.length<=1){
+    const row=dayRows[0]||{sets:0,maxSets:0};
+    badgeEl.innerHTML=_buildGroupedStarsHtml(row.sets,row.maxSets,false,{starSize:13,trophySize:17,activeDim:true});
+    if(countEl){
+      const complete=row.maxSets>0&&row.sets>=row.maxSets;
+      countEl.textContent=row.sets+' / '+row.maxSets+' SET'+(complete?' 完走！':'');
+      countEl.style.color=complete?'#BA7517':'';
+      countEl.style.fontWeight=complete?'700':'';
+    }
+    return;
+  }
+
+  // 複数日：各日行＋合計行
+  let html='';
+  let totalSets=0,totalMax=0;
+  for(let i=0;i<dayRows.length;i++){
+    const row=dayRows[i];
+    totalSets+=row.sets; totalMax+=row.maxSets;
+    const complete=row.maxSets>0&&row.sets>=row.maxSets;
+    // 区切り線（最初の行以外）
+    if(i>0) html+='<div style="border-top:1px solid rgba(74,222,128,.15);margin:5px 0;"></div>';
+    html+='<div style="margin-bottom:3px;">';
+    html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">';
+    html+='<div style="font-size:.58rem;font-weight:700;color:#86efac;">'+row.label+'</div>';
+    html+='<div style="font-size:.58rem;color:'+(complete?'#BA7517':'#86efac')+';font-weight:'+(complete?'700':'400')+';">'+row.sets+' / '+row.maxSets+' SET'+(complete?' 完走！':'')+'</div>';
+    html+='</div>';
+    html+=_buildGroupedStarsHtml(row.sets,row.maxSets,false,{starSize:11,trophySize:14,activeDim:true});
+    html+='</div>';
+  }
+  // 合計行
+  const totalComplete=totalMax>0&&totalSets>=totalMax;
+  html+='<div style="border-top:1px solid rgba(74,222,128,.3);margin-top:6px;padding-top:4px;display:flex;align-items:center;justify-content:space-between;">';
+  html+='<div style="font-size:.6rem;font-weight:800;color:#4ade80;">2日間合計</div>';
+  html+='<div style="font-size:.65rem;font-weight:800;color:'+(totalComplete?'#BA7517':'#4ade80')+';">'+totalSets+' / '+totalMax+' SET'+(totalComplete?' 🏆':'')+'</div>';
+  html+='</div>';
+
+  badgeEl.innerHTML=html;
+  if(countEl) countEl.textContent='';
 }
 
 // フィナーレアニメーションを展開
@@ -6452,19 +6507,62 @@ function showCrazy10Finale(dateStr){
   const ds=dateStr||((typeof currentDate!=='undefined'&&currentDate)?currentDate:toStudyDateStr(new Date()));
   const ev=_getCrazy10Event(ds);
   if(!ev)return;
-  // 星バッジ構築
-  const sets=_getCrazy10SetCount(ds);
-  const maxSets=_getCrazy10MaxSetCount(ev);
-  _buildFinaleStars(sets,maxSets);
+  // 表示済みとして記録（自動発動の重複防止）
+  _markCrazy10FinaleShown(ds);
+
+  // ── 多日対応：参加済みかつフィナーレ解禁済みの全日を収集 ──
+  const dayRows=[];
+  for(let i=0;i<CRAZY10_EVENTS.length;i++){
+    const e=CRAZY10_EVENTS[i];
+    if(!_isCrazy10Joined(e.dateStr))continue;
+    if(!_isCrazy10FinaleAvailable(e.dateStr))continue;
+    const s=_getCrazy10SetCount(e.dateStr);
+    const mx=_getCrazy10MaxSetCount(e);
+    dayRows.push({label:'DAY'+(i+1)+' ('+_formatEventDateShort(e.dateStr)+')',sets:s,maxSets:mx,dateStr:e.dateStr});
+  }
+  // 参加日が0の場合は当日だけで表示
+  if(dayRows.length===0){
+    const s=_getCrazy10SetCount(ds);
+    const mx=_getCrazy10MaxSetCount(ev);
+    dayRows.push({label:'DAY'+(CRAZY10_EVENTS.findIndex(e=>e.dateStr===ds)+1)+' ('+_formatEventDateShort(ds)+')',sets:s,maxSets:mx,dateStr:ds});
+  }
+
+  // ── 星バッジ描画 ──
+  _buildFinaleStarsMulti(dayRows);
+
+  // ── 日付ラベル ──
   const dateEl=document.getElementById('crazy10-finale-date');
-  if(dateEl)dateEl.textContent=_formatEventFinaleDate(ev);
+  if(dateEl){
+    if(dayRows.length>=2){
+      // 複数日：最初〜最後の日付範囲
+      const first=dayRows[0].dateStr;
+      const last=dayRows[dayRows.length-1].dateStr;
+      const fp=first.split('-'),lp=last.split('-');
+      dateEl.textContent=Number(fp[0])+'.'+Number(fp[1])+'.'+Number(fp[2])+' – '+Number(lp[1])+'/'+Number(lp[2])+' DAY1–'+dayRows.length;
+    }else{
+      dateEl.textContent=_formatEventFinaleDate(ev);
+    }
+  }
+
+  // ── メッセージ（全日コンプリートなら特別メッセージ） ──
   const msgEl=document.getElementById('crazy10-finale-message');
   if(msgEl){
-    msgEl.innerHTML=(maxSets>0&&sets>=maxSets)
-      ?'今日の10分の積み重ねが<br>未来を動かす。'
-      :'今日のコツコツが<br>未来につながる。';
+    const totalSets=dayRows.reduce((a,r)=>a+r.sets,0);
+    const totalMax=dayRows.reduce((a,r)=>a+r.maxSets,0);
+    const allDone=totalMax>0&&totalSets>=totalMax;
+    const multiDay=dayRows.length>=2;
+    if(allDone&&multiDay){
+      msgEl.innerHTML='2日間の10分の積み重ねが<br>未来を動かす。';
+    }else if(allDone){
+      msgEl.innerHTML='今日の10分の積み重ねが<br>未来を動かす。';
+    }else if(multiDay){
+      msgEl.innerHTML='2日間お疲れ様でした！<br>頑張ったね。';
+    }else{
+      msgEl.innerHTML='今日のコツコツが<br>未来につながる。';
+    }
   }
-  // オーバーレイ表示
+
+  // ── オーバーレイ表示 ──
   const overlay=document.getElementById('crazy10-finale-overlay');
   if(!overlay)return;
   overlay.style.display='flex';
@@ -6492,13 +6590,45 @@ function _checkCrazy10Finale(){
   _syncCrazy10FinaleButtonVisibility(ev.dateStr);
 }
 
-// 既存の30秒定期実行にフィナーレチェックを追加
-(function(){
-  const _origInterval=window.setInterval;
-  // ページロード30秒定期に追加
-  // フィナーレはブロックチェック時に発動するため自動チェックは不要
-  // setIntervalとsetTimeoutは引き続き無効
-})();
+// ── フィナーレ自動発動（起動時・フォーカス復帰時） ──
+// 参加済み：フィナーレ時間帯に入ったら自動でポップアップ（1回のみ）
+// 未参加：イベント終了後に強トーストで案内
+let _finaleAutoTriggered=false;
+function _autoTriggerFinaleIfNeeded(){
+  // 過去イベント含め最新のフィナーレ対象日を探す
+  let targetDate='';
+  for(let i=CRAZY10_EVENTS.length-1;i>=0;i--){
+    const ev=CRAZY10_EVENTS[i];
+    if(!ev)continue;
+    if(_isCrazy10FinaleAvailable(ev.dateStr)){targetDate=ev.dateStr;break;}
+  }
+  if(!targetDate)return;
+
+  const joined=_isCrazy10Joined(targetDate);
+  const alreadyShown=_isCrazy10FinaleShown(targetDate);
+
+  if(joined&&!alreadyShown){
+    // 参加済み・未表示 → 自動でフィナーレポップアップ発動
+    _markCrazy10FinaleShown(targetDate);
+    setTimeout(()=>{
+      showEasterToast('🥦 フィナーレが届いてるよ！準備ができたら見てね✨');
+      setTimeout(()=>showCrazy10Finale(targetDate),2200);
+    },1200);
+  } else if(!joined&&!_finaleAutoTriggered){
+    // 未参加・イベント終了後 → 強トーストで案内
+    const ev=CRAZY10_EVENTS.find(e=>e.dateStr===targetDate);
+    if(!ev)return;
+    const today=_toLocalDateStr(new Date());
+    const now=new Date();
+    const h=now.getHours()+now.getMinutes()/60;
+    const ended=(targetDate<today)||(targetDate===today&&h>=ev.end);
+    if(!ended)return;
+    _finaleAutoTriggered=true;
+    setTimeout(()=>{
+      showEasterToast('🥦 Crazy10お疲れ様！フィナーレボタンから結果を見てね🌸');
+    },1200);
+  }
+}
 
 // テスト用：コンソールで crazy10TestFinale() を実行すると確認できます
 function crazy10TestFinale(){
