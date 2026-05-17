@@ -48,6 +48,14 @@
 .date-side .exam-days-pill .count-num{font-size:26px;line-height:1;margin:0 3px;color:#ef8fc2;vertical-align:-1px}
 .date-side .exam-days-pill .count-small{font-size:1em;font-weight:950}
 @media(max-width:560px){.date-header-table{border-spacing:0 7px;padding:3px 0 6px}.date-row-btn{--date-shift:-46px;min-height:48px;border-radius:14px!important;padding:6px 8px!important}.date-center-wrap{grid-template-columns:20px 112px 20px;column-gap:3px}.date-mark{font-size:18px}.date-center-wrap .date-display-text{font-size:21px!important}.date-side{left:calc(50% + 36px)}.date-side .today-date-pill{min-width:58px;font-size:14px;padding:6px 8px}.date-side .exam-days-pill{min-width:108px;font-size:11px;padding:6px 8px}.date-side .exam-days-pill .count-num{font-size:21px;margin:0 2px}}
+</style><style>
+/* ── Crazy10参加日の発光スタイル ── */
+@keyframes crazy10BarGlow{0%,100%{filter:drop-shadow(0 0 3px rgba(74,222,128,.5))}50%{filter:drop-shadow(0 0 8px rgba(74,222,128,.9)) brightness(1.15)}}
+.bar-col.crazy10-day .bar-stack{background:rgba(74,222,128,.15);animation:crazy10BarGlow 2s ease-in-out infinite;}
+.bar-col.crazy10-day .bar-seg{filter:hue-rotate(60deg) saturate(1.5);}
+@keyframes crazy10CellGlow{0%,100%{box-shadow:0 0 4px 1px rgba(74,222,128,.4);border-color:rgba(74,222,128,.6)!important}50%{box-shadow:0 0 10px 3px rgba(74,222,128,.75);border-color:rgba(74,222,128,1)!important}}
+.cal-day.crazy10-day{animation:crazy10CellGlow 2s ease-in-out infinite;}
+.cal-day.crazy10-day .cal-day-bg{background:rgba(74,222,128,.2)!important;opacity:1!important;}
 </style><link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#4f8ef7">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -68,7 +76,7 @@
 <div id="badge-popup" class="badge-popup"></div>
 <div id="easter-toast" class="easter-toast"></div>
 <div id="backup-toast" class="backup-toast"></div>
-<div id="crazy10-finale-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:10200;align-items:center;justify-content:center;padding:16px;">
+<div id="crazy10-finale-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.40);z-index:10200;align-items:center;justify-content:center;padding:16px;">
 <div id="crazy10-finale-popup" style="background:#0d1f13;border:2px solid #4ade80;border-radius:20px;padding:22px 20px;max-width:340px;width:100%;text-align:center;position:relative;z-index:1;box-shadow:0 16px 50px rgba(0,0,0,.45);">
 <div style="font-size:2.2rem;margin-bottom:6px;">&#x1F966;</div>
 <div style="font-size:.92rem;font-weight:800;color:#bbf7d0;letter-spacing:.03em;margin-bottom:4px;">ITACHACHA House Crazy10</div>
@@ -85,7 +93,7 @@
 </div>
 </div>
 </div>
-<div id="crazy10-shotmode-hint" style="display:none;position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:10300;background:rgba(0,0,0,.45);border:1px solid rgba(74,222,128,.28);border-radius:999px;color:#bbf7d0;font-size:.72rem;font-weight:800;padding:7px 13px;pointer-events:none;">タップで戻る</div>
+<div id="crazy10-shotmode-hint" style="display:none;position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:10300;background:rgba(0,0,0,.45);border:1px solid rgba(74,222,128,.28);border-radius:999px;color:#bbf7d0;font-size:.72rem;font-weight:800;padding:7px 13px;cursor:pointer;">タップで戻る</div>
 <div id="crazy10-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:10100;align-items:center;justify-content:center;padding:16px;">
 <div id="crazy10-popup" style="background:#0d1f13;border:2px solid #4ade80;border-radius:20px;padding:24px 28px;max-width:340px;width:100%;text-align:center;position:relative;">
 <div style="font-size:2rem;margin-bottom:6px;">🥦</div>
@@ -3441,6 +3449,8 @@ function renderWeekly(){
       const min=dayTotal(d);const pct=maxMin>0?min/maxMin*100:0;
       const parts=dayPartMinutes(d);const dt=parseDate(d);const isToday=d===todayStr;
       const col=document.createElement('div');col.className='bar-col';
+      // Crazy10参加日なら発光クラスを付与
+      if(_isCrazy10Joined(d)&&CRAZY10_EVENTS.some(ev=>ev.dateStr===d&&ev.isOfficial)){col.classList.add('crazy10-day');}
       col.title=(dt.getMonth()+1)+'/'+dt.getDate()+' ('+WD[dt.getDay()]+')\n計: '+fmt(min)+'\n☀ 午前: '+fmt(parts.morning)+'\n☀ 午後: '+fmt(parts.afternoon)+'\n🌙 夜: '+fmt(parts.evening);
       col.addEventListener('click',()=>{currentDate=d;weekOff=0;switchView('daily');});
       const te=document.createElement('div');te.className='bar-time';te.textContent=min>0?fmt(min):'';
@@ -3502,6 +3512,8 @@ function renderMonthly(){
     const dow=new Date(year,month-1,d).getDay();const hol=!isToday&&isHoliday(ds);
     const numColorClass=isToday?'':hol||dow===0?' sun':dow===6?' sat':'';
     const cell=document.createElement('div');cell.className='cal-day'+heat+(isToday?' today-day':'');
+    // Crazy10参加日なら発光クラスを付与
+    if(_isCrazy10Joined(ds)&&CRAZY10_EVENTS.some(ev=>ev.dateStr===ds&&ev.isOfficial)){cell.classList.add('crazy10-day');}
     cell.title=month+'/'+d+' '+fmt(min);
     cell.addEventListener('click',()=>{currentDate=ds;monthOff=0;switchView('daily');});
     const bg=document.createElement('div');bg.className='cal-day-bg';
@@ -5934,10 +5946,13 @@ function renderCrazy10Stars(){
   let ds=(typeof currentDate!=='undefined'&&currentDate)?currentDate:toStudyDateStr(new Date());
   let html=_renderCrazy10Stars(ds);
   if(!html){
-    const finaleDs=(typeof _getCrazy10FinaleTargetDate==='function')?_getCrazy10FinaleTargetDate(ds):'';
-    if(finaleDs){ds=finaleDs;html=_renderCrazy10Stars(ds);}
+    // 今日の日付がイベント日でない場合は星バッジ・フィナーレボタン両方非表示
+    // ※日付を過去のイベント日に戻した場合のみ両方表示される
+    if(existing)existing.remove();
+    const finaleBtn=document.getElementById('crazy10-finale-btn');
+    if(finaleBtn)finaleBtn.remove();
+    return;
   }
-  if(!html){if(existing)existing.remove();return;}
   if(existing){existing.outerHTML=html;}
   else{container.insertAdjacentHTML('beforeend',html);}
   // フィナーレボタンを追加（まだなければ）
@@ -6455,6 +6470,7 @@ document.addEventListener('click',function(e){
   const hint=document.getElementById('crazy10-shotmode-hint');
   if(!hint||hint.style.display!=='block')return;
   if(e.target&&e.target.id==='crazy10-finale-shotmode')return;
+  // ヒントボタン自体またはオーバーレイ上のどこかをタップしたら戻る
   _setCrazy10ShotMode(false);
 });
 
