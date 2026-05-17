@@ -5924,8 +5924,12 @@ function _renderCrazy10Stars(dateStr){
 // ── 星バッジをメイン画面のストーリーカードに挿入・更新 ──
 function renderCrazy10Stars(){
   const existing=document.getElementById('crazy10-stars-wrap');
-  const container=document.querySelector('.story-main-card');
-  if(!container)return;
+  const container=document.getElementById('story-main-card')||document.querySelector('.story-main-card');
+  if(!container){
+    // コンテナが見つからない場合は少し待ってリトライ
+    setTimeout(renderCrazy10Stars,500);
+    return;
+  }
   // currentDateを優先して使用（テスト・過去日付閲覧対応）
   let ds=(typeof currentDate!=='undefined'&&currentDate)?currentDate:toStudyDateStr(new Date());
   let html=_renderCrazy10Stars(ds);
@@ -6120,8 +6124,11 @@ function _renderAsajukuStars(ds){
 
 function renderAsajukuStars(){
   const existing=document.getElementById('asajuku-stars-wrap');
-  const container=document.querySelector('.story-main-card');
-  if(!container)return;
+  const container=document.getElementById('story-main-card')||document.querySelector('.story-main-card');
+  if(!container){
+    setTimeout(renderAsajukuStars,500);
+    return;
+  }
   const ds=(typeof currentDate!=='undefined'&&currentDate)?currentDate:toStudyDateStr(new Date());
   const html=_renderAsajukuStars(ds);
   if(!html){if(existing)existing.remove();return;}
@@ -6352,9 +6359,9 @@ function _showCrazy10PreviewToastIfNeeded(){
 	  // 参加確認ポップアップ（少し遅延して表示）
 	  setTimeout(_showCrazy10PopupIfNeeded, 1500);
 	  setTimeout(_showAsajukuPopupIfNeeded, 1900);
-	  // 星バッジ初期描画
-	  setTimeout(renderCrazy10Stars, 800);
-	  setTimeout(renderAsajukuStars, 900);
+	  // 星バッジ初期描画（Androidでも確実に表示されるよう少し遅延）
+	  setTimeout(renderCrazy10Stars, 1200);
+	  setTimeout(renderAsajukuStars, 1300);
 	  // フィナーレ自動発動チェック（起動時）
 	  setTimeout(_autoTriggerFinaleIfNeeded, 2500);
 	  setInterval(checkAsajukuDisplayWindowChanged, 30000);
