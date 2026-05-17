@@ -93,7 +93,7 @@
 </div>
 </div>
 </div>
-<div id="crazy10-shotmode-hint" style="display:none;position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:10300;background:rgba(0,0,0,.45);border:1px solid rgba(74,222,128,.28);border-radius:999px;color:#bbf7d0;font-size:.72rem;font-weight:800;padding:7px 13px;cursor:pointer;">タップで戻る</div>
+<div id="crazy10-shotmode-hint" style="display:none;position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:10400;background:rgba(0,0,0,.45);border:1px solid rgba(74,222,128,.28);border-radius:999px;color:#bbf7d0;font-size:.72rem;font-weight:800;padding:7px 13px;cursor:pointer;" onclick="_setCrazy10ShotMode(false);">タップで戻る</div>
 <div id="crazy10-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:10100;align-items:center;justify-content:center;padding:16px;">
 <div id="crazy10-popup" style="background:#0d1f13;border:2px solid #4ade80;border-radius:20px;padding:24px 28px;max-width:340px;width:100%;text-align:center;position:relative;">
 <div style="font-size:2rem;margin-bottom:6px;">🥦</div>
@@ -3617,7 +3617,7 @@ function switchView(view){
   if(view!=='daily'&&_loopTimer){clearInterval(_loopTimer);_loopTimer=null;}
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.view===view));
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+view));
-  if(view==='daily'){refreshGrid();updateDateLabel();applyLuckyBlock();}
+  if(view==='daily'){refreshGrid();updateDateLabel();applyLuckyBlock();if(typeof renderCrazy10Stars==='function')setTimeout(renderCrazy10Stars,100);if(typeof renderAsajukuStars==='function')setTimeout(renderAsajukuStars,150);}
   else if(view==='weekly'){weekOff=0;renderWeekly();}
   else if(view==='monthly'){monthOff=0;renderMonthly();}
   updateStats();safeRenderAllTimeCard();safeRenderForecast();
@@ -6690,25 +6690,50 @@ function _renderOfficialEventList(){
   const el=document.getElementById('crazy10-official-list');
   if(!el)return;
   if(!CRAZY10_EVENTS.length){el.innerHTML='<div style="font-size:.62rem;color:var(--text-muted);">現在公式イベントはありません</div>';return;}
-  el.innerHTML=CRAZY10_EVENTS.map(ev=>{
+  el.innerHTML=CRAZY10_EVENTS.map((ev,idx)=>{
     const sh=_hToTimeStr(ev.start),eh=_hToTimeStr(ev.end);
     const breaks=_normalizeBreaks(ev);
     const totalBreak=_calcTotalBreak(breaks);
     const study=(ev.end-ev.start)-totalBreak;
     const bkTxt=breaks.length?breaks.map(b=>_hToTimeStr(b.s)+'〜'+_hToTimeStr(b.e)).join('、'):'なし';
-    // 終了済み判定（今日より前の日付）
     const today=_toLocalDateStr(new Date());
     const isDone=ev.dateStr<today;
     const doneBadge=isDone?'<span style="font-size:.55rem;background:rgba(156,163,175,.2);color:#9ca3af;border-radius:4px;padding:1px 6px;margin-left:6px;">終了済み</span>':'';
     const borderColor=isDone?'rgba(156,163,175,.2)':'rgba(74,222,128,.2)';
     const bgColor=isDone?'rgba(156,163,175,.03)':'rgba(74,222,128,.05)';
-    return '<div style="background:'+bgColor+';border:1px solid '+borderColor+';border-radius:7px;padding:6px 10px;display:flex;align-items:center;gap:8px;">'
+    const joined=_isCrazy10Joined(ev.dateStr);
+    const dayNum='DAY'+(idx+1);
+    const togId='crazy10-official-tog-'+ev.dateStr.replace(/-/g,'');
+    return '<div style="background:'+bgColor+';border:1px solid '+borderColor+';border-radius:7px;padding:6px 10px;">'
+      +'<div style="display:flex;align-items:center;gap:8px;">'
       +'<div style="flex:1;min-width:0;">'
-      +'<div style="font-size:.7rem;font-weight:700;color:var(--text);">'+ev.dateStr+doneBadge+'</div>'
+      +'<div style="font-size:.7rem;font-weight:700;color:var(--text);">'+dayNum+' '+ev.dateStr+doneBadge+'</div>'
       +'<div style="font-size:.6rem;color:var(--text-muted);margin-top:2px;">'+sh+' 〜 '+eh+'　休憩 '+bkTxt+'　実質 '+_hDiffStr(study)+'</div>'
+      +'</div>'
+      +'<div style="display:flex;align-items:center;gap:5px;flex-shrink:0;">'
+      +'<span style="font-size:.6rem;color:'+(joined?'#4ade80':'var(--text-muted)')+';font-weight:700;" id="'+togId+'-lbl">'+(joined?'参加':'不参加')+'</span>'
+      +'<label class="tog-sw"><input type="checkbox" id="'+togId+'"'+(joined?' checked':'')+'><span class="tog-slider"></span></label>'
+      +'</div>'
       +'</div>'
       +'</div>';
   }).join('');
+  // 各トグルのイベントを設定
+  CRAZY10_EVENTS.forEach((ev,idx)=>{
+    const togId='crazy10-official-tog-'+ev.dateStr.replace(/-/g,'');
+    const tog=document.getElementById(togId);
+    const lbl=document.getElementById(togId+'-lbl');
+    if(!tog||!lbl)return;
+    tog.onchange=function(){
+      _setCrazy10Joined(ev.dateStr,this.checked);
+      lbl.textContent=this.checked?'参加':'不参加';
+      lbl.style.color=this.checked?'#4ade80':'var(--text-muted)';
+      buildGrid();
+      if(typeof renderCrazy10Stars==='function')renderCrazy10Stars();
+      if(typeof renderWeekly==='function'&&currentView==='weekly')renderWeekly();
+      if(typeof renderMonthly==='function'&&currentView==='monthly')renderMonthly();
+      if(typeof _syncCrazy10FinaleButtonVisibility==='function')_syncCrazy10FinaleButtonVisibility();
+    };
+  });
 }
 
 // My Crazyのbreaksを正規化（旧形式後方互換）
