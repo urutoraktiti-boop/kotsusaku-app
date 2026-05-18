@@ -59,10 +59,12 @@
 </style><style>
 /* 設定画面はパネル全体を画面内に収め、中身だけを最後までスクロールさせる */
 .cust-overlay.show{align-items:center!important;padding:8px!important;overflow:hidden!important;}
-.cust-panel{height:min(92dvh,calc(100dvh - 16px))!important;max-height:none!important;min-height:0!important;border-radius:16px!important;}
-.cust-panel-hd{flex-shrink:0!important;}
-.cust-panel>div[style*="overflow-y:auto"]{min-height:0!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-bottom:28px!important;}
-@media(max-width:560px){.cust-overlay.show{align-items:stretch!important;padding:0!important;}.cust-panel{width:100%!important;height:100dvh!important;border-radius:0!important;}.cust-panel-hd{border-radius:0!important;}.cust-panel>div[style*="overflow-y:auto"]{padding:14px 14px 34px!important;}}
+.cust-panel{display:block!important;height:min(92dvh,calc(100dvh - 16px))!important;max-height:none!important;min-height:0!important;border-radius:16px!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
+.cust-panel-hd{position:static!important;flex-shrink:0!important;}
+.cust-panel>div[style*="overflow-y:auto"]{display:block!important;overflow:visible!important;min-height:auto!important;padding-bottom:82px!important;}
+.cust-official-link-fixed{position:sticky;bottom:0;z-index:3;background:var(--surface);border-top:1px solid var(--border);padding:10px 0 0!important;margin:10px -2px 0!important;}
+.cust-official-link-fixed a{box-shadow:0 -8px 18px rgba(0,0,0,.18);}
+@media(max-width:560px){.cust-overlay.show{align-items:stretch!important;padding:0!important;}.cust-panel{width:100%!important;height:100dvh!important;border-radius:0!important;}.cust-panel-hd{border-radius:0!important;}.cust-panel>div[style*="overflow-y:auto"]{padding:14px 14px 94px!important;}.cust-official-link-fixed{margin:10px -14px 0!important;padding:10px 14px calc(10px + env(safe-area-inset-bottom))!important;}}
 </style><link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#4f8ef7">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -601,7 +603,7 @@
 <button onclick="_openDataPolicy()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-size:.62rem;padding:3px 10px;border-radius:6px;cursor:pointer;">詳細を見る</button>
 </div>
 </div>
-<div class="cust-sec" style="margin:10px 0 0;">
+<div class="cust-sec cust-official-link-fixed" style="margin:10px 0 0;">
 <a href="https://urutoraktiti-boop.github.io/kotsusaku-homepage/" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);text-decoration:none;border-radius:10px;padding:10px 12px;font-size:.76rem;font-weight:800;">
 🌐 コツサク🌸公式ページ
 </a>
