@@ -150,7 +150,7 @@
 </div>
 </div>
 
-<div id="asajuku-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:10100;align-items:center;justify-content:center;padding:16px;">
+<div id="asajuku-overlay" style="display:none!important;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:10100;align-items:center;justify-content:center;padding:16px;">
 <div id="asajuku-popup" style="background:#0c1a2e;border:2px solid #38bdf8;border-radius:20px;padding:24px 28px;max-width:340px;width:100%;text-align:center;position:relative;">
 <div style="font-size:2rem;margin-bottom:6px;">🌅</div>
 <div style="font-size:1rem;font-weight:800;color:#bae6fd;letter-spacing:.04em;margin-bottom:4px;">早朝自習室</div>
@@ -1138,7 +1138,7 @@ function trackEvent(name, params) {
   if (!analytics || !name) return;
   try {
     analytics.logEvent(name, Object.assign({
-      app_version: 'kotsusaku-v88'
+      app_version: 'kotsusaku-v89'
     }, params || {}));
   } catch(e) {
     console.warn('Analytics送信エラー:', e);
@@ -5844,7 +5844,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v88'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v89'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
 
@@ -6346,6 +6346,7 @@ function checkAsajukuDisplayWindowChanged(){
 	
 	// ポップアップ表示（4:00〜7:00、itachachaは自動ON）
 	function _showAsajukuPopupIfNeeded(){
+    return; // 緊急停止中
   const now=new Date();const h=now.getHours()+now.getMinutes()/60;
   if(h<4||h>=ASAJUKU_END)return;
   const ds=toStudyDateStr(now);
