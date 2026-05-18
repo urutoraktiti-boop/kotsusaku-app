@@ -1138,7 +1138,7 @@ function trackEvent(name, params) {
   if (!analytics || !name) return;
   try {
     analytics.logEvent(name, Object.assign({
-      app_version: 'kotsusaku-v86'
+      app_version: 'kotsusaku-v87'
     }, params || {}));
   } catch(e) {
     console.warn('Analytics送信エラー:', e);
@@ -2516,9 +2516,13 @@ function _setupPopupClose(popupEl){
   btn.style.cssText='display:block;margin:14px auto 0;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);color:#fff;border-radius:99px;padding:7px 24px;font-size:.78rem;font-weight:800;cursor:pointer;letter-spacing:.04em;';
   btn.onclick=function(e){e.stopPropagation();_closePopupManual();};
   popupEl.appendChild(btn);
-  // 画面タップでも閉じる（ボタン以外）
+  // 画面タップでも閉じる（他のオーバーレイが表示中は無効）
   setTimeout(()=>{
     _popCloseHandler=function(e){
+      // Crazy10・早朝自習室・データポリシー等のオーバーレイが開いているときは無視
+      const overlays=['crazy10-overlay','asajuku-overlay','data-policy-overlay','update-banner'];
+      const anyOpen=overlays.some(id=>{const el=document.getElementById(id);return el&&el.style.display==='flex';});
+      if(anyOpen)return;
       _closePopupManual();
     };
     document.addEventListener('click',_popCloseHandler,{once:true});
@@ -5840,7 +5844,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v86'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v87'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
 
@@ -6440,7 +6444,15 @@ function _renderAsajukuBadgeGrid(){
 }
 
 function _closeAsajukuOverlay(){var o=document.getElementById("asajuku-overlay");if(o)o.style.display="none";}
-function _closeCrazy10Overlay(){var o=document.getElementById("crazy10-overlay");if(o)o.style.display="none";}
+function _closeCrazy10Overlay(){
+  var o=document.getElementById("crazy10-overlay");
+  if(o)o.style.display="none";
+  // 残留クリックハンドラをクリア（ポップアップキューとの干渉防止）
+  if(typeof _popCloseHandler!=='undefined'&&_popCloseHandler){
+    document.removeEventListener('click',_popCloseHandler);
+    _popCloseHandler=null;
+  }
+}
 // ── ポップアップを表示すべきか判定・表示 ──
 function _showCrazy10PopupIfNeeded(){
   const ev=_getCrazy10EventNow();
@@ -6469,7 +6481,7 @@ function _showCrazy10PopupIfNeeded(){
   overlay.style.display='flex';
   const joinBtn=document.getElementById('crazy10-join-btn');
   const skipBtn=document.getElementById('crazy10-skip-btn');
-  function close(){overlay.style.display='none';localStorage.setItem(key,'1');}
+  function close(){overlay.style.display='none';localStorage.setItem(key,'1');if(typeof _popCloseHandler!=='undefined'&&_popCloseHandler){document.removeEventListener('click',_popCloseHandler);_popCloseHandler=null;}}
   if(joinBtn)joinBtn.onclick=function(){
     _setCrazy10Joined(ev.dateStr,true);buildGrid();renderCrazy10Stars();_syncCrazy10SettingsSec();if(typeof _syncCrazy10FinaleButtonVisibility==='function')_syncCrazy10FinaleButtonVisibility();
     var popup=document.getElementById('crazy10-popup');
