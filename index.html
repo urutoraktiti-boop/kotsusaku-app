@@ -1138,7 +1138,7 @@ function trackEvent(name, params) {
   if (!analytics || !name) return;
   try {
     analytics.logEvent(name, Object.assign({
-      app_version: 'kotsusaku-v87'
+      app_version: 'kotsusaku-v88'
     }, params || {}));
   } catch(e) {
     console.warn('Analytics送信エラー:', e);
@@ -5844,7 +5844,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v87'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v88'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
 
@@ -6455,7 +6455,7 @@ function _closeCrazy10Overlay(){
 }
 // ── ポップアップを表示すべきか判定・表示 ──
 function _showCrazy10PopupIfNeeded(){
-  const ev=_getCrazy10EventNow();
+  return; // 緊急停止中
   if(!ev)return;
   if(!ev.isOfficial)return; // MyEventは参加/不参加ポップアップ不要
   // 4時以降、イベント終了前であれば表示
