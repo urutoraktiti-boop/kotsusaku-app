@@ -94,7 +94,50 @@
 </div>
 </div>
 <div id="crazy10-shotmode-hint" style="display:none;position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:10400;background:rgba(0,0,0,.45);border:1px solid rgba(74,222,128,.28);border-radius:999px;color:#bbf7d0;font-size:.72rem;font-weight:800;padding:7px 13px;cursor:pointer;" onclick="_setCrazy10ShotMode(false);">タップで戻る</div>
-<div id="crazy10-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:10100;align-items:center;justify-content:center;padding:16px;">
+<div id="data-policy-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10500;align-items:center;justify-content:center;padding:16px;">
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;max-width:360px;width:100%;max-height:85vh;overflow-y:auto;">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+<div style="display:flex;align-items:center;gap:8px;">
+<span style="font-size:1.1rem;">🔒</span>
+<span style="font-size:.88rem;font-weight:800;color:var(--text);">データ収集について</span>
+</div>
+<button onclick="document.getElementById('data-policy-overlay').style.display='none'" style="background:transparent;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;padding:2px 6px;">✕</button>
+</div>
+<div style="background:rgba(62,207,142,.1);border:1px solid rgba(62,207,142,.35);border-radius:10px;padding:10px 14px;margin-bottom:14px;display:flex;gap:10px;align-items:flex-start;">
+<span style="font-size:1.1rem;flex-shrink:0;">🛡</span>
+<div>
+<div style="font-size:.72rem;font-weight:800;color:var(--checked);margin-bottom:3px;">個人情報は一切収集していません</div>
+<div style="font-size:.62rem;color:var(--checked);line-height:1.7;">お名前・メールアドレス・電話番号など、ご本人を特定できる情報の登録や収集は行っておりません。</div>
+</div>
+</div>
+<div style="font-size:.62rem;color:var(--text-muted);line-height:1.8;margin-bottom:12px;">本アプリでは、より良いアプリ開発のため、以下の学習データを匿名で自動収集しています。</div>
+<div style="font-size:.65rem;font-weight:700;color:var(--text);margin-bottom:8px;">収集するデータ</div>
+<div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px;">
+<div style="display:flex;align-items:flex-start;gap:8px;padding:7px 10px;background:var(--surface2);border-radius:8px;">
+<span style="font-size:.85rem;flex-shrink:0;">⏱</span>
+<div><div style="font-size:.62rem;font-weight:700;color:var(--text);">学習データ</div><div style="font-size:.58rem;color:var(--text-muted);line-height:1.6;">累計学習時間・学習日数・1日の平均学習時間・連続学習日数</div></div>
+</div>
+<div style="display:flex;align-items:flex-start;gap:8px;padding:7px 10px;background:var(--surface2);border-radius:8px;">
+<span style="font-size:.85rem;flex-shrink:0;">📖</span>
+<div><div style="font-size:.62rem;font-weight:700;color:var(--text);">ストーリー・資格</div><div style="font-size:.58rem;color:var(--text-muted);line-height:1.6;">選択中のストーリーモード・資格カテゴリ</div></div>
+</div>
+<div style="display:flex;align-items:flex-start;gap:8px;padding:7px 10px;background:var(--surface2);border-radius:8px;">
+<span style="font-size:.85rem;flex-shrink:0;">🏅</span>
+<div><div style="font-size:.62rem;font-weight:700;color:var(--text);">レベル・バッジ</div><div style="font-size:.58rem;color:var(--text-muted);line-height:1.6;">現在のレベル・取得済みバッジの種類と数</div></div>
+</div>
+<div style="display:flex;align-items:flex-start;gap:8px;padding:7px 10px;background:var(--surface2);border-radius:8px;">
+<span style="font-size:.85rem;flex-shrink:0;">📱</span>
+<div><div style="font-size:.62rem;font-weight:700;color:var(--text);">端末・利用状況</div><div style="font-size:.58rem;color:var(--text-muted);line-height:1.6;">デバイス種別・OS・PWAインストール状況・アクセス時間帯</div></div>
+</div>
+</div>
+<div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:14px;">
+<div style="font-size:.62rem;color:var(--text);line-height:1.9;margin-bottom:10px;">収集されたデータは、アプリの改善・新機能の開発に活用するほか、仲間たちが積み上げてきた学習の軌跡として、公式ホームページに掲載することがあります。</div>
+<div style="font-size:.62rem;color:var(--text-muted);line-height:1.9;margin-bottom:10px;">皆さんの10分10分が積み重なって、大きな時間になっています。その軌跡を、同じアプリで学ぶ仲間たちとも共有できたら、という思いから掲載しています。</div>
+<div style="font-size:.58rem;color:var(--text-muted);line-height:1.8;padding-top:10px;border-top:1px solid var(--border);">掲載される情報はすべて匿名の統計データであり、個人が特定されることは一切ありません。</div>
+</div>
+<button onclick="document.getElementById('data-policy-overlay').style.display='none'" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);border-radius:10px;padding:10px;font-size:.72rem;font-weight:700;cursor:pointer;">閉じる</button>
+</div>
+</div>
 <div id="crazy10-popup" style="background:#0d1f13;border:2px solid #4ade80;border-radius:20px;padding:24px 28px;max-width:340px;width:100%;text-align:center;position:relative;">
 <div style="font-size:2rem;margin-bottom:6px;">🥦</div>
 <div style="font-size:1rem;font-weight:800;color:#bbf7d0;letter-spacing:.04em;margin-bottom:4px;">ITACHACHA House Crazy10</div>
@@ -156,7 +199,7 @@
 <div style="font-size:2.2rem;line-height:1;margin-bottom:10px;">🆕</div>
 <div style="font-size:1.05rem;font-weight:800;color:#fde8f7;margin-bottom:6px;">新しいバージョンがあります</div>
 <div id="update-version-text" style="font-size:.78rem;color:#c084fc;margin-bottom:10px;">最新版に更新してください</div>
-<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">Crazy Crazy 特別バージョン🥦🐘🐣🦍🥸</div>
+<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">ホームページ開設🌸<br>設定画面の一番下からご確認できます</div>
 <div id="update-data-note" style="font-size:.66rem;color:#fca5a5;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.22);border-radius:8px;padding:7px 10px;margin-bottom:12px;line-height:1.65;text-align:left;">※キャッシュ・サイトデータを削除すると、端末内の記録が消える場合があります。</div>
 <button id="update-reload-btn" style="display:block;width:100%;background:#f472b6;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:800;cursor:pointer;margin-bottom:12px;letter-spacing:.03em;">
 ✅ 今すぐ更新する
@@ -216,18 +259,17 @@
 </div>
 <div style="overflow-y:auto;flex:1;padding:16px 20px 20px;">
 <div id="crazy10-settings-sec" style="display:none;margin-bottom:18px;background:rgba(74,222,128,.07);border:1.5px solid rgba(74,222,128,.4);border-radius:12px;padding:12px 14px;">
-<div style="font-size:.75rem;font-weight:800;color:#4ade80;letter-spacing:.05em;margin-bottom:6px;">🎯 Crazy10イベント</div>
-<div style="font-size:.62rem;color:#86efac;background:rgba(74,222,128,.1);border-radius:6px;padding:5px 8px;margin-bottom:8px;line-height:1.6;">Crazy10を各自で設定できます。公式イベントの参加やMy Crazyの登録・管理をここで行えます。</div>
-<div class="cust-tog-row">
-<span id="crazy10-tog-label" style="font-size:.75rem;color:var(--text);">Crazy10 に参加する</span>
-<label class="tog-sw"><input type="checkbox" id="crazy10-tog"><span class="tog-slider"></span></label>
+<div style="font-size:.75rem;font-weight:800;color:#4ade80;letter-spacing:.05em;margin-bottom:6px;">🎯 Crazy設定</div>
+<div style="font-size:.62rem;color:#86efac;background:rgba(74,222,128,.1);border-radius:6px;padding:5px 8px;margin-bottom:10px;line-height:1.6;">Crazy（自習時間を事前に決めて学習）を各自で設定できます。公式イベントの参加や、My Crazyの登録管理をここで行えます。</div>
+<div style="margin-bottom:10px;">
+<button id="crazy10-official-acc-hd" onclick="_toggleCrazy10OfficialAcc()" style="width:100%;display:flex;align-items:center;justify-content:space-between;background:transparent;border:1px solid rgba(74,222,128,.35);border-radius:7px;padding:7px 12px;cursor:pointer;color:#4ade80;font-size:.68rem;font-weight:700;">
+<span>📢 公式イベント</span>
+<span id="crazy10-official-acc-arrow" style="font-size:.65rem;transition:transform .2s;">▼</span>
+</button>
+<div id="crazy10-official-acc-body" style="display:none;margin-top:6px;">
+<div id="crazy10-official-list" style="display:flex;flex-direction:column;gap:5px;"></div>
 </div>
-<div id="crazy10-tog-help" style="font-size:.6rem;color:var(--text-muted);margin-top:2px;margin-bottom:8px;line-height:1.5;">途中からON/OFFできます。記録は消えません。</div>
-<div style="border-top:1px solid rgba(74,222,128,.2);margin-bottom:8px;"></div>
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
-<span style="font-size:.65rem;font-weight:700;color:#4ade80;">📢 公式イベント</span>
 </div>
-<div id="crazy10-official-list" style="display:flex;flex-direction:column;gap:3px;margin-bottom:8px;"></div>
 <div style="border-top:1px solid rgba(74,222,128,.2);margin-bottom:8px;"></div>
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
 <span style="font-size:.65rem;font-weight:700;color:#4ade80;">📅 My Crazy</span><button onclick="_showMyEvInfo()" style="background:transparent;border:none;color:#4ade80;font-size:.72rem;cursor:pointer;padding:0 0 0 4px;line-height:1;opacity:.8;">ℹ️</button>
@@ -263,14 +305,17 @@
 </div>
 </div>
 </div>
-<div class="cust-sec">
+<!-- ② 基本設定 -->
+<div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:var(--surface2);margin-bottom:14px;">
+<div style="font-size:.72rem;font-weight:800;color:var(--text);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border);">基本設定</div>
+<div class="cust-sec" style="margin-bottom:0;padding-bottom:10px;border-bottom:1px solid var(--border);">
 <div class="cust-sec-title">🏷 アプリ名</div>
 <div class="cust-row">
 <label class="cust-lbl">タイトル</label>
 <input type="text" id="cust-app-name" class="cust-input" maxlength="30" placeholder="コツコツ✏️サクサク🌸">
 </div>
 </div>
-<div class="cust-sec">
+<div class="cust-sec" style="margin-bottom:0;padding-bottom:10px;border-bottom:1px solid var(--border);">
 <div class="cust-sec-title">🌸 試験日・目標日</div>
 <div class="cust-row">
 <label class="cust-lbl">試験日</label>
@@ -288,7 +333,7 @@
 </div>
 <div style="font-size:.6rem;color:var(--text-muted);margin-top:4px;">設定するとLv.100がその時間に合わせて調整されます（未設定時は1000時間）</div>
 </div>
-<div class="cust-sec">
+<div class="cust-sec" style="margin-bottom:0;padding-bottom:10px;border-bottom:1px solid var(--border);">
 <div class="cust-sec-title">🎯 学習目標</div>
 <div class="cust-row">
 <label class="cust-lbl">今日</label>
@@ -315,9 +360,10 @@
 </div>
 </div>
 </div>
-<div class="cust-sec">
-<div class="cust-sec-title">🎨 背景テーマ</div>
-<div class="cust-row" style="gap:10px;">
+<div class="cust-sec" style="margin-bottom:0;padding-bottom:10px;border-bottom:1px solid var(--border);">
+<div class="cust-sec-title">🎨 外観</div>
+<div style="font-size:.6rem;color:var(--text-muted);margin-bottom:6px;">背景テーマ</div>
+<div class="cust-row" style="gap:10px;margin-bottom:8px;">
 <div class="theme-picker" title="テーマを選択" style="gap:10px;">
 <div class="theme-dot" data-theme="dark" title="ダーク"></div>
 <div class="theme-dot" data-theme="light" title="ライト"></div>
@@ -326,21 +372,28 @@
 <div class="theme-dot" data-theme="sunset" title="サンセット"></div>
 </div>
 </div>
-<div style="font-size:.6rem;color:var(--text-muted);margin-top:4px;">🔒 ロック中のテーマはレベルアップで解放されます</div>
+<div style="font-size:.6rem;color:var(--text-muted);margin-bottom:8px;">🔒 ロック中のテーマはレベルアップで解放されます</div>
+<div style="font-size:.6rem;color:var(--text-muted);margin-bottom:6px;">背景ビジュアル</div>
+<div class="cust-tog-row">
+<span style="font-size:.75rem;color:var(--text)">桜の木のアニメーション</span>
+<label class="tog-sw"><input type="checkbox" id="cust-tree-tog" checked><span class="tog-slider"></span></label>
 </div>
-<div class="cust-sec">
+</div>
+<div class="cust-sec" style="margin-bottom:0;">
 <div class="cust-sec-title">🔊 サウンド</div>
 <div class="cust-row">
 <label class="cust-lbl">音声のオン・オフ</label>
 <button class="sound-btn" id="sound-btn" title="サウンドON/OFF">🔊</button>
 </div>
 </div>
-<div style="border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:var(--surface2);margin-bottom:18px;">
-<div style="font-size:.8rem;font-weight:800;color:var(--text);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">📖 ストーリー</div>
+</div>
+
+<!-- ③ ストーリー（独立・常時表示） -->
+<div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:var(--surface2);margin-bottom:14px;">
+<div style="font-size:.72rem;font-weight:800;color:var(--text);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border);">📖 ストーリー</div>
 <div class="cust-sec" style="margin-bottom:0;padding-bottom:10px;border-bottom:1px solid var(--border);">
-<div class="cust-sec-title" style="font-size:.95rem;color:var(--accent);background:rgba(var(--accent-rgb,.5,.8,1),.08);padding:8px 10px;border-radius:8px;border-left:3px solid var(--accent);margin-bottom:8px;">テーマ</div>
+<div class="cust-sec-title">ストーリー選択</div>
 <div class="cust-row">
-<label class="cust-lbl">ストーリー</label>
 <select id="cust-story-sel" class="cust-input" onchange="onStorySelChange(this.value)">
 <option value="">なし</option>
 <optgroup label="🎮 フィクション">
@@ -379,7 +432,24 @@
 <input type="text" id="cust-story-combo" class="cust-input" maxlength="40" placeholder="コンボ時の台詞">
 </div>
 </div>
-<div id="cust-story-edit" style="display:none;margin-top:6px;">
+</div>
+<div class="cust-sec" style="margin-bottom:0;padding-bottom:10px;border-bottom:1px solid var(--border);">
+<div class="cust-sec-title">✅ チェック絵文字（ブロック達成時）</div>
+<div class="cust-row">
+<label class="cust-lbl">絵文字</label>
+<input type="text" id="cust-check-inp" class="cust-input" maxlength="4" placeholder="🌸" style="width:64px;flex:none;">
+<span style="font-size:.62rem;color:var(--text-muted)">← 直接入力も可</span>
+</div>
+<div class="cust-emoji-grid" id="cust-check-grid"></div>
+</div>
+<!-- 成長段階メッセージ（アコーディオン・一番下） -->
+<div class="cust-sec" style="margin-bottom:0;">
+<button id="story-tiers-acc-hd" onclick="_toggleStoryTiersAcc()" style="width:100%;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.12);border:1px solid var(--border);border-radius:7px;padding:7px 12px;cursor:pointer;color:var(--text-muted);font-size:.65rem;font-weight:700;">
+<span>📝 成長段階メッセージを編集</span>
+<span id="story-tiers-acc-arrow" style="font-size:.65rem;transition:transform .2s;">▼</span>
+</button>
+<div id="story-tiers-acc-body" style="display:none;margin-top:6px;">
+<div id="cust-story-edit">
 <div style="font-size:.6rem;color:var(--text-muted);margin-bottom:6px;">文章を編集（空欄でデフォルトに戻る）</div>
 <div style="font-size:.65rem;font-weight:700;color:var(--text-muted);margin-bottom:4px;">▸ 成長段階メッセージ（Lv別）</div>
 <div id="cust-story-tiers"></div>
@@ -389,30 +459,22 @@
 </div>
 </div>
 </div>
-<div class="cust-sec" style="margin-bottom:0;">
-<div class="cust-sec-title">✅ チェック絵文字（ブロック達成時）</div>
-<div class="cust-row">
-<label class="cust-lbl">絵文字</label>
-<input type="text" id="cust-check-inp" class="cust-input" maxlength="4" placeholder="🌸" style="width:64px;flex:none;">
-<span style="font-size:.62rem;color:var(--text-muted)">← 直接入力も可</span>
-</div>
-<div class="cust-emoji-grid" id="cust-check-grid"></div>
 </div>
 </div>
+
 <div style="display:none;">
 <input type="text" id="cust-combo-inp" class="cust-input" maxlength="4" placeholder="✨" style="width:64px;flex:none;">
 <div class="cust-emoji-grid" id="cust-combo-grid"></div>
 </div>
-<div style="border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:var(--surface2);display:flex;flex-direction:column;gap:0;">
-<div style="font-size:.8rem;font-weight:800;color:var(--text);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">🎛 カスタマイズ</div>
-<div class="cust-sec" style="margin-bottom:0;padding-bottom:10px;border-bottom:1px solid var(--border);">
-<div class="cust-sec-title">🌳 背景ビジュアル</div>
-<div class="cust-tog-row">
-<span style="font-size:.75rem;color:var(--text)">桜の木のアニメーション</span>
-<label class="tog-sw"><input type="checkbox" id="cust-tree-tog" checked><span class="tog-slider"></span></label>
-</div>
-</div>
-<div class="cust-sec" style="margin-bottom:0;padding-bottom:10px;border-bottom:1px solid var(--border);">
+
+<!-- ④ カスタマイズ（アコーディオン） -->
+<div style="border:1px solid var(--border);border-radius:10px;background:var(--surface2);margin-bottom:14px;overflow:hidden;">
+<button id="cust-acc-hd" onclick="_toggleCustAcc()" style="width:100%;display:flex;align-items:center;justify-content:space-between;background:transparent;border:none;padding:12px 14px;cursor:pointer;">
+<span style="font-size:.72rem;font-weight:800;color:var(--text);">🎛 カスタマイズ</span>
+<span id="cust-acc-arrow" style="font-size:.65rem;color:var(--text-muted);transition:transform .2s;">▼</span>
+</button>
+<div id="cust-acc-body" style="display:none;padding:0 14px 14px;border-top:1px solid var(--border);">
+<div class="cust-sec" style="margin-bottom:0;padding-bottom:10px;border-bottom:1px solid var(--border);margin-top:12px;">
 <div class="cust-sec-title">💬 モチベーション名言</div>
 <div class="cust-tog-row" style="margin-bottom:8px;">
 <span style="font-size:.75rem;color:var(--text)">カスタム名言のみ使用</span>
@@ -456,9 +518,12 @@
 </div>
 </div>
 </div>
-<div style="height:16px;"></div>
+</div>
+</div><!-- カスタマイズアコーディオン終わり -->
+
+<div style="height:10px;"></div>
 <div style="border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:var(--surface2);">
-<div style="font-size:.8rem;font-weight:800;color:var(--text);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">🗄 データ</div>
+<div style="font-size:.72rem;font-weight:800;color:var(--text);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">🗄 その他</div>
 <div class="cust-sec" style="margin-bottom:0;padding-bottom:10px;border-bottom:1px solid var(--border);">
 <div class="cust-sec-title">💾 データ管理</div>
 <div class="cust-row" style="gap:8px;flex-wrap:wrap;">
@@ -496,7 +561,13 @@
 🌐 コツサク🌸公式ページ
 </a>
 </div>
+<div class="cust-sec" style="margin:10px 0 0;border-top:1px solid var(--border);padding-top:12px;">
+<div style="display:flex;align-items:center;justify-content:space-between;">
+<div style="display:flex;align-items:center;gap:6px;">
+<span style="font-size:.9rem;">🔒</span>
+<span style="font-size:.72rem;color:var(--text-muted);">データ収集について</span>
 </div>
+<button onclick="_openDataPolicy()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-size:.62rem;padding:3px 10px;border-radius:6px;cursor:pointer;">詳細を見る</button>
 </div>
 </div>
 </div>
@@ -1067,7 +1138,7 @@ function trackEvent(name, params) {
   if (!analytics || !name) return;
   try {
     analytics.logEvent(name, Object.assign({
-      app_version: 'kotsusaku-v85'
+      app_version: 'kotsusaku-v86'
     }, params || {}));
   } catch(e) {
     console.warn('Analytics送信エラー:', e);
@@ -1924,6 +1995,8 @@ function renderLevelBar(){
   if(typeof updateStoryMainCard==='function')updateStoryMainCard();
 }
 function showLevelUp(ld){
+  // 過去日付では発動しない
+  if(currentDate!==toStudyDateStr(new Date()))return;
   _queuePopup(()=>{
     const popup=$('levelup-popup');
     const unlock=FEATURE_UNLOCKS[ld.lv];
@@ -1943,7 +2016,7 @@ function showLevelUp(ld){
     launchFireworks('weekly');
     if(unlock)setTimeout(()=>launchPetals(),600);
     if(ld.lv===10&&isUnlocked('bigBang')){const o=$('big-bang-overlay');if(o){o.style.display='flex';setTimeout(()=>{o.style.display='none';},3200);}}
-    setTimeout(()=>popup.style.display='none',unlock?6500:5000);
+    _setupPopupClose(popup);
   },5000);
 }
 
@@ -1959,13 +2032,15 @@ function checkMilestones(totalMin){
   });
 }
 function showMilestoneBanner(m){
+  // 過去日付では発動しない
+  if(currentDate!==toStudyDateStr(new Date()))return;
   _queuePopup(()=>{
     const popup=$('milestone-popup');
     popup.innerHTML=`<span class="ms-hours">${m.emoji} ${m.h}時間</span><span class="ms-title">${m.msg.replace('\n','<br>')}</span>`;
     popup.style.display='block';
     playMilestoneSound();
     if(isUnlocked('fireworks'))launchFireworks('monthly');
-    setTimeout(()=>popup.style.display='none',8000);
+    _setupPopupClose(popup);
   },8000);
 }
 
@@ -2407,9 +2482,57 @@ function manualUnlockBadge(id){
 // ── ポップアップキュー（重なり防止） ──
 const _popQ=[];let _popBusy=false;
 function _queuePopup(fn,dur){_popQ.push({fn,dur});if(!_popBusy)_runNextPopup();}
-function _runNextPopup(){if(!_popQ.length){_popBusy=false;return;}_popBusy=true;const{fn,dur}=_popQ.shift();fn();setTimeout(_runNextPopup,dur+600);}
+let _popCloseHandler=null;
+function _runNextPopup(){
+  if(!_popQ.length){_popBusy=false;return;}
+  _popBusy=true;
+  const{fn}=_popQ.shift();
+  fn();
+}
+// ポップアップを手動で閉じる（次のキューへ）
+function _closePopupManual(){
+  // すべてのポップアップ要素を非表示
+  ['fw-banner-weekly','fw-banner-monthly','bloom-banner','milestone-popup','levelup-popup','itachacha-popup'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.style.display='none';
+  });
+  // クリックハンドラを削除
+  if(_popCloseHandler){
+    document.removeEventListener('click',_popCloseHandler);
+    _popCloseHandler=null;
+  }
+  // 次のポップアップへ
+  setTimeout(_runNextPopup,300);
+}
+// ポップアップ表示後に「次の軌跡へ」ボタンと画面タップを設定
+function _setupPopupClose(popupEl){
+  // 既存のボタンがあれば削除
+  const existing=popupEl.querySelector('.popup-close-btn');
+  if(existing)existing.remove();
+  // 「次の軌跡へ」ボタンを追加
+  const btn=document.createElement('button');
+  btn.className='popup-close-btn';
+  btn.textContent='次の軌跡へ';
+  btn.style.cssText='display:block;margin:14px auto 0;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.4);color:#fff;border-radius:99px;padding:7px 24px;font-size:.78rem;font-weight:800;cursor:pointer;letter-spacing:.04em;';
+  btn.onclick=function(e){e.stopPropagation();_closePopupManual();};
+  popupEl.appendChild(btn);
+  // 画面タップでも閉じる（ボタン以外）
+  setTimeout(()=>{
+    _popCloseHandler=function(e){
+      _closePopupManual();
+    };
+    document.addEventListener('click',_popCloseHandler,{once:true});
+  },600);
+}
 function _showPopup(id,html,dur,sfx,fw){
-  _queuePopup(()=>{const el=$(id);el.innerHTML=html;el.style.display='block';if(sfx)sfx();if(fw)launchFireworks(fw);setTimeout(()=>el.style.display='none',dur);},dur);
+  _queuePopup(()=>{
+    const el=$(id);
+    el.innerHTML=html;
+    el.style.display='block';
+    if(sfx)sfx();
+    if(fw)launchFireworks(fw);
+    _setupPopupClose(el);
+  },dur);
 }
 
 let comboCount=0,comboTimer=null;
@@ -3098,11 +3221,18 @@ function updateSakuraTree(pct){
   const treeBg=$('sakura-tree-bg');
   if(pct>=100){
     treeBg.classList.add('full-bloom');
-    if(lastBloomPct<100){showBloomBanner();launchPetals();}
+    if(lastBloomPct<100&&currentDate===toStudyDateStr(new Date())){
+      const bKey='bloom-shown-'+currentDate;
+      if(!LS.get(bKey)){LS.set(bKey,'1');showBloomBanner();launchPetals();}
+    }
   }else{treeBg.classList.remove('full-bloom');}
   lastBloomPct=pct;
 }
-function showBloomBanner(){const b=$('bloom-banner');b.style.display='block';setTimeout(()=>b.style.display='none',10000);}
+function showBloomBanner(){
+  const b=$('bloom-banner');
+  b.style.display='block';
+  _setupPopupClose(b);
+}
 function launchPetals(){
   if(petalBusy)return;petalBusy=true;let count=0;const total=35;
   function spawn(){
@@ -3535,13 +3665,39 @@ function _setStat(sid,pid,val,goal,ach){
   return pct;
 }
 function updateStats(){
+  const todayStr=toStudyDateStr(new Date());
+  const isToday=currentDate===todayStr;
   const dPct=_setStat('stat-daily','daily-prog',dayTotal(currentDate),GOAL,'🌸 目標 '+GOAL/60+'h 達成！満開！');
   const wPct=_setStat('stat-weekly','weekly-prog',weekTotal(currentDate,0),WEEK_GOAL,'🎆 目標 '+WEEK_GOAL/60+'h 達成！');
-  if(wPct>=100&&lastWeeklyPct<100){LS.set('weekly-goal-achieved','true');_queuePopup(()=>{launchFireworks('weekly');playGoalSound();const b=$('fw-banner-weekly');b.style.display='block';setTimeout(()=>b.style.display='none',10000);},10000);}
+  // 週間目標達成：今日だけ・1日1回のみ
+  if(isToday&&wPct>=100&&lastWeeklyPct<100){
+    const wKey='weekly-goal-shown-'+todayStr;
+    if(!LS.get(wKey)){
+      LS.set(wKey,'1');
+      LS.set('weekly-goal-achieved','true');
+      _queuePopup(()=>{
+        launchFireworks('weekly');playGoalSound();
+        const b=$('fw-banner-weekly');b.style.display='block';
+        _setupPopupClose(b);
+      },10000);
+    }
+  }
   lastWeeklyPct=wPct;
   const{year,month}=monthInfo(currentDate,0);
   const mPct=_setStat('stat-monthly','monthly-prog',monthTotal(year,month),MONTH_GOAL,'🎇 目標 '+MONTH_GOAL/60+'h 達成！');
-  if(mPct>=100&&lastMonthlyPct<100){LS.set('monthly-goal-achieved','true');_queuePopup(()=>{launchFireworks('monthly');playGoalSound();const b=$('fw-banner-monthly');b.style.display='block';setTimeout(()=>b.style.display='none',10000);},10000);}
+  // 月間目標達成：今日だけ・1日1回のみ
+  if(isToday&&mPct>=100&&lastMonthlyPct<100){
+    const mKey='monthly-goal-shown-'+todayStr;
+    if(!LS.get(mKey)){
+      LS.set(mKey,'1');
+      LS.set('monthly-goal-achieved','true');
+      _queuePopup(()=>{
+        launchFireworks('monthly');playGoalSound();
+        const b=$('fw-banner-monthly');b.style.display='block';
+        _setupPopupClose(b);
+      },10000);
+    }
+  }
   lastMonthlyPct=mPct;
   updateSakuraTree(dPct);
   safeRenderAllTimeCard();
@@ -3636,7 +3792,7 @@ $('next-btn').addEventListener('click',()=>{
   if(currentView==='daily'){refreshGrid();updateDateLabel();updateStats();applyLuckyBlock();}
 });
 function goTodayDate(){
-  currentDate=toStudyDateStr(new Date());weekOff=0;monthOff=0;lastBloomPct=-1;lastWeeklyPct=-1;lastMonthlyPct=-1;
+  currentDate=toStudyDateStr(new Date());weekOff=0;monthOff=0;lastBloomPct=-1;
   resetCombo();
   switchView('daily');
 }
@@ -3656,7 +3812,7 @@ if(_currentDateDisplay&&_currentDateInput){
   _currentDateInput.addEventListener('change',()=>{
     if(!_currentDateInput.value)return;
     currentDate=_currentDateInput.value;
-    weekOff=0;monthOff=0;lastBloomPct=-1;lastWeeklyPct=-1;lastMonthlyPct=-1;
+    weekOff=0;monthOff=0;lastBloomPct=-1;
     resetCombo();
     switchView('daily');
   });
@@ -5218,6 +5374,9 @@ function onStorySelChange(val){
     }
   }
   saveCust();applyAllCust();renderQuote();
+  // 成長段階アコーディオンボタンをストーリー選択時のみ表示
+  const storyTiersHd=document.getElementById('story-tiers-acc-hd');
+  if(storyTiersHd)storyTiersHd.style.display=val?'flex':'none';
   const ed=$('cust-story-edit');if(ed)ed.style.display=val?'block':'none';
   const mw=$('cust-story-msg-wrap');if(mw)mw.style.display=val?'block':'none';
   _renderStoryEdit();
@@ -5284,6 +5443,8 @@ function _syncCustPanel(){
   if(window._refreshTargetBtn)window._refreshTargetBtn();
   const ss=$('cust-story-sel');if(ss)ss.value=CUST.storyId||'';
   const sed=$('cust-story-edit');if(sed)sed.style.display=CUST.storyId?'block':'none';
+  const storyTiersHd=document.getElementById('story-tiers-acc-hd');
+  if(storyTiersHd)storyTiersHd.style.display=CUST.storyId?'flex':'none';
   const smw=$('cust-story-msg-wrap');if(smw)smw.style.display=CUST.storyId?'block':'none';
   if(CUST.storyId)_renderStoryEdit();
   _renderIconSelGrid();
@@ -5679,7 +5840,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v85'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v86'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
 
@@ -7082,6 +7243,42 @@ function _toggleMyEventAcc(){
   arrow.style.transform=open?'':'rotate(180deg)';
   // 開いたときにselectのoptionsを確実に初期化
   if(!open)_ensureMyEventTimeOptions('05:00','16:00',false);
+}
+
+// カスタマイズアコーディオントグル
+function _toggleCustAcc(){
+  const body=document.getElementById('cust-acc-body');
+  const arrow=document.getElementById('cust-acc-arrow');
+  if(!body||!arrow)return;
+  const open=body.style.display==='block';
+  body.style.display=open?'none':'block';
+  arrow.style.transform=open?'':'rotate(180deg)';
+}
+
+// 成長段階メッセージアコーディオントグル
+function _toggleStoryTiersAcc(){
+  const body=document.getElementById('story-tiers-acc-body');
+  const arrow=document.getElementById('story-tiers-acc-arrow');
+  if(!body||!arrow)return;
+  const open=body.style.display==='block';
+  body.style.display=open?'none':'block';
+  arrow.style.transform=open?'':'rotate(180deg)';
+}
+
+// データポリシーオーバーレイを開く
+function _openDataPolicy(){
+  const ov=document.getElementById('data-policy-overlay');
+  if(ov)ov.style.display='flex';
+}
+
+// 公式イベントアコーディオントグル
+function _toggleCrazy10OfficialAcc(){
+  const body=document.getElementById('crazy10-official-acc-body');
+  const arrow=document.getElementById('crazy10-official-acc-arrow');
+  if(!body||!arrow)return;
+  const open=body.style.display==='block';
+  body.style.display=open?'none':'block';
+  arrow.style.transform=open?'':'rotate(180deg)';
 }
 
 // My Crazy ℹ️ボタン：3秒後に自動で消える
