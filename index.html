@@ -96,13 +96,13 @@
 <div id="crazy10-finale-stars" style="display:block;line-height:1;margin-bottom:0;"></div>
 <div id="crazy10-finale-count" style="font-size:.55rem;color:#86efac;margin-top:2px;"></div>
 </div>
-<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+<div id="crazy10-finale-buttons" style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
 <button id="crazy10-finale-shotmode" style="background:transparent;color:#86efac;border:1.5px solid rgba(74,222,128,.5);border-radius:99px;padding:8px 18px;font-size:.78rem;font-weight:800;cursor:pointer;">📸 スクショモード</button>
 <button id="crazy10-finale-close" style="background:#4ade80;color:#052e16;border:none;border-radius:99px;padding:8px 28px;font-size:.82rem;font-weight:800;cursor:pointer;">閉じる</button>
 </div>
 </div>
 </div>
-<div id="crazy10-shotmode-hint" style="display:none;position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:10400;background:rgba(0,0,0,.45);border:1px solid rgba(74,222,128,.28);border-radius:999px;color:#bbf7d0;font-size:.72rem;font-weight:800;padding:7px 13px;cursor:pointer;" onclick="_setCrazy10ShotMode(false);">タップで戻る</div>
+<div id="crazy10-shotmode-hint" style="display:none;position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:10400;background:rgba(0,0,0,.45);border:1px solid rgba(74,222,128,.28);border-radius:999px;color:#bbf7d0;font-size:.72rem;font-weight:800;padding:7px 13px;cursor:pointer;" onclick="_closeCrazy10Finale();">タップで戻る</div>
 <div id="data-policy-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10500;align-items:center;justify-content:center;padding:16px;">
 <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;max-width:360px;width:100%;max-height:85vh;overflow-y:auto;">
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
@@ -6770,9 +6770,8 @@ function _stopCrazy10FinaleFireworks(){
   if(_crazy10FireworksFinaleTimer){clearTimeout(_crazy10FireworksFinaleTimer);_crazy10FireworksFinaleTimer=null;}
 }
 function _setCrazy10ShotMode(on){
-  const popup=document.getElementById('crazy10-finale-popup');
   const hint=document.getElementById('crazy10-shotmode-hint');
-  const buttons=popup?popup.querySelector('div[style*="justify-content:center"]'):null;
+  const buttons=document.getElementById('crazy10-finale-buttons');
   if(buttons)buttons.style.display=on?'none':'flex';
   if(hint)hint.style.display=on?'block':'none';
 }
