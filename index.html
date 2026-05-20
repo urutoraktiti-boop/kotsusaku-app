@@ -1462,13 +1462,128 @@ setTimeout(() => trackEvent('app_open'), 0);
     }
   }
 
+  // ══════════════════════════════════════
+  // summaryへのリアルタイム差分送信
+  // ── 10分ブロック完了・手動タップのたびに差分をincrement
+  // ── 読み取りゼロ・書き込み1件のみ
+  // ══════════════════════════════════════
+  const SUMMARY_PREV_KEY = 'kotsusaku-summary-prev';
+
+  async function pushSummaryDiff() {
+    if (!db) return;
+    try {
+      // 現在の学習時間（分）を計算
+      const today = getAppDate();
+      const allData = data || {};
+      let totalMins = 0;
+      Object.values(allData).forEach(dayData => {
+        totalMins += Object.keys(dayData).length * 10;
+      });
+
+      // 前回送信値との差分を計算
+      let prev = null;
+      try {
+        const raw = localStorage.getItem(SUMMARY_PREV_KEY);
+        if (raw) prev = JSON.parse(raw);
+      } catch(e) {}
+
+      const prevMins = prev ? (prev.totalStudyMin || 0) : 0;
+      const diff = totalMins - prevMins;
+
+      // 差分がなければスキップ
+      if (diff === 0) return;
+
+      // summaryにdiffだけincrementする（読み取りゼロ・書き込み1件）
+      const INC = firebase.firestore.FieldValue.increment;
+      await db.collection('analytics_summary').doc('summary').set({
+        totalStudyMin: INC(diff),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+
+      // 送信成功後に現在値を記録
+      localStorage.setItem(SUMMARY_PREV_KEY, JSON.stringify({
+        totalStudyMin: totalMins,
+      }));
+
+    } catch(e) {
+      console.warn('pushSummaryDiff error:', e);
+    }
+  }
+
+  // ══════════════════════════════════════
+  // 毎朝4時：全件集計してsummaryを正確に上書き
+  // ── 1日1回・最初にアプリを開いた人が自動実行
+  // ══════════════════════════════════════
+  const DAILY_SNAP_KEY = 'kotsusaku-daily-snapshot-date';
+
+  async function saveDailySnapshotAuto() {
+    if (!db) return;
+    const today = getAppDate();
+    const lastSnap = localStorage.getItem(DAILY_SNAP_KEY);
+    if (lastSnap === today) return; // 今日すでに実行済み
+
+    try {
+      // analytics全件取得
+      const analyticsSnap = await db.collection('analytics').get();
+      const docs = analyticsSnap.docs.map(d => d.data());
+      const analyticsCount = docs.length;
+
+      // users全件取得
+      const usersSnap = await db.collection('users').get();
+      const usersCount = usersSnap.size;
+
+      // 総学習時間（分）
+      const totalStudyMin = docs.reduce((s, d) => s + (d.totalStudyMin || 0), 0);
+
+      // ストーリー集計
+      const FICTION_IDS = ['gorilla','samurai','space','itachacha','spartan'];
+      const LICENSE_IDS = ['boki3','boki2','takken','sharoshi','zeirishi','fp2','koumuin','shindanshi','kaikeishi'];
+      const storyCount = {};
+      const licenseCount = {};
+      docs.forEach(d => {
+        const s = d.storyMode || '';
+        const lc = d.licenseCategory || '';
+        if (FICTION_IDS.includes(s)) storyCount[s] = (storyCount[s] || 0) + 1;
+        else if (LICENSE_IDS.includes(s)) licenseCount[s] = (licenseCount[s] || 0) + 1;
+        else if (lc) licenseCount[lc] = (licenseCount[lc] || 0) + 1;
+      });
+
+      const now = firebase.firestore.FieldValue.serverTimestamp();
+
+      // analytics_dailyに保存
+      await db.collection('analytics_daily').doc(today).set({
+        date: today, totalStudyMin, analyticsCount, usersCount,
+        storyCount, licenseCount, savedAt: now,
+      });
+
+      // summaryを正確な値で上書き（誤差リセット）
+      await db.collection('analytics_summary').doc('summary').set({
+        totalStudyMin, userCount: analyticsCount,
+        storyCounts: storyCount, licenseCounts: licenseCount,
+        updatedAt: now,
+      }, { merge: true });
+
+      // SUMMARY_PREV_KEYも正確な値に更新
+      localStorage.setItem(SUMMARY_PREV_KEY, JSON.stringify({ totalStudyMin }));
+      localStorage.setItem(DAILY_SNAP_KEY, today);
+      console.log('daily snapshot saved:', today, totalStudyMin + '分');
+
+    } catch(e) {
+      console.warn('saveDailySnapshotAuto error:', e);
+    }
+  }
+
   // --- 起動時処理 ---
   async function onAppStart() {
     // 1. 前回セッション分の未送信データを送信
     await flushPending();
     // 2. 今回の起動データを送信（起動時は日次データも兼ねる）
     await sendDaily();
-    // 3. 今回のセッションデータをlocalStorageに保存（次回起動時のフォールバック用）
+    // 3. 毎朝4時の日次集計（1日1回・最初の起動者のみ）
+    await saveDailySnapshotAuto();
+    // 4. 起動時点でのsummary差分送信
+    await pushSummaryDiff();
+    // 5. 今回のセッションデータをlocalStorageに保存（次回起動時のフォールバック用）
     savePending();
   }
 
@@ -1481,10 +1596,12 @@ setTimeout(() => trackEvent('app_open'), 0);
     const msUntil4am = next4am - now;
     setTimeout(async () => {
       await sendDaily();
+      await saveDailySnapshotAuto();
       savePending();
       // 次の4:00もスケジュール
       setInterval(async () => {
         await sendDaily();
+        await saveDailySnapshotAuto();
         savePending();
       }, 24 * 60 * 60 * 1000);
     }, msUntil4am);
@@ -3474,6 +3591,8 @@ function toggle(ds,h,m){
     data[ds][h+':'+m]=true;
   }
   save();
+  // ブロックタップ時にsummaryへ差分送信
+  if(typeof pushSummaryDiff==='function')pushSummaryDiff();
 }
 function refreshGrid(){
   document.querySelectorAll('.block').forEach(div=>{
@@ -4020,7 +4139,9 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
     if(!data[ds][key]){data[ds][key]=true;save();if(currentView==='daily'&&currentDate===ds){refreshGrid();updateStats();if(typeof renderCrazy10Stars==='function')renderCrazy10Stars();if(typeof renderAsajukuStars==='function')renderAsajukuStars();}
       if(typeof trackEvent==='function')trackEvent('ten_min_check',{source:'stopwatch'});
       hintEl.textContent=String(h===0?24:h).padStart(2,'0')+':'+String(blockMin).padStart(2,'0')+' '+getActiveCheckEmoji();
-      playCheckSound();setTimeout(updateSwHint,3000);}
+      playCheckSound();setTimeout(updateSwHint,3000);
+      // 10分完了時にsummaryへ差分送信
+      if(typeof pushSummaryDiff==='function')pushSummaryDiff();}
     swCheckedCount++;
     swCheckedBoundaries.push(boundaryMs);
     persistSw();
