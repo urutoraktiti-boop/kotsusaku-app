@@ -1618,6 +1618,9 @@ setTimeout(() => trackEvent('app_open'), 0);
     }
   }, 2000);
 
+  // グローバルに公開（toggle・autoCheckから呼べるように）
+  window.pushSummaryDiff = pushSummaryDiff;
+
 })();
 // === アナリティクス end ===
 
