@@ -6313,13 +6313,9 @@ function _shouldShowCrazy10FinaleButton(dateStr){
   return _isCrazy10EventEnded(ds);
 }
 function _getCrazy10FinaleTargetDate(preferredDate){
+  // 表示中の日付のみを対象にする（過去イベントをさかのぼらない）
   const ds=preferredDate||((typeof currentDate!=='undefined'&&currentDate)?currentDate:toStudyDateStr(new Date()));
   if(_shouldShowCrazy10FinaleButton(ds))return ds;
-  for(let i=CRAZY10_EVENTS.length-1;i>=0;i--){
-    const ev=CRAZY10_EVENTS[i];
-    if(!ev||!ev.isOfficial)continue;
-    if(_shouldShowCrazy10FinaleButton(ev.dateStr))return ev.dateStr;
-  }
   return '';
 }
 function _syncCrazy10FinaleButtonVisibility(dateStr){
@@ -6780,12 +6776,20 @@ function _setCrazy10ShotMode(on){
   if(buttons)buttons.style.display=on?'none':'flex';
   if(hint)hint.style.display=on?'block':'none';
 }
+function _closeCrazy10Finale(){
+  // フィナーレ全体を閉じる（スクショモード中の「タップで戻る」でも使用）
+  const overlay=document.getElementById('crazy10-finale-overlay');
+  if(overlay)overlay.style.display='none';
+  _setCrazy10ShotMode(false);
+  _stopCrazy10BroccoliFinale();
+  _stopCrazy10FinaleFireworks();
+}
 document.addEventListener('click',function(e){
   const hint=document.getElementById('crazy10-shotmode-hint');
   if(!hint||hint.style.display!=='block')return;
   if(e.target&&e.target.id==='crazy10-finale-shotmode')return;
-  // ヒントボタン自体またはオーバーレイ上のどこかをタップしたら戻る
-  _setCrazy10ShotMode(false);
+  // 「タップで戻る」ボタンまたは画面タップでフィナーレ全体を閉じる
+  _closeCrazy10Finale();
 });
 
 // バッジエリアに星を描画
@@ -6926,7 +6930,7 @@ function showCrazy10Finale(dateStr){
   overlay.style.display='flex';
   // 閉じるボタン
   const closeBtn=document.getElementById('crazy10-finale-close');
-  if(closeBtn)closeBtn.onclick=function(){overlay.style.display='none';_setCrazy10ShotMode(false);_stopCrazy10BroccoliFinale();_stopCrazy10FinaleFireworks();};
+  if(closeBtn)closeBtn.onclick=function(){_closeCrazy10Finale();};
   const shotBtn=document.getElementById('crazy10-finale-shotmode');
   if(shotBtn)shotBtn.onclick=function(ev){if(ev)ev.stopPropagation();_setCrazy10ShotMode(true);};
   // ブロッコリ降下（少し遅延）
