@@ -197,10 +197,10 @@
 </div>
 <div id="update-banner" style="display:none;position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,.72);align-items:center;justify-content:center;padding:20px;">
 <div style="background:#0f1117;border:2px solid #f472b6;border-radius:20px;padding:28px 24px;max-width:380px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(244,114,182,.35);">
-<div style="font-size:2.2rem;line-height:1;margin-bottom:10px;">🆕</div>
-<div style="font-size:1.05rem;font-weight:800;color:#fde8f7;margin-bottom:6px;">コツサク🌸公式ページ開設</div>
-<div id="update-version-text" style="font-size:.78rem;color:#c084fc;margin-bottom:10px;">設定画面からご確認できます。</div>
-<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">設定画面の一番下に<br>コツサク🌸公式ページへのリンクを追加しました</div>
+<div style="font-size:2.2rem;line-height:1;margin-bottom:10px;">🥸</div>
+<div style="font-size:1.05rem;font-weight:800;color:#fde8f7;margin-bottom:6px;">みんなの軌跡5000時間突破</div>
+<div id="update-version-text" style="font-size:.78rem;color:#c084fc;margin-bottom:10px;">ありがとう</div>
+<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">これからも応援してるっぺ🥸</div>
 <div id="update-data-note" style="font-size:.66rem;color:#fca5a5;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.22);border-radius:8px;padding:7px 10px;margin-bottom:12px;line-height:1.65;text-align:left;">※キャッシュ・サイトデータを削除すると、端末内の記録が消える場合があります。</div>
 <button id="update-reload-btn" style="display:block;width:100%;background:#f472b6;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:800;cursor:pointer;margin-bottom:12px;letter-spacing:.03em;">
 ✅ 今すぐ更新する
@@ -1178,7 +1178,7 @@ function trackEvent(name, params) {
   if (!analytics || !name) return;
   try {
     analytics.logEvent(name, Object.assign({
-      app_version: 'kotsusaku-v90'
+      app_version: 'kotsusaku-v91'
     }, params || {}));
   } catch(e) {
     console.warn('Analytics送信エラー:', e);
@@ -1187,15 +1187,17 @@ function trackEvent(name, params) {
 setTimeout(() => trackEvent('app_open'), 0);
 
 // ============================================================
-// === コツコツサクサク アナリティクス (v90) ===
+// === コツコツサクサク アナリティクス (v91) ===
 // Firestore /analytics/{userId} にユーザー行動データを送信する
 // 送信タイミング:
 //   1. 起動時 → 前回セッション分の未送信データを送信 + 今回の起動データを送信
 //   2. 毎日4:00 → その場で開いていた場合に日次データを送信
+// analytics送信成功時に analytics_summary/summary を差分更新する（フェーズ2）
 // ============================================================
 (function() {
   const ANALYTICS_KEY = 'kotsusaku-analytics-pending'; // 未送信データ保存キー
   const ANALYTICS_SENT_KEY = 'kotsusaku-analytics-last-sent'; // 最終送信日
+  const SUMMARY_PREV_KEY = 'kotsusaku-summary-prev'; // summary差分計算用・前回送信値
 
   // --- デバイス情報を取得 ---
   function getDeviceInfo() {
@@ -1388,6 +1390,72 @@ setTimeout(() => trackEvent('app_open'), 0);
     }
   }
 
+  // --- analytics_summary/summary を差分更新（フェーズ2）---
+  // increment() を使って原子的に更新するため競合が発生しない
+  async function updateSummary(payload) {
+    if (!db) return;
+    try {
+      const INC = firebase.firestore.FieldValue.increment;
+      const now = firebase.firestore.FieldValue.serverTimestamp();
+      const userId = getAnonymousId();
+
+      // 前回送信値をlocalStorageから取得（初回はnull）
+      let prev = null;
+      try {
+        const raw = localStorage.getItem(SUMMARY_PREV_KEY);
+        if (raw) prev = JSON.parse(raw);
+      } catch(e) {}
+
+      const updates = { updatedAt: now };
+
+      // ── totalStudyMin：差分をincrement ──
+      const curMin = payload.totalStudyMin || 0;
+      const prevMin = prev ? (prev.totalStudyMin || 0) : 0;
+      const diffMin = curMin - prevMin;
+      if (diffMin !== 0) updates.totalStudyMin = INC(diffMin);
+
+      // ── userCount：初回のみ +1（prevがnullなら新規ユーザー）──
+      if (!prev) updates.userCount = INC(1);
+
+      // ── storyCounts：モード変更時に旧-1・新+1 ──
+      const curStory  = payload.storyMode || '';
+      const prevStory = prev ? (prev.storyMode || '') : '';
+      if (curStory !== prevStory) {
+        if (prevStory) updates[`storyCounts.${prevStory}`] = INC(-1);
+        if (curStory)  updates[`storyCounts.${curStory}`]  = INC(1);
+      } else if (!prev && curStory) {
+        // 初回：旧値なしで新規追加のみ
+        updates[`storyCounts.${curStory}`] = INC(1);
+      }
+
+      // ── licenseCounts：カテゴリ変更時に旧-1・新+1 ──
+      const curLic  = payload.licenseCategory || '';
+      const prevLic = prev ? (prev.licenseCategory || '') : '';
+      if (curLic !== prevLic) {
+        if (prevLic) updates[`licenseCounts.${prevLic}`] = INC(-1);
+        if (curLic)  updates[`licenseCounts.${curLic}`]  = INC(1);
+      } else if (!prev && curLic) {
+        updates[`licenseCounts.${curLic}`] = INC(1);
+      }
+
+      // 更新が totalStudyMin か userCount か counts に変化がある場合のみ送信
+      const hasChange = Object.keys(updates).length > 1; // updatedAt以外がある
+      if (!hasChange) return;
+
+      await db.collection('analytics_summary').doc('summary').set(updates, { merge: true });
+
+      // 送信成功後、今回値をlocalStorageに保存（次回差分計算用）
+      localStorage.setItem(SUMMARY_PREV_KEY, JSON.stringify({
+        totalStudyMin: curMin,
+        storyMode:     curStory,
+        licenseCategory: curLic,
+      }));
+
+    } catch(e) {
+      console.warn('summary更新エラー:', e);
+    }
+  }
+
   // --- 送信するデータを組み立てる ---
   function buildPayload(type) {
     const device = getDeviceInfo();
@@ -1395,7 +1463,7 @@ setTimeout(() => trackEvent('app_open'), 0);
     const now = new Date().toISOString();
     const base = {
       userId: getAnonymousId(),
-      appVersion: 'kotsusaku-v90',
+      appVersion: 'kotsusaku-v91',
       lastAccess: now,
       firstAccess: getFirstAccess(),
       os: device.os,
@@ -1442,7 +1510,10 @@ setTimeout(() => trackEvent('app_open'), 0);
       const { payload } = JSON.parse(raw);
       if (!payload) return;
       const ok = await sendAnalytics(payload);
-      if (ok) localStorage.removeItem(ANALYTICS_KEY);
+      if (ok) {
+        localStorage.removeItem(ANALYTICS_KEY);
+        await updateSummary(payload); // summary差分更新
+      }
     } catch(e) {}
   }
 
@@ -1456,6 +1527,7 @@ setTimeout(() => trackEvent('app_open'), 0);
     if (ok) {
       localStorage.setItem(ANALYTICS_SENT_KEY, today);
       localStorage.removeItem(ANALYTICS_KEY); // 未送信キューをクリア
+      await updateSummary(payload); // summary差分更新
     }
   }
 
@@ -5925,7 +5997,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v90'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v91'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
 
