@@ -3875,7 +3875,7 @@ function updateDateLabel(){
   const extra=$('current-date-extra');
   if(extra){
     extra.textContent=isToday?'今日':'今日へ';
-    extra.style.visibility=isToday?'hidden':'visible';
+    extra.style.visibility='visible';
   }
   const picker=$('current-date-input');if(picker)picker.value=currentDate;
   updateHeaderExamDate();
