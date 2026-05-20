@@ -1459,27 +1459,25 @@ setTimeout(() => trackEvent('app_open'), 0);
     if (ok) {
       localStorage.setItem(ANALYTICS_SENT_KEY, today);
       localStorage.removeItem(ANALYTICS_KEY); // 未送信キューをクリア
+      // payloadのtotalStudyMin（Firestore送信値）を使って差分送信
+      if (payload.totalStudyMin) {
+        await pushSummaryDiff(payload.totalStudyMin);
+      }
     }
   }
 
   // ══════════════════════════════════════
   // summaryへのリアルタイム差分送信
-  // ── 10分ブロック完了・手動タップのたびに差分をincrement
+  // ── sendDailyのpayload.totalStudyMinを使って差分送信
   // ── 読み取りゼロ・書き込み1件のみ
   // ══════════════════════════════════════
   const SUMMARY_PREV_KEY = 'kotsusaku-summary-prev';
 
-  async function pushSummaryDiff() {
+  async function pushSummaryDiff(currentTotalStudyMin) {
     if (!db) return;
+    // currentTotalStudyMinが未指定の場合はスキップ（安全のため）
+    if (typeof currentTotalStudyMin !== 'number') return;
     try {
-      // 現在の学習時間（分）を計算
-      const today = getAppDate();
-      const allData = data || {};
-      let totalMins = 0;
-      Object.values(allData).forEach(dayData => {
-        totalMins += Object.keys(dayData).length * 10;
-      });
-
       // 前回送信値との差分を計算
       let prev = null;
       try {
@@ -1487,11 +1485,20 @@ setTimeout(() => trackEvent('app_open'), 0);
         if (raw) prev = JSON.parse(raw);
       } catch(e) {}
 
-      const prevMins = prev ? (prev.totalStudyMin || 0) : 0;
-      const diff = totalMins - prevMins;
+      const prevMins = prev ? (prev.totalStudyMin || 0) : null;
 
-      // 差分がなければスキップ
-      if (diff === 0) return;
+      // 初回（prevがない）の場合はスキップ（二重カウント防止）
+      if (prevMins === null) {
+        localStorage.setItem(SUMMARY_PREV_KEY, JSON.stringify({
+          totalStudyMin: currentTotalStudyMin,
+        }));
+        return;
+      }
+
+      const diff = currentTotalStudyMin - prevMins;
+
+      // 差分がゼロまたはマイナスならスキップ
+      if (diff <= 0) return;
 
       // summaryにdiffだけincrementする（読み取りゼロ・書き込み1件）
       const INC = firebase.firestore.FieldValue.increment;
@@ -1502,8 +1509,10 @@ setTimeout(() => trackEvent('app_open'), 0);
 
       // 送信成功後に現在値を記録
       localStorage.setItem(SUMMARY_PREV_KEY, JSON.stringify({
-        totalStudyMin: totalMins,
+        totalStudyMin: currentTotalStudyMin,
       }));
+
+      console.log('pushSummaryDiff:', diff + '分 increment');
 
     } catch(e) {
       console.warn('pushSummaryDiff error:', e);
@@ -1581,9 +1590,7 @@ setTimeout(() => trackEvent('app_open'), 0);
     await sendDaily();
     // 3. 毎朝4時の日次集計（1日1回・最初の起動者のみ）
     await saveDailySnapshotAuto();
-    // 4. 起動時点でのsummary差分送信
-    await pushSummaryDiff();
-    // 5. 今回のセッションデータをlocalStorageに保存（次回起動時のフォールバック用）
+    // 4. 今回のセッションデータをlocalStorageに保存（次回起動時のフォールバック用）
     savePending();
   }
 
