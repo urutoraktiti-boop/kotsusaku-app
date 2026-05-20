@@ -1197,7 +1197,6 @@ setTimeout(() => trackEvent('app_open'), 0);
 (function() {
   const ANALYTICS_KEY = 'kotsusaku-analytics-pending'; // 未送信データ保存キー
   const ANALYTICS_SENT_KEY = 'kotsusaku-analytics-last-sent'; // 最終送信日
-  const SUMMARY_PREV_KEY = 'kotsusaku-summary-prev'; // summary差分計算用・前回送信値
 
   // --- デバイス情報を取得 ---
   function getDeviceInfo() {
@@ -1390,72 +1389,6 @@ setTimeout(() => trackEvent('app_open'), 0);
     }
   }
 
-  // --- analytics_summary/summary を差分更新（フェーズ2）---
-  // increment() を使って原子的に更新するため競合が発生しない
-  async function updateSummary(payload) {
-    if (!db) return;
-    try {
-      const INC = firebase.firestore.FieldValue.increment;
-      const now = firebase.firestore.FieldValue.serverTimestamp();
-      const userId = getAnonymousId();
-
-      // 前回送信値をlocalStorageから取得（初回はnull）
-      let prev = null;
-      try {
-        const raw = localStorage.getItem(SUMMARY_PREV_KEY);
-        if (raw) prev = JSON.parse(raw);
-      } catch(e) {}
-
-      const updates = { updatedAt: now };
-
-      // ── totalStudyMin：差分をincrement ──
-      const curMin = payload.totalStudyMin || 0;
-      const prevMin = prev ? (prev.totalStudyMin || 0) : 0;
-      const diffMin = curMin - prevMin;
-      if (diffMin !== 0) updates.totalStudyMin = INC(diffMin);
-
-      // ── userCount：初回のみ +1（prevがnullなら新規ユーザー）──
-      if (!prev) updates.userCount = INC(1);
-
-      // ── storyCounts：モード変更時に旧-1・新+1 ──
-      const curStory  = payload.storyMode || '';
-      const prevStory = prev ? (prev.storyMode || '') : '';
-      if (curStory !== prevStory) {
-        if (prevStory) updates[`storyCounts.${prevStory}`] = INC(-1);
-        if (curStory)  updates[`storyCounts.${curStory}`]  = INC(1);
-      } else if (!prev && curStory) {
-        // 初回：旧値なしで新規追加のみ
-        updates[`storyCounts.${curStory}`] = INC(1);
-      }
-
-      // ── licenseCounts：カテゴリ変更時に旧-1・新+1 ──
-      const curLic  = payload.licenseCategory || '';
-      const prevLic = prev ? (prev.licenseCategory || '') : '';
-      if (curLic !== prevLic) {
-        if (prevLic) updates[`licenseCounts.${prevLic}`] = INC(-1);
-        if (curLic)  updates[`licenseCounts.${curLic}`]  = INC(1);
-      } else if (!prev && curLic) {
-        updates[`licenseCounts.${curLic}`] = INC(1);
-      }
-
-      // 更新が totalStudyMin か userCount か counts に変化がある場合のみ送信
-      const hasChange = Object.keys(updates).length > 1; // updatedAt以外がある
-      if (!hasChange) return;
-
-      await db.collection('analytics_summary').doc('summary').set(updates, { merge: true });
-
-      // 送信成功後、今回値をlocalStorageに保存（次回差分計算用）
-      localStorage.setItem(SUMMARY_PREV_KEY, JSON.stringify({
-        totalStudyMin: curMin,
-        storyMode:     curStory,
-        licenseCategory: curLic,
-      }));
-
-    } catch(e) {
-      console.warn('summary更新エラー:', e);
-    }
-  }
-
   // --- 送信するデータを組み立てる ---
   function buildPayload(type) {
     const device = getDeviceInfo();
@@ -1512,7 +1445,6 @@ setTimeout(() => trackEvent('app_open'), 0);
       const ok = await sendAnalytics(payload);
       if (ok) {
         localStorage.removeItem(ANALYTICS_KEY);
-        await updateSummary(payload); // summary差分更新
       }
     } catch(e) {}
   }
@@ -1527,67 +1459,6 @@ setTimeout(() => trackEvent('app_open'), 0);
     if (ok) {
       localStorage.setItem(ANALYTICS_SENT_KEY, today);
       localStorage.removeItem(ANALYTICS_KEY); // 未送信キューをクリア
-      await updateSummary(payload); // summary差分更新
-    }
-  }
-
-  // --- 日次スナップショット保存（analytics_daily/{YYYY-MM-DD}）---
-  // 1日1回、その日の集計値をFirestoreに保存する
-  // ダッシュボードの推移グラフで使用
-  const DAILY_SNAP_KEY = 'kotsusaku-daily-snapshot-date'; // 保存済み日付
-
-  async function saveDailySnapshot() {
-    if (!db) return;
-    const today = getAppDate();
-    // 今日すでに保存済みならスキップ
-    const lastSnap = localStorage.getItem(DAILY_SNAP_KEY);
-    if (lastSnap === today) return;
-    try {
-      // analyticsコレクションの全件を取得して集計
-      const analyticsSnap = await db.collection('analytics').get();
-      const docs = analyticsSnap.docs.map(d => d.data());
-      const analyticsCount = docs.length;
-
-      // usersコレクションの件数
-      const usersSnap = await db.collection('users').get();
-      const usersCount = usersSnap.size;
-
-      // 総学習時間
-      const totalStudyMin = docs.reduce((s, d) => s + (d.totalStudyMin || 0), 0);
-
-      // ストーリー選択人数マップ
-      const FICTION_IDS  = ['gorilla','samurai','space','itachacha','spartan'];
-      const LICENSE_IDS  = ['boki3','boki2','takken','sharoshi','zeirishi','fp2','koumuin','shindanshi','kaikeishi'];
-      const storyCount   = {};
-      const licenseCount = {};
-      docs.forEach(d => {
-        const s  = d.storyMode || '';
-        const lc = d.licenseCategory || '';
-        if (FICTION_IDS.includes(s)) {
-          storyCount[s] = (storyCount[s] || 0) + 1;
-        } else if (LICENSE_IDS.includes(s)) {
-          licenseCount[s] = (licenseCount[s] || 0) + 1;
-        } else if (lc) {
-          licenseCount[lc] = (licenseCount[lc] || 0) + 1;
-        }
-      });
-
-      // Firestoreに保存
-      await db.collection('analytics_daily').doc(today).set({
-        date: today,
-        totalStudyMin,
-        analyticsCount,
-        usersCount,
-        storyCount,
-        licenseCount,
-        savedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      });
-
-      // 保存成功後にlocalStorageに記録（今日は保存済み）
-      localStorage.setItem(DAILY_SNAP_KEY, today);
-      console.log('daily snapshot saved:', today);
-    } catch(e) {
-      console.warn('daily snapshot error:', e);
     }
   }
 
@@ -1597,9 +1468,7 @@ setTimeout(() => trackEvent('app_open'), 0);
     await flushPending();
     // 2. 今回の起動データを送信（起動時は日次データも兼ねる）
     await sendDaily();
-    // 3. 日次スナップショットを保存（1日1回・ダッシュボード推移グラフ用）
-    await saveDailySnapshot();
-    // 4. 今回のセッションデータをlocalStorageに保存（次回起動時のフォールバック用）
+    // 3. 今回のセッションデータをlocalStorageに保存（次回起動時のフォールバック用）
     savePending();
   }
 
