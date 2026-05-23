@@ -705,21 +705,21 @@
 <div class="stat-row">
 <div class="stat-card">
 <span class="stat-label">今日の学習</span>
-<span class="stat-value" id="stat-daily">0 h 0 m</span>
+<span class="stat-value" id="stat-daily">0分</span>
 <div class="prog-bg"><div class="prog-fill" id="daily-prog" style="width:0%"></div></div>
-<div class="prog-info" id="daily-prog-info">目標 2h まで 0%</div>
+<div class="prog-info" id="daily-prog-info">目標 2時間 まで 0%</div>
 </div>
 <div class="stat-card">
 <span class="stat-label">今週の合計</span>
-<span class="stat-value" id="stat-weekly">0 h 0 m</span>
+<span class="stat-value" id="stat-weekly">0分</span>
 <div class="prog-bg"><div class="prog-fill" id="weekly-prog" style="width:0%"></div></div>
-<div class="prog-info" id="weekly-prog-info">目標 10h まで 0%</div>
+<div class="prog-info" id="weekly-prog-info">目標 10時間 まで 0%</div>
 </div>
 <div class="stat-card">
 <span class="stat-label">今月の合計</span>
-<span class="stat-value" id="stat-monthly">0 h 0 m</span>
+<span class="stat-value" id="stat-monthly">0分</span>
 <div class="prog-bg"><div class="prog-fill" id="monthly-prog" style="width:0%"></div></div>
-<div class="prog-info" id="monthly-prog-info">目標 30h まで 0%</div>
+<div class="prog-info" id="monthly-prog-info">目標 30時間 まで 0%</div>
 </div>
 </div>
 <div class="challenge-wrap" id="challenge-wrap-outer">
@@ -1101,7 +1101,7 @@
       '<div class="atc-body">'+
         '<div class="atc-label">累計学習時間</div>'+
         '<div class="atc-value">'+fmtLong(total)+'</div>'+
-        '<div class="atc-sub">1日平均 '+Math.floor(avg/60)+'h'+(avg%60)+'m</div>'+
+        '<div class="atc-sub">1日平均 '+fmtStudyTimeText(avg)+'</div>'+
       '</div>'+
       '<div class="atc-elapsed"><div class="atc-streak-val">'+streakText+'</div><div class="atc-elapsed-lbl">'+streakLabel+'</div></div>'+
       '<div class="atc-days"><div class="atc-days-val">'+days+'日</div><div class="atc-days-lbl">学習日数</div></div>';
@@ -2089,7 +2089,7 @@ function getLevelData(totalMin){
   const tier=LEVEL_DEF.filter(t=>t.lv<=lv).pop()||LEVEL_DEF[0];
   const curH=_lvFormula(lv), nextH=lv<100?_lvFormula(lv+1):null;
   let pct=0,xpInfo='';
-  if(nextH!==null){const cM=curH*60,nM=nextH*60;pct=Math.max(0,Math.min(100,Math.round((totalMin-cM)/(nM-cM)*100)));xpInfo=`次 Lv.${lv+1} まで ${Math.round((nM-totalMin)/60*10)/10}h`;}
+  if(nextH!==null){const cM=curH*60,nM=nextH*60;pct=Math.max(0,Math.min(100,Math.round((totalMin-cM)/(nM-cM)*100)));xpInfo=`次 Lv.${lv+1} まで ${fmtStudyTimeText(nM-totalMin)}`;}
   else{pct=100;xpInfo='MAX LEVEL！';}
   const _cTitle=(CUST.levelNames&&CUST.levelNames[lv])||tier.title;
   const _cIcon=(CUST.levelIcons&&CUST.levelIcons[lv])||tier.icon;
@@ -3015,15 +3015,13 @@ function renderForecast(){
       const adv=_getForecastAdvice();
       if(status==='ok'){
         const totalNow=allTimeTotal()/60;
-        const overH=diffH,oh=Math.floor(overH),om=Math.round((overH-oh)*60);
-        const overStr=oh>0?`${oh}h${om>0?om+'m':''}`:om+'m';
+        const overStr=fmtStudyTimeText(diffH*60);
         adviceEl.innerHTML=`<div class="advice-main" style="color:#3ecf8e;">${adv.ok_main()}</div><div class="advice-sub">${adv.ok_sub(overStr)}</div>`;
       }else{
         const daysLeft=Math.round((new Date(cdVal)-new Date())/86400000);
         const shortMin=(targetH-predictedH)*60;
         const addPerDay=daysLeft>0?Math.ceil(shortMin/daysLeft):0;
-        const addH=Math.floor(addPerDay/60),addM=addPerDay%60;
-        const addStr=addH>0?`${addH}h${addM>0?addM+'m':''}`:addM+'分';
+        const addStr=fmtStudyTimeText(addPerDay);
         const mainColor=status==='close'?'#f59e0b':'#f87171';
         const mainTxt=status==='close'?adv.close_main(addStr):adv.ng_main(addStr);
         const subTxt=status==='close'?adv.close_sub(addStr):adv.ng_sub(addStr);
@@ -3054,7 +3052,7 @@ function renderForecast(){
   const predicted=Math.round(avgPerDay*daysLeft);
   const avgRounded=Math.round(avgPerDay),avgH=Math.floor(avgRounded/60),avgM=avgRounded%60;
   sections.forEach(s=>{
-    _setSection(s,predicted,avgH,avgM,`1日平均 ${avgH}h${avgM}m（累計実績ベース）`);
+    _setSection(s,predicted,avgH,avgM,`1日平均 ${fmtStudyTimeText(avgRounded)}（累計実績ベース）`);
   });
 }
 function safeRenderForecast(){
@@ -3333,8 +3331,8 @@ function exportDailyReport(){
   // ── ⑥ KPI（累計・1日平均・連続・学習日数）
   ctx.fillStyle=bg;ctx.fillRect(0,y,W,kpiH);
   const kpiItems=[
-    {label:'累計学習',val:fmt(total)},
-    {label:'1日平均',val:fmt(avgMin)},
+    {label:'累計学習',val:fmtStudyTimeText(total)},
+    {label:'1日平均',val:fmtStudyTimeText(avgMin)},
     {label:'連続学習',val:streak+'日'},
     {label:'学習日数',val:days+'日'},
   ];
@@ -3637,7 +3635,7 @@ function renderAllTimeCard(){
     <div class="atc-body">
       <div class="atc-label">累計学習時間</div>
       <div class="atc-value">${fmtLongHtml(total)}</div>
-      <div class="atc-sub">1日平均 ${Math.floor(avgMin/60)}h${avgMin%60}m</div>
+      <div class="atc-sub">1日平均 ${fmtStudyTimeText(avgMin)}</div>
     </div>
     <div class="atc-elapsed">${streakContent}</div>
     <div class="atc-days">
@@ -3775,9 +3773,9 @@ function renderWeekly(){
   if(prevTotal>0){const pct=Math.round(currTotal/prevTotal*100);const diff=pct-100;const cls=diff>0?'up':diff<0?'down':'even';const arrow=diff>0?'▲ ':diff<0?'▼ ':'─ ';const sign=diff>0?'+':'';pctHtml=`<span class="wsl-pct ${cls}">${arrow}先週比 ${sign}${diff}%（${pct}%）</span>`;}
   else pctHtml=`<span class="wsl-pct even">先週データなし</span>`;
   const currLabel=$('week-curr-label');currLabel.className='week-section-label curr';
-  currLabel.innerHTML=`<span class="wsl-name">${weekName(currDates)}</span><span class="wsl-total">${fmt(currTotal)}</span>${pctHtml}`;
+  currLabel.innerHTML=`<span class="wsl-name">${weekName(currDates)}</span><span class="wsl-total">${fmtStudyTimeText(currTotal)}</span>${pctHtml}`;
   const prevLabel=$('week-prev-label');prevLabel.className='week-section-label';
-  prevLabel.innerHTML=`<span class="wsl-name">${weekName(prevDates)}</span><span class="wsl-total">${fmt(prevTotal)}</span>`;
+  prevLabel.innerHTML=`<span class="wsl-name">${weekName(prevDates)}</span><span class="wsl-total">${fmtStudyTimeText(prevTotal)}</span>`;
   buildChart('bar-chart-prev',prevDates,false);buildChart('bar-chart-curr',currDates,true);
   safeRenderForecast();
 }
@@ -3793,7 +3791,7 @@ function renderMonthly(){
   if(prevMTotal>0){const pct=Math.round(currMTotal/prevMTotal*100);const diff=pct-100;const cls=diff>0?'up':diff<0?'down':'even';const arrow=diff>0?'▲ ':diff<0?'▼ ':'─ ';const sign=diff>0?'+':'';pctHtml=`<span class="wsl-pct ${cls}">${arrow}先月比 ${sign}${diff}%（${pct}%）</span>`;}
   else pctHtml=`<span class="wsl-pct even">先月データなし</span>`;
   const summaryEl=$('month-summary-label');summaryEl.className='week-section-label curr';
-  summaryEl.innerHTML=`<span class="wsl-name">${mName}</span><span class="wsl-total">${fmt(currMTotal)}</span>${pctHtml}`;
+  summaryEl.innerHTML=`<span class="wsl-name">${mName}</span><span class="wsl-total">${fmtStudyTimeText(currMTotal)}</span>${pctHtml}`;
   safeRenderAllTimeCard();
   const todayStr=toStudyDateStr(new Date());
   let monthMaxPart=120;
@@ -3829,15 +3827,15 @@ function renderMonthly(){
 
 function _setStat(sid,pid,val,goal,ach){
   const pct=Math.min(100,Math.round(val/goal*100));
-  $(sid).textContent=fmt(val);$(pid).style.width=pct+'%';
-  $(pid+'-info').textContent=pct>=100?ach:'目標 '+goal/60+'h まで '+pct+'%';
+  $(sid).textContent=fmtStudyTimeText(val);$(pid).style.width=pct+'%';
+  $(pid+'-info').textContent=pct>=100?ach:'目標 '+fmtStudyTimeText(goal)+' まで '+pct+'%';
   return pct;
 }
 function updateStats(){
   const todayStr=toStudyDateStr(new Date());
   const isToday=currentDate===todayStr;
-  const dPct=_setStat('stat-daily','daily-prog',dayTotal(currentDate),GOAL,'🌸 目標 '+GOAL/60+'h 達成！満開！');
-  const wPct=_setStat('stat-weekly','weekly-prog',weekTotal(currentDate,0),WEEK_GOAL,'🎆 目標 '+WEEK_GOAL/60+'h 達成！');
+  const dPct=_setStat('stat-daily','daily-prog',dayTotal(currentDate),GOAL,'🌸 目標 '+fmtStudyTimeText(GOAL)+' 達成！満開！');
+  const wPct=_setStat('stat-weekly','weekly-prog',weekTotal(currentDate,0),WEEK_GOAL,'🎆 目標 '+fmtStudyTimeText(WEEK_GOAL)+' 達成！');
   // 週間目標達成：今日だけ・1日1回のみ
   if(isToday&&wPct>=100&&lastWeeklyPct<100){
     const wKey='weekly-goal-shown-'+todayStr;
@@ -3853,7 +3851,7 @@ function updateStats(){
   }
   lastWeeklyPct=wPct;
   const{year,month}=monthInfo(currentDate,0);
-  const mPct=_setStat('stat-monthly','monthly-prog',monthTotal(year,month),MONTH_GOAL,'🎇 目標 '+MONTH_GOAL/60+'h 達成！');
+  const mPct=_setStat('stat-monthly','monthly-prog',monthTotal(year,month),MONTH_GOAL,'🎇 目標 '+fmtStudyTimeText(MONTH_GOAL)+' 達成！');
   // 月間目標達成：今日だけ・1日1回のみ
   if(isToday&&mPct>=100&&lastMonthlyPct<100){
     const mKey='monthly-goal-shown-'+todayStr;
@@ -5418,8 +5416,8 @@ function updateStoryMainCard(){
     const nextTierH=_lvFormula(nextTier.lvMin);
     const span=Math.max(1,nextTierH-curTierH);
     pct=Math.min(100,Math.max(0,Math.round((loopH-curTierH)/span*100)));
-    const left=Math.max(0,Math.round((nextTierH-loopH)*10)/10);
-    barInfo='ステージ '+(tierIdx+1)+'/'+tiers.length+' — 次「'+nextTier.title+'」まで | あと '+left+'h';
+    const leftMin=Math.max(0,Math.round((nextTierH-loopH)*60));
+    barInfo='ステージ '+(tierIdx+1)+'/'+tiers.length+' — 次「'+nextTier.title+'」まで | あと '+fmtStudyTimeText(leftMin);
   }else{
     barInfo='ステージ '+tiers.length+'/'+tiers.length+' — 🎉 ストーリークリア！';
     pct=100;
