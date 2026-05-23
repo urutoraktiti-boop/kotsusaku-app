@@ -3888,10 +3888,18 @@ function _formatMonthDayWeekHtml(dateStr, isToday){
   return '<span class="date-num">'+String(mo).padStart(2,'0')+'/'+String(d).padStart(2,'0')+'</span><span class="date-week">('+WD[dt.getDay()]+')</span>';
 }
 function _openNativeDatePicker(input){
-  if(!input)return;
-  try{if(input.showPicker){input.showPicker();return;}}catch(e){}
+  if(!input)return false;
+  try{if(input.showPicker){input.showPicker();return true;}}catch(e){return false;}
   input.focus();
-  try{input.click();}catch(e){}
+  try{input.click();return true;}catch(e){return false;}
+}
+function _isIOSLike(){
+  const ua=navigator.userAgent||'';
+  return /iPad|iPhone|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+}
+function _openSmartDatePicker(input,opts){
+  if(input&&!_isIOSLike()&&typeof input.showPicker==='function'&&_openNativeDatePicker(input))return;
+  _openDateEditPopup(opts);
 }
 function _openDateEditPopup(opts){
   opts=opts||{};
@@ -3937,11 +3945,23 @@ function _openDateEditPopup(opts){
   document.body.appendChild(ov);
   setTimeout(()=>{input.focus();try{if(input.showPicker)input.showPicker();}catch(e){}},80);
 }
+function persistTopSettingsNow(){
+  try{
+    if(typeof saveToCloudNow==='function'){
+      saveToCloudNow();
+    }else if(typeof saveToCloud==='function'){
+      saveToCloud();
+    }
+  }catch(e){
+    console.warn('トップ画面設定の同期保存をスキップしました:', e);
+  }
+}
 function _setExamDateValue(v){
   if(v)LS.set('exam-date',v);else LS.del('exam-date');
   const main=$('cd-input');if(main)main.value=v||'';
   const cust=$('cust-cd-input');if(cust)cust.value=v||'';
   updateCountdown();safeRenderForecast();
+  persistTopSettingsNow();
 }
 function updateHeaderExamDate(){
   const val=LS.get('exam-date')||(($('cd-input')&&$('cd-input').value)||'');
@@ -4021,7 +4041,7 @@ if(_currentDateDisplay&&_currentDateInput){
   _currentDateDisplay.addEventListener('click',(e)=>{
     e.preventDefault();
     _currentDateInput.value=currentDate;
-    _openDateEditPopup({
+    _openSmartDatePicker(_currentDateInput,{
       title:'表示する日を選択',
       value:currentDate,
       onSave:function(v){
@@ -4088,7 +4108,7 @@ if(_custCdClear){
 function openExamDatePicker(){
   const inp=$('cd-input');if(!inp)return;
   inp.value=LS.get('exam-date')||inp.value||'';
-  _openDateEditPopup({
+  _openSmartDatePicker(inp,{
     title:'開花日・目標日を選択',
     value:inp.value||'',
     clearable:true,
@@ -4177,14 +4197,22 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
 })();
 
 (function(){
-  let swRunning=false,swElapsed=0,swLastStart=0,swInterval=null,swCheckedCount=0;
+  let swRunning=false,swElapsed=0,swLastStart=0,swStopAt=0,swInterval=null,swCheckedCount=0;
   let swCheckedBoundaries=[];
   const SW_STATE_KEY='kotsusaku-stopwatch-state';
+  const SW_AUTO_STOP_HOUR=4;
   const dispEl=$('sw-display'),hintEl=$('sw-hint'),nextTimeEl=$('sw-next-time');
   const startBtn=$('sw-start-btn'),stopBtn=$('sw-stop-btn'),resetBtn=$('sw-reset-btn');
   function fmtSw(ms){const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;if(h>0)return h+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');}
   function fmtNext(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60),sec=s%60;return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');}
   function nextClockBoundary(ms){return Math.floor(ms/600000)*600000+600000;}
+  function nextStudyBoundaryMs(ms){
+    const d=new Date(ms||Date.now());
+    const b=new Date(d);
+    b.setHours(SW_AUTO_STOP_HOUR,0,0,0);
+    if(d.getTime()>=b.getTime())b.setDate(b.getDate()+1);
+    return b.getTime();
+  }
   function boundaryToBlock(boundaryMs){
     const d=new Date(boundaryMs-1);
     const h=d.getHours(),mm=d.getMinutes();
@@ -4194,7 +4222,8 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
   function setNextHidden(){nextTimeEl.textContent='--:--';nextTimeEl.classList.remove('soon');}
   function updateNext(){
     if(!swRunning){setNextHidden();return;}
-    const rem=Math.max(0,nextClockBoundary(Date.now())-Date.now());
+    const now=Date.now();
+    const rem=Math.max(0,Math.min(nextClockBoundary(now),swStopAt||nextStudyBoundaryMs(now))-now);
     nextTimeEl.textContent=fmtNext(rem);
     nextTimeEl.classList.toggle('soon',rem<60000);
   }
@@ -4203,7 +4232,7 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
     hintEl.textContent=swRunning?'チェック済み '+e+'×'+swCheckedCount:(swElapsed>0?'一時停止中 — '+e+'×'+swCheckedCount:'10分ごとに '+e);
   }
   function persistSw(){
-    localStorage.setItem(SW_STATE_KEY,JSON.stringify({running:swRunning,elapsed:swElapsed,lastStart:swLastStart,checkedBoundaries:swCheckedBoundaries}));
+    localStorage.setItem(SW_STATE_KEY,JSON.stringify({running:swRunning,elapsed:swElapsed,lastStart:swLastStart,stopAt:swStopAt,checkedBoundaries:swCheckedBoundaries}));
   }
   function autoCheck(boundaryMs){
     const{h,blockMin,ds}=boundaryToBlock(boundaryMs);if(!data[ds])data[ds]={};const key=h+':'+blockMin;
@@ -4221,26 +4250,45 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
     if(!swRunning)return;
     const lastChecked=swCheckedBoundaries.length?swCheckedBoundaries[swCheckedBoundaries.length-1]:0;
     let boundary=Math.max(nextClockBoundary(swLastStart),lastChecked+600000);
-    const now=Date.now();
+    const now=Math.min(Date.now(),swStopAt||nextStudyBoundaryMs(swLastStart));
     while(boundary<=now){autoCheck(boundary);boundary+=600000;}
   }
-  function tick(){const elapsed=swElapsed+(swRunning?Date.now()-swLastStart:0);dispEl.textContent=fmtSw(elapsed);processClockBoundaries();updateNext();if(swRunning)persistSw();}
-  function swStart(){if(swRunning)return;swRunning=true;swLastStart=Date.now();swInterval=setInterval(tick,500);dispEl.classList.add('running');startBtn.disabled=true;stopBtn.disabled=false;resetBtn.disabled=true;updateSwHint();updateNext();persistSw();if(isUnlocked('startBloom')&&Math.random()<0.25)setTimeout(()=>launchPetals(),300);
+  function clearSwRunningUi(){
+    dispEl.classList.remove('running');startBtn.disabled=false;stopBtn.disabled=true;resetBtn.disabled=false;setNextHidden();_swIsRunning=false;
+    if(_nowProgressTimer){clearInterval(_nowProgressTimer);_nowProgressTimer=null;}
+    document.querySelectorAll('.block.now-time').forEach(b=>{b.style.animation='';b.style.background='';});
+  }
+  function autoStopAtStudyBoundary(){
+    if(!swRunning)return false;
+    const stopAt=swStopAt||nextStudyBoundaryMs(swLastStart);
+    if(Date.now()<stopAt)return false;
+    processClockBoundaries();
+    swElapsed+=Math.max(0,stopAt-swLastStart);
+    swRunning=false;swLastStart=0;swStopAt=0;clearInterval(swInterval);
+    dispEl.textContent=fmtSw(swElapsed);clearSwRunningUi();hintEl.textContent='朝4時で自動停止しました';persistSw();
+    if(typeof showEasterToast==='function')showEasterToast('⏱ 朝4時になったため、ストップウォッチを自動停止しました');
+    if(typeof trackEvent==='function')trackEvent('stopwatch_auto_stop_4am');
+    return true;
+  }
+  function tick(){processClockBoundaries();if(autoStopAtStudyBoundary())return;const now=Date.now();const elapsed=swElapsed+(swRunning?Math.min(now,swStopAt||now)-swLastStart:0);dispEl.textContent=fmtSw(elapsed);updateNext();if(swRunning)persistSw();}
+  function swStart(){if(swRunning)return;swRunning=true;swLastStart=Date.now();swStopAt=nextStudyBoundaryMs(swLastStart);swInterval=setInterval(tick,500);dispEl.classList.add('running');startBtn.disabled=true;stopBtn.disabled=false;resetBtn.disabled=true;updateSwHint();updateNext();persistSw();if(isUnlocked('startBloom')&&Math.random()<0.25)setTimeout(()=>launchPetals(),300);
   if(typeof trackEvent==='function')trackEvent('stopwatch_start');
   const _sm=getStoryText('startMsg');if(_sm){showEasterToast('📖 '+_sm);}
   _swIsRunning=true;if(_nowProgressTimer)clearInterval(_nowProgressTimer);_nowProgressTimer=setInterval(()=>{if(currentView==='daily')updateNowBlock();},500);
 }
-  function swStop(){if(!swRunning)return;tick();swElapsed+=Date.now()-swLastStart;swRunning=false;clearInterval(swInterval);dispEl.classList.remove('running');startBtn.disabled=false;stopBtn.disabled=true;resetBtn.disabled=false;setNextHidden();updateSwHint();persistSw();_swIsRunning=false;if(_nowProgressTimer){clearInterval(_nowProgressTimer);_nowProgressTimer=null;}document.querySelectorAll('.block.now-time').forEach(b=>{b.style.animation='';b.style.background='';});}
-  function swReset(){if(swRunning)swStop();swElapsed=0;swCheckedCount=0;swCheckedBoundaries=[];dispEl.textContent='00:00';dispEl.classList.remove('running');startBtn.disabled=false;stopBtn.disabled=true;resetBtn.disabled=false;updateSwHint();setNextHidden();localStorage.removeItem(SW_STATE_KEY);}
+  function swStop(){if(!swRunning)return;tick();if(!swRunning)return;swElapsed+=Math.max(0,Math.min(Date.now(),swStopAt||Date.now())-swLastStart);swRunning=false;swLastStart=0;swStopAt=0;clearInterval(swInterval);clearSwRunningUi();updateSwHint();persistSw();}
+  function swReset(){if(swRunning)swStop();swElapsed=0;swCheckedCount=0;swCheckedBoundaries=[];swStopAt=0;dispEl.textContent='00:00';dispEl.classList.remove('running');startBtn.disabled=false;stopBtn.disabled=true;resetBtn.disabled=false;updateSwHint();setNextHidden();localStorage.removeItem(SW_STATE_KEY);}
   function restoreSw(){
     try{
       const st=JSON.parse(localStorage.getItem(SW_STATE_KEY)||'null');
       if(!st)return;
       swElapsed=Number(st.elapsed)||0;
       swLastStart=Number(st.lastStart)||0;
+      swStopAt=Number(st.stopAt)||0;
       swCheckedBoundaries=Array.isArray(st.checkedBoundaries)?st.checkedBoundaries.filter(Number).sort((a,b)=>a-b):[];
       swCheckedCount=swCheckedBoundaries.length;
       swRunning=!!st.running&&swLastStart>0;
+      if(swRunning&&!swStopAt)swStopAt=nextStudyBoundaryMs(swLastStart);
       if(swRunning){
         dispEl.classList.add('running');startBtn.disabled=true;stopBtn.disabled=false;resetBtn.disabled=true;_swIsRunning=true;
         swInterval=setInterval(tick,500);
@@ -5086,6 +5134,7 @@ function syncStopwatchIconLabels(){
       CUST.targetTotalH=(v>0&&v<=9999)?v:0;
       CUST.targetTotalTouched=true;
       saveCust(); // 確実にlocalStorageに保存（blur→saveの順序問題を防ぐ）
+      persistTopSettingsNow();
       renderLevelBar();safeRenderForecast();safeRenderAllTimeCard();
       inp.replaceWith(btn);refreshTargetBtn();
     }
@@ -5126,6 +5175,7 @@ function syncStopwatchIconLabels(){
       CUST.targetTotalH=(v>0&&v<=9999)?v:0;
       CUST.targetTotalTouched=true;
       saveCust();renderLevelBar();safeRenderForecast();safeRenderAllTimeCard();
+      persistTopSettingsNow();
       if(window._refreshTargetBtn)window._refreshTargetBtn();
       restoreBtn();
     }
