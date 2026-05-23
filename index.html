@@ -162,7 +162,8 @@
 </div>
 </div>
 </div>
-<div id="install-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(90deg,#0f2027,#1a3a4a);border-bottom:2px solid #38bdf8;color:#e0f2fe;font-size:.8rem;padding:0;box-shadow:0 2px 12px rgba(0,0,0,.5);">
+<div id="install-banner" style="display:none;position:fixed;inset:0;z-index:23000;background:rgba(0,0,0,.68);color:#e0f2fe;font-size:.8rem;padding:16px;align-items:center;justify-content:center;">
+<div style="width:min(430px,100%);background:linear-gradient(135deg,#0f2027,#1a3a4a);border:2px solid #38bdf8;border-radius:18px;box-shadow:0 16px 48px rgba(0,0,0,.45);overflow:hidden;">
 <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px 6px;gap:8px;">
 <span style="font-weight:800;font-size:.85rem;">📲 ホーム画面に追加して使おう！</span>
 <button id="install-banner-close" style="background:transparent;border:none;color:#93c5fd;font-size:1.1rem;cursor:pointer;line-height:1;padding:0 2px;">×</button>
@@ -193,6 +194,12 @@
 アドレスバー右端の <b>インストールアイコン（⊕）</b> をクリックしてインストールできます<br>
 <span style="color:#7dd3fc;font-size:.7rem;">※ インストールするとオフラインでも使えます</span><br>
 <span style="color:#93c5fd;font-size:.7rem;">⚠️ アイコンが表示されない場合：右上の <b>⋮（3点メニュー）</b> → 「<b>その他のツール</b>」または「<b>キャスト、保存、共有</b>」→「<b>ページをアプリとしてインストール…</b>」をクリック</span>
+</div>
+<div style="padding:6px 14px 14px;text-align:center;">
+<a href="https://urutoraktiti-boop.github.io/kotsusaku-homepage/install.html" style="display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%;max-width:320px;background:#38bdf8;color:#0f2027;border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:10px 14px;font-size:.78rem;font-weight:900;text-decoration:none;box-shadow:0 6px 18px rgba(56,189,248,.28);">
+  &#x1F4F2; 図解でわかる詳しい手順はこちら →
+</a>
+</div>
 </div>
 </div>
 <div id="update-banner" style="display:none;position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,.72);align-items:center;justify-content:center;padding:20px;">
@@ -1186,6 +1193,12 @@ function trackEvent(name, params) {
 }
 setTimeout(() => trackEvent('app_open'), 0);
 
+function isKotsusakuInstalled() {
+  return window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true;
+}
+window.isKotsusakuInstalled = isKotsusakuInstalled;
+
 // ============================================================
 // === コツコツサクサク アナリティクス (v91) ===
 // Firestore /analytics/{userId} にユーザー行動データを送信する
@@ -1710,6 +1723,7 @@ function copySyncCode() {
   );
 }
 function showInitialSyncGuideIfNeeded() {
+  if (!isKotsusakuInstalled()) return;
   if (localStorage.getItem('kotsusaku-sync-guide-shown')) return;
   const hasLocalData = Object.keys(data || {}).length > 0 || Object.keys(notes || {}).length > 0;
   if (hasLocalData) return;
@@ -5595,6 +5609,7 @@ function _dismissInitialSetupPrompt(){
   if(ov)ov.style.display='none';
 }
 function showInitialSetupPromptIfNeeded(){
+  if (!isKotsusakuInstalled()) return;
   if($('cust-overlay')&&$('cust-overlay').classList.contains('show'))return;
   const needs=_initialSetupNeeds();
   if(!needs.length)return;
@@ -6161,7 +6176,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ── インストール促進バナー ──────────────────────────────
 (function(){
   // スタンドアローン（インストール済み）なら何もしない
-  if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) return;
+  if (isKotsusakuInstalled()) return;
 
   const banner = document.getElementById('install-banner');
   if (!banner) return;
@@ -6219,8 +6234,8 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
     if (g) g.style.display = 'block';
   }
 
-  // バナー表示
-  banner.style.display = 'block';
+  // インストール案内を最初のポップアップとして表示
+  banner.style.display = 'flex';
 
   // ×ボタンで閉じる
   const closeBtn = document.getElementById('install-banner-close');
