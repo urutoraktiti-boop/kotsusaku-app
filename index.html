@@ -2047,6 +2047,13 @@ function hasAchievedMonthGoal(){
   const achieved=JSON.parse(LS.get('monthly-goal-achieved','false'));return achieved;
 }
 function fmtLongHtml(min){const h=Math.floor(min/60),m=min%60;if(h>=100)return h+'時間';const minSpan=`<span class="atc-min">${m}分</span>`;return h+'時間 '+minSpan;}
+function fmtStudyTimeText(min){
+  min=Math.max(0,Math.round(min||0));
+  const h=Math.floor(min/60),m=min%60;
+  if(h>0&&m>0)return h+'時間'+m+'分';
+  if(h>0)return h+'時間';
+  return m+'分';
+}
 
 function renderQuote(){
   const el=$('quote-bar');if(!el)return;
@@ -2964,16 +2971,15 @@ function renderForecast(){
     const pct=Math.min(Math.round(predictedH/targetH*100),999);
     const diffH=predictedH-targetH;
     const status=pct>=100?'ok':pct>=95?'close':'ng';
-    if(targetBtnEl){targetBtnEl.textContent=targetH+'h';targetBtnEl.classList.add('active','has-target');}
+    if(targetBtnEl){targetBtnEl.textContent=fmtStudyTimeText(targetH*60);targetBtnEl.classList.add('active','has-target');}
     if(targetDiffEl){
       targetDiffEl.className='forecast-target-diff '+status;
       if(status==='ok'){
-        const overH=Math.floor(diffH),overM=Math.round((diffH-overH)*60);
-        targetDiffEl.textContent=`✅ +${overH>0?overH+'h':''}${overM>0?overM+'m':''}の余裕`;
+        targetDiffEl.textContent=`✅ +${fmtStudyTimeText(diffH*60)}の余裕`;
       }else{
-        const shortH=Math.abs(diffH),sh=Math.floor(shortH),sm=Math.round((shortH-sh)*60);
-        targetDiffEl.textContent=status==='close'?`⚠️ あと${sh>0?sh+'h':''}${sm>0?sm+'m':''}`:
-          `❌ ${sh>0?sh+'h':''}${sm>0?sm+'m':''}不足`;
+        const shortMin=Math.abs(diffH)*60;
+        targetDiffEl.textContent=status==='close'?`⚠️ あと${fmtStudyTimeText(shortMin)}`:
+          `❌ ${fmtStudyTimeText(shortMin)}不足`;
       }
     }
     if(gaugeWrap)gaugeWrap.style.display='block';
@@ -3887,6 +3893,50 @@ function _openNativeDatePicker(input){
   input.focus();
   try{input.click();}catch(e){}
 }
+function _openDateEditPopup(opts){
+  opts=opts||{};
+  const old=$('date-edit-overlay');if(old)old.remove();
+  const ov=document.createElement('div');
+  ov.id='date-edit-overlay';
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.58);z-index:23000;display:flex;align-items:center;justify-content:center;padding:16px;';
+  const card=document.createElement('div');
+  card.style.cssText='width:min(360px,100%);background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;color:var(--text);box-shadow:0 16px 48px rgba(0,0,0,.38);';
+  const title=document.createElement('div');
+  title.style.cssText='font-size:1rem;font-weight:900;margin-bottom:10px;';
+  title.textContent=opts.title||'日付を選択';
+  const input=document.createElement('input');
+  input.type='date';
+  input.value=opts.value||'';
+  input.style.cssText='width:100%;background:var(--surface2);border:1.5px solid var(--accent);color:var(--text);font-size:1.05rem;padding:11px 12px;border-radius:10px;outline:none;margin-bottom:12px;';
+  const btnRow=document.createElement('div');
+  btnRow.style.cssText='display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;';
+  function mkBtn(label,primary){
+    const b=document.createElement('button');
+    b.type='button';b.textContent=label;
+    b.style.cssText=primary?'background:var(--accent);border:none;color:#fff;border-radius:9px;padding:9px 14px;font-weight:900;cursor:pointer;':'background:transparent;border:1px solid var(--border);color:var(--text-muted);border-radius:9px;padding:9px 12px;font-weight:800;cursor:pointer;';
+    return b;
+  }
+  const cancel=mkBtn('キャンセル',false);
+  const save=mkBtn('決定',true);
+  cancel.addEventListener('click',()=>ov.remove());
+  save.addEventListener('click',()=>{
+    if(typeof opts.onSave==='function')opts.onSave(input.value||'');
+    ov.remove();
+  });
+  if(opts.clearable){
+    const clear=mkBtn('クリア',false);
+    clear.addEventListener('click',()=>{
+      if(typeof opts.onSave==='function')opts.onSave('');
+      ov.remove();
+    });
+    btnRow.appendChild(clear);
+  }
+  btnRow.appendChild(cancel);btnRow.appendChild(save);
+  card.appendChild(title);card.appendChild(input);card.appendChild(btnRow);ov.appendChild(card);
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+  document.body.appendChild(ov);
+  setTimeout(()=>{input.focus();try{if(input.showPicker)input.showPicker();}catch(e){}},80);
+}
 function _setExamDateValue(v){
   if(v)LS.set('exam-date',v);else LS.del('exam-date');
   const main=$('cd-input');if(main)main.value=v||'';
@@ -3968,9 +4018,20 @@ if(_currentDateExtra){
   _currentDateExtra.addEventListener('keydown',(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();goTodayDate();}});
 }
 if(_currentDateDisplay&&_currentDateInput){
-  _currentDateDisplay.addEventListener('click',()=>{
+  _currentDateDisplay.addEventListener('click',(e)=>{
+    e.preventDefault();
     _currentDateInput.value=currentDate;
-    _openNativeDatePicker(_currentDateInput);
+    _openDateEditPopup({
+      title:'表示する日を選択',
+      value:currentDate,
+      onSave:function(v){
+        if(!v)return;
+        currentDate=v;
+        weekOff=0;monthOff=0;lastBloomPct=-1;
+        resetCombo();
+        switchView('daily');
+      }
+    });
   });
   _currentDateInput.addEventListener('change',()=>{
     if(!_currentDateInput.value)return;
@@ -4027,12 +4088,23 @@ if(_custCdClear){
 function openExamDatePicker(){
   const inp=$('cd-input');if(!inp)return;
   inp.value=LS.get('exam-date')||inp.value||'';
-  _openNativeDatePicker(inp);
+  _openDateEditPopup({
+    title:'開花日・目標日を選択',
+    value:inp.value||'',
+    clearable:true,
+    onSave:function(v){_setExamDateValue(v);}
+  });
 }
 const _examDisplay=$('exam-date-display');
 const _examChange=$('exam-date-change-btn');
 if(_examDisplay)_examDisplay.addEventListener('click',openExamDatePicker);
 if(_examChange)_examChange.addEventListener('click',openExamDatePicker);
+const _countdownCenter=$('cd-label')&&$('cd-label').parentElement;
+if(_countdownCenter){
+  _countdownCenter.style.cursor='pointer';
+  _countdownCenter.title='開花日を設定';
+  _countdownCenter.addEventListener('click',openExamDatePicker);
+}
 
 
 function applyTheme(theme){
@@ -5043,7 +5115,7 @@ function syncStopwatchIconLabels(){
     let done=false;
     function restoreBtn(){
       inp.replaceWith(btn);
-      btn.textContent=CUST.targetTotalH>0?CUST.targetTotalH+'h':'✏ 目標入力';
+      btn.textContent=CUST.targetTotalH>0?fmtStudyTimeText(CUST.targetTotalH*60):'✏ 目標入力';
       btn.classList.toggle('active',CUST.targetTotalH>0);
       btn.classList.toggle('has-target',CUST.targetTotalH>0);
       delete colEl.dataset.editing;
