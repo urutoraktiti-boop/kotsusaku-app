@@ -2558,7 +2558,10 @@ function showBadgePopup(b){
     popup.innerHTML=`<span class="bp-icon">${b.icon}</span><div class="bp-name">バッジ獲得！「${b.name}」</div><div class="bp-msg">${b.desc}</div>`;
     popup.style.display='block';
     playBadgeSound();
-    setTimeout(()=>popup.style.display='none',4000);
+    _popCurrentDone=setTimeout(()=>{
+      popup.style.display='none';
+      _finishPopupQueueItem(0);
+    },4000);
   },4000);
 }
 function openBadgePanel(){renderBadgeGrid();$('badge-overlay').classList.add('show');}
@@ -2606,11 +2609,11 @@ function renderBadgeGrid(){
 
   // タブの表示/非表示
   if(tabsEl)tabsEl.style.display=isFiction?'block':'none';
-  // 早朝タブ：イタチャチャモード、またはCrazy10イベント日（参加有無問わず）は非表示
+  // 早朝タブ：Crazy10イベント日は非表示
   const asajukuTabEl=$('badge-asajuku-tab');
   const _todayDs=(()=>{const n=new Date();if(n.getHours()<4)n.setDate(n.getDate()-1);return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');})();
   const _isCrazy10EventDay=typeof _getCrazy10Event==='function'&&!!_getCrazy10Event(_todayDs);
-  if(asajukuTabEl)asajukuTabEl.style.display=(_isItachachaMode()||_isCrazy10EventDay)?'none':'block';
+  if(asajukuTabEl)asajukuTabEl.style.display=_isCrazy10EventDay?'none':'block';
 
   if(isFiction){
     // フィクション選択中：タブを現在のストーリーに合わせる
@@ -2661,11 +2664,23 @@ function manualUnlockBadge(id){
 const _popQ=[];let _popBusy=false;
 function _queuePopup(fn,dur){_popQ.push({fn,dur});if(!_popBusy)_runNextPopup();}
 let _popCloseHandler=null;
+let _popCurrentDone=null;
 function _runNextPopup(){
   if(!_popQ.length){_popBusy=false;return;}
   _popBusy=true;
   const{fn}=_popQ.shift();
   fn();
+}
+function _finishPopupQueueItem(delay){
+  if(!_popBusy&&!_popCurrentDone)return;
+  if(_popCloseHandler){
+    document.removeEventListener('click',_popCloseHandler);
+    _popCloseHandler=null;
+  }
+  const done=_popCurrentDone;
+  _popCurrentDone=null;
+  if(done)clearTimeout(done);
+  setTimeout(_runNextPopup,delay==null?300:delay);
 }
 // ポップアップを手動で閉じる（次のキューへ）
 function _closePopupManual(){
@@ -2674,13 +2689,8 @@ function _closePopupManual(){
     const el=document.getElementById(id);
     if(el)el.style.display='none';
   });
-  // クリックハンドラを削除
-  if(_popCloseHandler){
-    document.removeEventListener('click',_popCloseHandler);
-    _popCloseHandler=null;
-  }
   // 次のポップアップへ
-  setTimeout(_runNextPopup,300);
+  _finishPopupQueueItem(300);
 }
 // ポップアップ表示後に「次の軌跡へ」ボタンと画面タップを設定
 function _setupPopupClose(popupEl){
@@ -2866,7 +2876,10 @@ function showEasterToast(msg){
   _queuePopup(()=>{
     const el=$('easter-toast');
     el.textContent=msg;el.classList.add('show');
-    setTimeout(()=>el.classList.remove('show'),dur);
+    _popCurrentDone=setTimeout(()=>{
+      el.classList.remove('show');
+      _finishPopupQueueItem(0);
+    },dur);
   },dur);
 }
 
@@ -3482,14 +3495,13 @@ function buildGrid(){
           else{cls+=' c10-set2';}
         }
       }
-      // 早朝自習室：30分グループ点滅（Crazy10・itachachaがない場合のみ）
+      // 早朝自習室：参加済みの日だけ30分グループ点滅
       {
         const _asaNow=new Date();const _asaH=_asaNow.getHours()+_asaNow.getMinutes()/60;
         const _asaDs=_toLocalDateStr(_asaNow);
         const _asaStart=5,_asaEnd=7,_asaDisplayStart=4;
-        const _asaItaMode=(typeof _isItachachaMode==='function')&&_isItachachaMode();
         const _asaJoined=localStorage.getItem('asajuku-joined-'+_asaDs)==='1';
-        const _asaActive=(_asaItaMode||_asaJoined)&&_asaH>=_asaDisplayStart&&_asaH<_asaEnd;
+        const _asaActive=_asaJoined&&_asaH>=_asaDisplayStart&&_asaH<_asaEnd;
         const _asaHour=_asaActive&&h>=_asaStart&&h<_asaEnd;
         if(_asaHour&&!_bc&&!_c10hour){
           if(m<=30){cls+=' asa-set1';if(m===30)cls+=' last-asa-set1';}
@@ -4213,6 +4225,7 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
   let swCheckedBoundaries=[];
   const SW_STATE_KEY='kotsusaku-stopwatch-state';
   const SW_AUTO_STOP_HOUR=4;
+  const SW_AUTO_STOP_MIN_ELAPSED_MS=24*60*60*1000;
   const dispEl=$('sw-display'),hintEl=$('sw-hint'),nextTimeEl=$('sw-next-time');
   const startBtn=$('sw-start-btn'),stopBtn=$('sw-stop-btn'),resetBtn=$('sw-reset-btn');
   function fmtSw(ms){const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;if(h>0)return h+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');}
@@ -4225,6 +4238,19 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
     if(d.getTime()>=b.getTime())b.setDate(b.getDate()+1);
     return b.getTime();
   }
+  function findEligibleAutoStopBoundary(nowMs){
+    if(!swRunning||!swLastStart)return 0;
+    const now=nowMs||Date.now();
+    let boundary=nextStudyBoundaryMs(swLastStart);
+    let guard=0;
+    while(boundary<=now&&guard<400){
+      const elapsedAtBoundary=swElapsed+Math.max(0,boundary-swLastStart);
+      if(elapsedAtBoundary>=SW_AUTO_STOP_MIN_ELAPSED_MS)return boundary;
+      boundary=nextStudyBoundaryMs(boundary+1);
+      guard++;
+    }
+    return 0;
+  }
   function boundaryToBlock(boundaryMs){
     const d=new Date(boundaryMs-1);
     const h=d.getHours(),mm=d.getMinutes();
@@ -4235,7 +4261,7 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
   function updateNext(){
     if(!swRunning){setNextHidden();return;}
     const now=Date.now();
-    const rem=Math.max(0,Math.min(nextClockBoundary(now),swStopAt||nextStudyBoundaryMs(now))-now);
+    const rem=Math.max(0,nextClockBoundary(now)-now);
     nextTimeEl.textContent=fmtNext(rem);
     nextTimeEl.classList.toggle('soon',rem<60000);
   }
@@ -4258,11 +4284,11 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
     swCheckedBoundaries.push(boundaryMs);
     persistSw();
   }
-  function processClockBoundaries(){
+  function processClockBoundaries(untilMs){
     if(!swRunning)return;
     const lastChecked=swCheckedBoundaries.length?swCheckedBoundaries[swCheckedBoundaries.length-1]:0;
     let boundary=Math.max(nextClockBoundary(swLastStart),lastChecked+600000);
-    const now=Math.min(Date.now(),swStopAt||nextStudyBoundaryMs(swLastStart));
+    const now=untilMs||Date.now();
     while(boundary<=now){autoCheck(boundary);boundary+=600000;}
   }
   function clearSwRunningUi(){
@@ -4272,23 +4298,23 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
   }
   function autoStopAtStudyBoundary(){
     if(!swRunning)return false;
-    const stopAt=swStopAt||nextStudyBoundaryMs(swLastStart);
-    if(Date.now()<stopAt)return false;
-    processClockBoundaries();
+    const stopAt=findEligibleAutoStopBoundary(Date.now());
+    if(!stopAt)return false;
+    processClockBoundaries(stopAt);
     swElapsed+=Math.max(0,stopAt-swLastStart);
     swRunning=false;swLastStart=0;swStopAt=0;clearInterval(swInterval);
-    dispEl.textContent=fmtSw(swElapsed);clearSwRunningUi();hintEl.textContent='朝4時で自動停止しました';persistSw();
-    if(typeof showEasterToast==='function')showEasterToast('⏱ 朝4時になったため、ストップウォッチを自動停止しました');
-    if(typeof trackEvent==='function')trackEvent('stopwatch_auto_stop_4am');
+    dispEl.textContent=fmtSw(swElapsed);clearSwRunningUi();hintEl.textContent='24時間以上経過したため朝4時で自動停止しました';persistSw();
+    if(typeof showEasterToast==='function')showEasterToast('⏱ 24時間以上経過したため、朝4時でストップウォッチを自動停止しました');
+    if(typeof trackEvent==='function')trackEvent('stopwatch_auto_stop_24h_4am');
     return true;
   }
-  function tick(){processClockBoundaries();if(autoStopAtStudyBoundary())return;const now=Date.now();const elapsed=swElapsed+(swRunning?Math.min(now,swStopAt||now)-swLastStart:0);dispEl.textContent=fmtSw(elapsed);updateNext();if(swRunning)persistSw();}
-  function swStart(){if(swRunning)return;swRunning=true;swLastStart=Date.now();swStopAt=nextStudyBoundaryMs(swLastStart);swInterval=setInterval(tick,500);dispEl.classList.add('running');startBtn.disabled=true;stopBtn.disabled=false;resetBtn.disabled=true;updateSwHint();updateNext();persistSw();if(isUnlocked('startBloom')&&Math.random()<0.25)setTimeout(()=>launchPetals(),300);
+  function tick(){if(autoStopAtStudyBoundary())return;processClockBoundaries();const now=Date.now();const elapsed=swElapsed+(swRunning?now-swLastStart:0);dispEl.textContent=fmtSw(elapsed);updateNext();if(swRunning)persistSw();}
+  function swStart(){if(swRunning)return;swRunning=true;swLastStart=Date.now();swStopAt=0;swInterval=setInterval(tick,500);dispEl.classList.add('running');startBtn.disabled=true;stopBtn.disabled=false;resetBtn.disabled=true;updateSwHint();updateNext();persistSw();if(isUnlocked('startBloom')&&Math.random()<0.25)setTimeout(()=>launchPetals(),300);
   if(typeof trackEvent==='function')trackEvent('stopwatch_start');
   const _sm=getStoryText('startMsg');if(_sm){showEasterToast('📖 '+_sm);}
   _swIsRunning=true;if(_nowProgressTimer)clearInterval(_nowProgressTimer);_nowProgressTimer=setInterval(()=>{if(currentView==='daily')updateNowBlock();},500);
 }
-  function swStop(){if(!swRunning)return;tick();if(!swRunning)return;swElapsed+=Math.max(0,Math.min(Date.now(),swStopAt||Date.now())-swLastStart);swRunning=false;swLastStart=0;swStopAt=0;clearInterval(swInterval);clearSwRunningUi();updateSwHint();persistSw();}
+  function swStop(){if(!swRunning)return;tick();if(!swRunning)return;swElapsed+=Math.max(0,Date.now()-swLastStart);swRunning=false;swLastStart=0;swStopAt=0;clearInterval(swInterval);clearSwRunningUi();updateSwHint();persistSw();}
   function swReset(){if(swRunning)swStop();swElapsed=0;swCheckedCount=0;swCheckedBoundaries=[];swStopAt=0;dispEl.textContent='00:00';dispEl.classList.remove('running');startBtn.disabled=false;stopBtn.disabled=true;resetBtn.disabled=false;updateSwHint();setNextHidden();localStorage.removeItem(SW_STATE_KEY);}
   function restoreSw(){
     try{
@@ -4296,11 +4322,10 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
       if(!st)return;
       swElapsed=Number(st.elapsed)||0;
       swLastStart=Number(st.lastStart)||0;
-      swStopAt=Number(st.stopAt)||0;
+      swStopAt=0;
       swCheckedBoundaries=Array.isArray(st.checkedBoundaries)?st.checkedBoundaries.filter(Number).sort((a,b)=>a-b):[];
       swCheckedCount=swCheckedBoundaries.length;
       swRunning=!!st.running&&swLastStart>0;
-      if(swRunning&&!swStopAt)swStopAt=nextStudyBoundaryMs(swLastStart);
       if(swRunning){
         dispEl.classList.add('running');startBtn.disabled=true;stopBtn.disabled=false;resetBtn.disabled=true;_swIsRunning=true;
         swInterval=setInterval(tick,500);
@@ -6629,12 +6654,58 @@ function _setAsajukuJoined(ds,v){localStorage.setItem('asajuku-joined-'+ds,v?'1'
 function _isAsajukuActive(){
   const now=new Date();const h=now.getHours()+now.getMinutes()/60;
   const ds=toStudyDateStr(now);
-  if(typeof _isItachachaMode==='function'&&_isItachachaMode())return h>=4&&h<ASAJUKU_END;
   return _isAsajukuJoined(ds)&&h>=4&&h<ASAJUKU_END;
 }
 function _asajukuPopupKey(ds){return 'asajuku-popup-'+ds;}
 const ASAJUKU_YT_URL='https://www.youtube.com/@Cteamchannel/streams';
 const ASAJUKU_YT_BTN='<a href="'+ASAJUKU_YT_URL+'" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,0,0,.15);border:1px solid rgba(255,80,80,.35);border-radius:7px;padding:7px 11px;text-decoration:none;color:#fca5a5;font-size:.65rem;font-weight:700;"><svg width=\"16\" height=\"12\" viewBox=\"0 0 28 20\" aria-hidden=\"true\"><rect width=\"28\" height=\"20\" rx=\"5\" fill=\"#ff0033\"/><path d=\"M11 6v8l7-4z\" fill=\"#fff\"/></svg>ライブ配信</a>';
+const ASAJUKU_POPUP_RETRY_MS=30000;
+let _asajukuPopupRetryTimer=null;
+function _isOverlayVisible(el){
+  if(!el)return false;
+  if(el.classList&&(el.classList.contains('show')||el.classList.contains('active')))return true;
+  const display=el.style&&el.style.display;
+  return !!display&&display!=='none';
+}
+function _isAsajukuPopupBlocked(){
+  if(typeof _popBusy!=='undefined'&&_popBusy)return true;
+  const ids=['crazy10-overlay','crazy10-finale-overlay','data-policy-overlay','install-banner','update-banner','initial-setup-overlay','cust-overlay','badge-overlay','challenge-overlay','date-edit-overlay','icon-picker-overlay'];
+  return ids.some(id=>_isOverlayVisible(document.getElementById(id)));
+}
+function _scheduleAsajukuPopupRetry(){
+  if(_asajukuPopupRetryTimer)return;
+  _asajukuPopupRetryTimer=setTimeout(()=>{
+    _asajukuPopupRetryTimer=null;
+    _showAsajukuPopupIfNeeded();
+  },ASAJUKU_POPUP_RETRY_MS);
+}
+function _renderAsajukuJoinPopup(ds,key){
+  const popup=document.getElementById('asajuku-popup');
+  if(!popup)return;
+  popup.innerHTML='<div style="font-size:2rem;margin-bottom:6px;">🌅</div>'
+    +'<div style="font-size:1rem;font-weight:800;color:#bae6fd;letter-spacing:.04em;margin-bottom:4px;">早朝自習室</div>'
+    +'<div style="font-size:.75rem;color:#7dd3fc;margin-bottom:14px;line-height:1.6;">朝5時〜7時、2時間の早朝自習室<br>開催中です！参加しますか？</div>'
+    +'<div style="display:flex;gap:10px;justify-content:center;">'
+    +'<button id="asajuku-join-btn" style="background:#38bdf8;color:#0c1a2e;border:none;border-radius:10px;padding:10px 28px;font-size:.9rem;font-weight:800;cursor:pointer;">参加</button>'
+    +'<button id="asajuku-skip-btn" style="background:transparent;color:#7dd3fc;border:1.5px solid #38bdf8;border-radius:10px;padding:10px 28px;font-size:.9rem;font-weight:800;cursor:pointer;">今日はなし</button>'
+    +'</div>';
+  const joinBtn=document.getElementById('asajuku-join-btn');
+  const skipBtn=document.getElementById('asajuku-skip-btn');
+  function close(){_closeAsajukuOverlay();localStorage.setItem(key,'1');}
+  if(skipBtn)skipBtn.onclick=function(){_setAsajukuJoined(ds,false);close();};
+  if(joinBtn)joinBtn.onclick=function(){
+    _setAsajukuJoined(ds,true);buildGrid();renderAsajukuStars();
+    if(typeof trackEvent==='function')trackEvent('asajuku_join');
+    localStorage.setItem(key,'1');
+    popup.innerHTML='<div style="font-size:2rem;margin-bottom:8px;">⚡</div>'
+      +'<div style="font-size:.9rem;font-weight:800;color:#38bdf8;margin-bottom:8px;">早朝モード、ON！</div>'
+      +'<div style="font-size:.7rem;color:#7dd3fc;margin-bottom:14px;line-height:1.8;">いくつ星がゲットできるか?<br>さあ、いこう!!</div>'
+      +'<div style="border-top:1px solid rgba(56,189,248,.2);padding-top:10px;margin-top:4px;">'
+      +ASAJUKU_YT_BTN
+      +'</div>'
+      +'<button onclick="_closeAsajukuOverlay()" style=\"background:transparent;color:#6b7280;border:none;font-size:.63rem;cursor:pointer;padding:4px 8px;margin-top:8px;\">閉じる ✕</button>';
+  };
+}
 
 
 
@@ -6684,7 +6755,7 @@ function _getAsajukuSetCount(ds){
 // 星バッジHTML
 function _renderAsajukuStars(ds){
   if(ds!==toStudyDateStr(new Date()))return null;
-  const joined=_isItachachaMode()||_isAsajukuJoined(ds);
+  const joined=_isAsajukuJoined(ds);
   if(!joined)return null;
   const sets=_getAsajukuSetCount(ds);
   const maxSets=(ASAJUKU_END-ASAJUKU_START)*2;
@@ -6743,38 +6814,22 @@ function checkAsajukuDisplayWindowChanged(){
   }
 }
 	
-	// ポップアップ表示（4:00〜7:00、itachachaは自動ON）
-	function _showAsajukuPopupIfNeeded(){
-    return; // 緊急停止中
-  const now=new Date();const h=now.getHours()+now.getMinutes()/60;
-  if(h<4||h>=ASAJUKU_END)return;
-  const ds=toStudyDateStr(now);
-  // イタチャチャモードまたはCrazy10イベント日はポップアップ不要
-  if(_isItachachaMode()){_setAsajukuJoined(ds,true);buildGrid();renderAsajukuStars();return;}
-  if(typeof _getCrazy10Event==='function'&&_getCrazy10Event(ds)){return;}
-  const key=_asajukuPopupKey(ds);
-  if(localStorage.getItem(key)==='1')return;
-  const overlay=document.getElementById('asajuku-overlay');
-  if(!overlay)return;
-  overlay.style.display='flex';
-  const joinBtn=document.getElementById('asajuku-join-btn');
-  const skipBtn=document.getElementById('asajuku-skip-btn');
-  function close(){overlay.style.display='none';localStorage.setItem(key,'1');}
-  if(skipBtn)skipBtn.onclick=function(){_setAsajukuJoined(ds,false);close();};
-  if(joinBtn)joinBtn.onclick=function(){
-    _setAsajukuJoined(ds,true);buildGrid();renderAsajukuStars();
-    if(typeof trackEvent==='function')trackEvent('asajuku_join');
-    localStorage.setItem(key,'1');
-    var popup=document.getElementById('asajuku-popup');
-    if(popup){popup.innerHTML='<div style="font-size:2rem;margin-bottom:8px;">⚡</div>'
-      +'<div style="font-size:.9rem;font-weight:800;color:#38bdf8;margin-bottom:8px;">早朝モード、ON！</div>'
-      +'<div style="font-size:.7rem;color:#7dd3fc;margin-bottom:14px;line-height:1.8;">いくつ星がゲットできるか?<br>さあ、いこう!!</div>'
-      +'<div style="border-top:1px solid rgba(56,189,248,.2);padding-top:10px;margin-top:4px;">'
-      +ASAJUKU_YT_BTN
-      +'</div>'
-      +'<button onclick="_closeAsajukuOverlay()" style=\"background:transparent;color:#6b7280;border:none;font-size:.63rem;cursor:pointer;padding:4px 8px;margin-top:8px;\">閉じる ✕</button>';}
-  };
-}
+		// ポップアップ表示（4:00〜7:00）
+		function _showAsajukuPopupIfNeeded(){
+	  const now=new Date();const h=now.getHours()+now.getMinutes()/60;
+	  if(h<4||h>=ASAJUKU_END)return;
+	  const ds=toStudyDateStr(now);
+	  // Crazy10イベント日はポップアップ不要
+	  if(typeof _getCrazy10Event==='function'&&_getCrazy10Event(ds)){return;}
+	  const key=_asajukuPopupKey(ds);
+	  if(localStorage.getItem(key)==='1')return;
+	  const overlay=document.getElementById('asajuku-overlay');
+	  if(!overlay)return;
+	  if(_isOverlayVisible(overlay))return;
+	  if(_isAsajukuPopupBlocked()){_scheduleAsajukuPopupRetry();return;}
+	  _renderAsajukuJoinPopup(ds,key);
+	  overlay.style.setProperty('display','flex','important');
+	}
 
 // バッジチェック（早朝）
 function _checkAsajukuBadges(){
@@ -6843,7 +6898,7 @@ function _renderAsajukuBadgeGrid(){
   +'</div>';
 }
 
-function _closeAsajukuOverlay(){var o=document.getElementById("asajuku-overlay");if(o)o.style.display="none";}
+function _closeAsajukuOverlay(){var o=document.getElementById("asajuku-overlay");if(o)o.style.setProperty('display','none','important');}
 function _closeCrazy10Overlay(){
   var o=document.getElementById("crazy10-overlay");
   if(o)o.style.display="none";
