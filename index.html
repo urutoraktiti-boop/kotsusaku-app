@@ -205,9 +205,9 @@
 <div id="update-banner" style="display:none;position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,.72);align-items:center;justify-content:center;padding:20px;">
 <div style="background:#0f1117;border:2px solid #f472b6;border-radius:20px;padding:28px 24px;max-width:380px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(244,114,182,.35);">
 <div style="font-size:2.2rem;line-height:1;margin-bottom:10px;">🥸</div>
-<div style="font-size:1.05rem;font-weight:800;color:#fde8f7;margin-bottom:6px;">みんなの軌跡5000時間突破</div>
-<div id="update-version-text" style="font-size:.78rem;color:#c084fc;margin-bottom:10px;">ありがとう</div>
-<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">これからも応援してるっぺ🥸</div>
+<div style="font-size:1.05rem;font-weight:800;color:#fde8f7;margin-bottom:4px;">ニヤ🥸ボタン 実装!!</div>
+<div id="update-version-text" style="font-size:.82rem;font-weight:700;color:#fde8f7;margin-bottom:10px;">アプリやホームページから見つけてね。</div>
+<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">押すとニヤニヤするっぺ🥸<br>見つけたらぜひ押してみてね！</div>
 <div id="update-data-note" style="font-size:.66rem;color:#fca5a5;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.22);border-radius:8px;padding:7px 10px;margin-bottom:12px;line-height:1.65;text-align:left;">※キャッシュ・サイトデータを削除すると、端末内の記録が消える場合があります。</div>
 <button id="update-reload-btn" style="display:block;width:100%;background:#f472b6;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:800;cursor:pointer;margin-bottom:12px;letter-spacing:.03em;">
 ✅ 今すぐ更新する
@@ -621,10 +621,16 @@
 <div id="big-bang-overlay"><div class="bb-text">🏆💥<br>伝説の学者<br>Lv.10 達成！</div></div>
 <input type="file" id="import-file-input" accept=".json" style="display:none">
 <header>
-<div class="header-title" id="header-title-wrap">
+<div class="header-title" id="header-title-wrap" style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;">
+<div style="display:flex;align-items:center;gap:5px;">
 <div id="header-app-icon" onclick="openIconPicker()" style="display:none;width:22px;height:22px;border-radius:6px;overflow:hidden;flex-shrink:0;cursor:pointer;"></div>
-<span id="header-title-text">コツコツ✏️サクサク🌸</span>
-<div class="header-title-btns">
+<div class="niya-btn-wrap" style="position:relative;display:inline-flex;">
+<button id="niya-app-btn" onclick="niyaAppLaunch()" style="width:26px;height:26px;border-radius:50%;border:1.5px solid rgba(240,106,157,.5);background:rgba(240,106,157,.15);color:#f472b6;font-size:.95rem;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;line-height:1;transition:transform .15s,background .15s;">🥦</button>
+<div id="niya-app-bubble" style="position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%) scale(0);transform-origin:top center;background:#fff;border:2px solid #172033;border-radius:4px 12px 12px 12px;padding:5px 10px;font-size:11px;font-weight:800;color:#172033;white-space:nowrap;box-shadow:3px 3px 0 rgba(23,32,51,.1);pointer-events:none;z-index:200;transition:transform .25s cubic-bezier(.34,1.56,.64,1),opacity .2s;opacity:0;"></div>
+</div>
+</div>
+<span id="header-title-text" style="text-align:center;">コツコツ✏️サクサク🌸</span>
+<div class="header-title-btns" style="justify-content:flex-end;">
 <button class="cust-gear-btn" id="refresh-btn" onclick="checkAppUpdate()" title="更新">更新</button>
 <button class="cust-gear-btn" id="cust-gear-btn" onclick="openCustPanel()" title="設定">設定</button>
 </div>
@@ -1185,7 +1191,7 @@ function trackEvent(name, params) {
   if (!analytics || !name) return;
   try {
     analytics.logEvent(name, Object.assign({
-      app_version: 'kotsusaku-v91'
+      app_version: 'kotsusaku-v92'
     }, params || {}));
   } catch(e) {
     console.warn('Analytics送信エラー:', e);
@@ -1409,7 +1415,7 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
     const now = new Date().toISOString();
     const base = {
       userId: getAnonymousId(),
-      appVersion: 'kotsusaku-v91',
+      appVersion: 'kotsusaku-v92',
       lastAccess: now,
       firstAccess: getFirstAccess(),
       os: device.os,
@@ -6285,7 +6291,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v91'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v92'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
 
@@ -7802,5 +7808,155 @@ function _triggerCrazy10FinaleBtn(h,m,dateStr){
     bindSettingsButton();
   }
 })();
-</script></body>
+</script>
+
+<!-- ニヤニヤボタン演出 -->
+<style>
+#niya-app-btn:hover{background:rgba(240,106,157,.3)!important;transform:scale(1.12)!important;}
+#niya-app-btn:active{transform:scale(.88)!important;}
+#niya-app-bubble.show{transform:translateX(-50%) scale(1)!important;opacity:1!important;}
+@keyframes niyaAppRiseIcon{
+  0%{opacity:0;transform:translateY(0) rotate(0deg) translateX(0);}
+  8%{opacity:1;}
+  100%{opacity:0;transform:translateY(var(--rise,-80vh)) rotate(var(--spin,0deg)) translateX(var(--drift,0px));}
+}
+@keyframes niyaAppRiseText{
+  0%{opacity:0;transform:translateY(0) translateX(0);}
+  10%{opacity:1;}
+  70%{opacity:1;}
+  100%{opacity:0;transform:translateY(var(--rise,-50vh)) translateX(var(--drift,0px));}
+}
+.niya-app-icon{
+  position:fixed;bottom:-30px;pointer-events:none;z-index:9999;
+  font-size:var(--sz,20px);
+  animation:niyaAppRiseIcon var(--dur,2.4s) cubic-bezier(.2,.8,.4,1) forwards;
+}
+.niya-app-text{
+  position:fixed;bottom:-24px;pointer-events:none;z-index:9999;
+  font-weight:800;white-space:nowrap;
+  text-shadow:0 2px 8px rgba(0,0,0,.7);
+  animation:niyaAppRiseText var(--dur,4.0s) cubic-bezier(.15,.7,.35,1) forwards;
+}
+</style>
+<script>
+(function(){
+  /* ── ボタンアイコン（押すたびにローテーション） ── */
+  var BTN_ICONS = ['🥦','🦍','🌸','🥸'];
+  var btnIdx = 0;
+
+  /* ── 吹き出しコメント ── */
+  var BUBBLE_MSGS = [
+    'ニヤニヤ待て‼️','オイ🥸 コラ〜🦍','押せだっぺ🥸',
+    'やるじゃないゴリ🦍','なんだこれっぺ‼️','ぐへへ〜🥦',
+    'また押したゴリ🦍','ニヤニヤが止まらん！','満開ニヤニヤ🌸',
+    '押したな？😏','コツサクっぺ〜🥸','ウホウホ‼️🦍',
+  ];
+
+  /* ── アイコンセット ── */
+  var ICON_SETS = [
+    ['🥦','🥦','🥦','🥦','🥦','✨','🌱'],
+    ['🦍','🦍','🦍','🦍','🍌','💪','🦍'],
+    ['🌸','🌸','🌸','🌸','🌸','💮','🌺'],
+    ['🥸','🥸','🥸','🥸','😏','😎','🥸'],
+    ['🌸','🥦','🦍','🥸','✨','🏅','👑','💥'],
+  ];
+
+  /* ── 応援テキスト（寄り添い＋ニヤニヤ＋ユーモア） ── */
+  var CHEER_TEXTS = [
+    /* 寄り添い系 */
+    '今日もよく来たね🌸','1マス、えらい✏️','続いてる、それだけで十分🥦',
+    '軌跡、ちゃんと残ってる','来ただけで勝ち🌸','また会えたね😊',
+    'コツコツ、積み重なってる','昨日の自分を超えてる','今日も一緒にいるよ🥦',
+    'ここに来た、それが全部',
+    /* 応援系 */
+    'いいぞ！その調子！','続けてる、すごい！','諦めてない、かっこいい',
+    '軌跡が花になる🌸','伝説への道、着々と','開花まで、もう少し',
+    '1マスが1000時間になる','今日の10分が未来を作る',
+    /* ニヤニヤ系 */
+    'ニヤニヤ待て😏','気づいたら伝説になってた','ニヤニヤが止まらない',
+    'ニヤニヤ……え、もう一回？','そっとニヤニヤしてください',
+    /* ゴリラ・キャラ系 */
+    'ゴリゴリいくゴリ🦍','伝説ゴリへ、一歩一歩','ウホウホ！今日もゴリ！',
+    'コツコツっぺ〜！🥸','なんだこれっぺ‼️🥸','押せだっぺ🥸',
+    /* ワクワク・ドキドキ系 */
+    'ドキドキしてきた…🌸','ワクワクが止まらない✨','次のレベル、もう見えてる',
+    'バッジ、こっそり近づいてる🏅','何かが開花しそう🌸','伝説まで、あと少し👑',
+  ];
+
+  var CHEER_COLORS = ['#fde68a','#86efac','#f9a8d4','#93c5fd','#fca5a5','#c4b5fd','#6ee7b7','#fcd34d','#a5f3fc'];
+  var SIZES = [14,20,28,42], WEIGHTS = [3,4,2,1];
+
+  function randSize(){
+    var t=WEIGHTS.reduce(function(a,b){return a+b;},0),r=Math.random()*t;
+    for(var i=0;i<SIZES.length;i++){r-=WEIGHTS[i];if(r<=0)return SIZES[i];}
+    return SIZES[1];
+  }
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  function spawnIcon(emoji){
+    var el=document.createElement('div');
+    el.className='niya-app-icon';
+    el.textContent=emoji;
+    var sz=randSize(), dur=1.8+Math.random()*1.6;
+    var rise='-'+(65+Math.random()*40)+'vh';
+    var drift=(Math.random()-.5)*280+'px';
+    var spin=(Math.random()>.5?1:-1)*(60+Math.random()*240)+'deg';
+    el.style.cssText='left:'+Math.random()*100+'vw;--sz:'+sz+'px;--dur:'+dur+'s;--rise:'+rise+';--drift:'+drift+';--spin:'+spin;
+    document.body.appendChild(el);
+    setTimeout(function(){el.remove();},(dur+.3)*1000);
+  }
+
+  function spawnText(txt){
+    var el=document.createElement('div');
+    el.className='niya-app-text';
+    el.textContent=txt;
+    var dur=3.6+Math.random()*.8;
+    var rise='-'+(35+Math.random()*20)+'vh';
+    var drift=(Math.random()-.5)*120+'px';
+    var sz=13+Math.random()*5;
+    el.style.color=pick(CHEER_COLORS);
+    el.style.fontSize=sz+'px';
+    el.style.left=(10+Math.random()*80)+'vw';
+    el.style.setProperty('--dur',dur+'s');
+    el.style.setProperty('--rise',rise);
+    el.style.setProperty('--drift',drift);
+    document.body.appendChild(el);
+    setTimeout(function(){el.remove();},(dur+.3)*1000);
+  }
+
+  window.niyaAppLaunch = function(){
+    /* ① アイコンをローテーション */
+    btnIdx = (btnIdx+1) % BTN_ICONS.length;
+    var btn = document.getElementById('niya-app-btn');
+    if(btn) btn.textContent = BTN_ICONS[btnIdx];
+
+    /* ② 吹き出し */
+    var bub = document.getElementById('niya-app-bubble');
+    if(bub){
+      bub.textContent = pick(BUBBLE_MSGS);
+      bub.classList.add('show');
+      clearTimeout(bub._tid);
+      bub._tid = setTimeout(function(){bub.classList.remove('show');}, 2000);
+    }
+
+    /* ③ アイコン＋テキストを吹き上げる（アイコン約75%・テキスト約25%） */
+    var icons = pick(ICON_SETS);
+    var total = 20;
+    var textCount = 0, maxText = 4;
+    for(var i=0; i<total; i++){
+      (function(idx){
+        setTimeout(function(){
+          if(textCount < maxText && Math.random() < 0.28){
+            spawnText(pick(CHEER_TEXTS));
+            textCount++;
+          } else {
+            spawnIcon(pick(icons));
+          }
+        }, idx * 80);
+      })(i);
+    }
+  };
+})();
+</script>
+</body>
 </html>
