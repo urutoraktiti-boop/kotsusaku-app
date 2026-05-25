@@ -688,11 +688,45 @@
 <button class="sw-icon-btn" id="badge-open-btn" onclick="openBadgePanel()" title="バッジコレクション">🏅<span class="badge-count" id="badge-count" style="font-size:.55rem;vertical-align:super;"></span></button>
 </div>
 </div>
-<div class="sw-btns-main">
-<button class="sw-btn start" id="sw-start-btn">▶ スタート</button>
-<button class="sw-btn stop" id="sw-stop-btn" disabled>■ ストップ</button>
+<!-- ボタングリッド：スタート・ストップ・休憩5分・カスタム・リセット -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+  <!-- 左列：スタート ＋ 休憩エリア（ボタン／カウントダウンをトグル） -->
+  <div style="display:flex;flex-direction:column;gap:6px;">
+    <button class="sw-btn start" id="sw-start-btn">▶ スタート</button>
+    <!-- 通常時：2ボタン -->
+    <div id="break-btns-row" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+      <button class="sw-btn" id="break-5-btn" onclick="startBreakTimer(5)"
+        style="background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-size:.68rem;padding:4px 0;">☕ 5分</button>
+      <button class="sw-btn" id="break-custom-btn" onclick="startBreakTimerCustom()"
+        style="background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-size:.68rem;padding:4px 0;">☕✏️</button>
+    </div>
+    <!-- カウントダウン中：同じ領域にカウントダウン表示 -->
+    <div id="break-timer-status" style="display:none;background:var(--surface2);border:1px solid var(--accent);border-radius:8px;padding:3px 8px;align-items:center;gap:6px;">
+      <span style="font-size:.72rem;">☕</span>
+      <span id="break-timer-display" style="font-size:.82rem;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums;flex:1;"></span>
+      <span id="break-timer-label" style="font-size:.55rem;font-weight:700;color:var(--text-muted);white-space:nowrap;">残り</span>
+      <button id="break-timer-cancel" onclick="cancelBreakTimer()"
+        style="background:transparent;border:none;color:#f87171;font-size:.7rem;font-weight:700;cursor:pointer;padding:0 2px;line-height:1;">✕</button>
+    </div>
+  </div>
+  <!-- 右列：ストップ ＋ リセット -->
+  <div style="display:flex;flex-direction:column;gap:6px;">
+    <button class="sw-btn stop" id="sw-stop-btn" disabled>■ ストップ</button>
+    <button class="sw-btn reset" id="sw-reset-btn" title="リセット" style="font-size:.7rem;padding:4px 0;">↺ リセット</button>
+  </div>
 </div>
-<button class="sw-btn reset" id="sw-reset-btn" title="リセット">↺ リセット</button>
+<!-- iOS案内（iPhoneのみ表示） -->
+<div id="break-ios-guide" style="display:none;margin-top:6px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;">
+  <div style="font-size:.62rem;font-weight:700;color:var(--text-muted);margin-bottom:4px;">📱 iPhoneでの休憩タイマーの使い方</div>
+  <ol style="font-size:.6rem;color:var(--text-muted);line-height:1.9;padding-left:1.2em;">
+    <li>iPhoneの「時計」アプリを開く</li>
+    <li>下の「タイマー」をタップ</li>
+    <li>時間を設定して「開始」をタップ</li>
+    <li>このアプリに戻って勉強スタート🌸</li>
+  </ol>
+  <button onclick="document.getElementById('break-ios-guide').style.display='none'"
+    style="margin-top:6px;background:transparent;border:none;color:var(--text-muted);font-size:.6rem;cursor:pointer;padding:0;">閉じる ✕</button>
+</div>
 </div>
 </div>
 <div id="challenge-overlay" class="badge-overlay" onclick="if(event.target===this)toggleChallengePopup()">
@@ -3853,7 +3887,7 @@ $('import-file-input').addEventListener('change',function(){
       const exportDate=backup.exportedAt?new Date(backup.exportedAt).toLocaleString('ja-JP'):'不明';
       if(!confirm('バックアップ（'+exportDate+'）を復元します。\n現在のデータは上書きされます。よろしいですか？'))return;
       LS.set('study-data',JSON.stringify(backup.studyData));
-      LS.set('study-deletes',JSON.stringify(backup.studyDeletes||{}));
+      if(backup.studyDeletes)LS.set('study-deletes',JSON.stringify(backup.studyDeletes));
       if(backup.studyNotes)LS.set('study-notes',JSON.stringify(backup.studyNotes));
       if(backup.studyGoal)LS.set('study-goal',backup.studyGoal);
       if(backup.studyWeekGoal)LS.set('study-week-goal',backup.studyWeekGoal);
@@ -4487,6 +4521,10 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
     });
   }
   _swBind(startBtn,swStart);_swBind(stopBtn,swStop);_swBind(resetBtn,swReset);restoreSw();
+  // 休憩タイマーから呼べるようにグローバル公開
+  window._swStart = swStart;
+  window._swStop  = swStop;
+  window._swIsRunningGetter = ()=>swRunning;
 })();
 
 const STORY_DEF=[
@@ -6434,7 +6472,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
   function _initVersion(ver) {
     CURRENT_VERSION = ver;
     var badge = document.getElementById('ver-badge');
-    if (badge) badge.textContent = '(' + ver.replace('kotsusaku-','') + ')';
+    if (badge) badge.textContent = '(' + ver.replace('kotsusaku-','') + '・休憩ボタン実装)';
   }
 
   // バナーを1回だけ表示し、ボタンに単一のリスナーをセット
@@ -6485,7 +6523,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
       if (sessionStorage.getItem('_swJustUpdated') === '1') {
         sessionStorage.removeItem('_swJustUpdated');
         var badge = document.getElementById('ver-badge');
-        if (badge) badge.textContent = '(' + CURRENT_VERSION.replace('kotsusaku-','') + ')';
+        if (badge) badge.textContent = '(' + CURRENT_VERSION.replace('kotsusaku-','') + '・休憩ボタン実装)';
         return;
       }
     } catch(e){}
@@ -6496,7 +6534,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
         if (!latest) return;
         // ver-badgeはlatestで表示する
         var badge = document.getElementById('ver-badge');
-        if (badge) badge.textContent = '(' + latest.replace('kotsusaku-','') + ')';
+        if (badge) badge.textContent = '(' + latest.replace('kotsusaku-','') + '・休憩ボタン実装)';
         // CURRENT_VERSION（このファイルが持つバージョン）と比較して更新バナーを出す
         if (latest !== CURRENT_VERSION) {
           showUpdateBanner(latest, null);
@@ -6506,7 +6544,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
       .catch(function(){
         // オフライン時はフォールバック値のまま ver-badge を表示
         var badge = document.getElementById('ver-badge');
-        if (badge) badge.textContent = '(' + CURRENT_VERSION.replace('kotsusaku-','') + ')';
+        if (badge) badge.textContent = '(' + CURRENT_VERSION.replace('kotsusaku-','') + '・休憩ボタン実装)';
       });
   }
 
@@ -6594,6 +6632,414 @@ function checkStudyDateChanged() {
     }
   }
 }
+
+// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// ☕ 休憩タイマー v2
+// ── iOSは手順案内、Android/PCはアプリ内カウントダウン
+// ── タイマー開始時にSWを止め、OKで再開
+// ── ゼロ到達後も超過カウントアップを継続
+// ══════════════════════════════════════════════
+(function(){
+  let _breakInterval  = null;
+  let _breakEndTime   = 0;
+  let _overrunMode    = false;
+  let _overrunStart   = 0;
+  let _swWasRunning   = false; // 休憩前にSWが動いていたか
+  const LS_KEY        = 'kotsusaku-break-timer';
+
+  // iOS判定
+  function isIos(){
+    return /iP(hone|ad|od)/.test(navigator.userAgent) ||
+      (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+  }
+
+  // 秒→MM:SS
+  function fmtBreak(sec){
+    const s = Math.abs(Math.floor(sec));
+    return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+  }
+
+  function el(id){ return document.getElementById(id); }
+
+  // ── UI更新 ──────────────────────────────────
+  function updateBreakUI(remainSec){
+    const status  = el('break-timer-status');
+    const btnsRow = el('break-btns-row');
+    const disp    = el('break-timer-display');
+    const label   = el('break-timer-label');
+    if(!disp) return;
+
+    if(remainSec === null){
+      // 非表示（通常状態）
+      if(status)  status.style.display = 'none';
+      if(btnsRow) btnsRow.style.display = 'grid';
+      return;
+    }
+
+    if(btnsRow) btnsRow.style.display = 'none';
+    if(status)  status.style.display  = 'flex';
+
+    if(_overrunMode){
+      // 超過中：オレンジ
+      disp.textContent   = '+' + fmtBreak(remainSec);
+      disp.style.color   = '#f97316';
+      if(status){ status.style.borderColor='#f97316'; status.style.background='rgba(249,115,22,.08)'; }
+      if(label){ label.textContent='超過中'; label.style.color='#f97316'; }
+    } else {
+      // カウントダウン中：アクセントカラー
+      disp.textContent   = fmtBreak(remainSec);
+      disp.style.color   = 'var(--accent)';
+      if(status){ status.style.borderColor='var(--accent)'; status.style.background='var(--surface2)'; }
+      if(label){ label.textContent='残り'; label.style.color='var(--text-muted)'; }
+    }
+  }
+
+  // ── ストーリー別ポップアップ ──────────────
+  const STORY_POPUP = {
+    none: {
+      bg:'linear-gradient(160deg,#0f1117,#162013)', border:'var(--checked)',
+      chars:['🏃','✏️','🌸','📖'],
+      bubbles:{
+        '🏃':['さあ行くぞ！','再開！','走れ！','GO！'],
+        '✏️':['コツコツ！','書くぞ！','積み上げ！','10分！'],
+        '🌸':['咲いた！','サクサク！','また一輪🌸','開花！'],
+        '📖':['勉強！','また来た！','覚えるぞ！','知識は力！'],
+      },
+      bandBg:'linear-gradient(90deg,#3ecf8e,#86efac,#4ade80,#3ecf8e)',
+      title:'☕✨ 休憩終了！', titleColor:'var(--checked)',
+      bubbleMsg:'「よし、行くか！🌸」',
+      bubbleBg:'rgba(62,207,142,.12)', bubbleBorder:'rgba(62,207,142,.3)', bubbleColor:'#86efac',
+      msg:'しっかり休めましたか？<br>また一緒にコツコツ積み上げていきましょう！',
+      okLabel:'▶ 勉強を再開する', okBg:'var(--checked)', okColor:'#052e16',
+    },
+    itachacha: {
+      bg:'linear-gradient(160deg,#0d1f13,#1c3d25)', border:'#4ade80',
+      chars:['🥸','🥦','🥸','🥦','🥸','🥦','🥦','🦍'],
+      bubbles:{
+        '🥸':['コツコツっぺ〜！','なんだこれっぺ‼️','押せだっぺ🥸','ぺっぺっぺ〜！','止まれないっぺ！','10分っぺ〜！','ニヤニヤっぺ！','再開だっぺ！','サクサクっぺ！','どこ行くっぺ！','資格もっぺ！','ぺぺぺっぺ〜！'],
+        '🥦':['ニヤニヤ〜！','コツコツ〜！','うおおお！','また来たぞ！','軌跡残すぜ！','今日も10分！','ぐへへ〜！','満開ニヤニヤ！','ぶろっこりー！','再開！','10分！','開花間近〜！'],
+        '🦍':['ウホウホ！','伝説ゴリへ！','ゴリゴリいくゴリ！','ウホ！ウホ！'],
+      },
+      bandBg:'linear-gradient(90deg,#16a34a,#4ade80,#86efac,#16a34a)',
+      title:'🥦 休憩終了！', titleColor:'#4ade80',
+      bubbleMsg:'「コツコツっぺ〜！また一緒に頑張るっぺ🥦」',
+      bubbleBg:'rgba(74,222,128,.1)', bubbleBorder:'rgba(74,222,128,.35)', bubbleColor:'#86efac',
+      msg:'ブロッコリーもちゃんと待ってたよ。<br>さあ、また10分を積み上げていこう！',
+      okLabel:'🥦 よし、やるっぺ！', okBg:'#16a34a', okColor:'#fff',
+    },
+    spartan: {
+      bg:'linear-gradient(160deg,#1a0a00,#2d1500)', border:'#f97316',
+      chars:['🐉','🔥','⚔️','💪'],
+      bubbles:{
+        '🐉':['かかってこい！','休憩終わりだ！','根性見せろ！','もっとだ！'],
+        '🔥':['燃えろ！','熱くなれ！','炎のように！','全力で！'],
+        '⚔️':['斬れ！','一刀！','切り開け！','勝利をつかめ！'],
+        '💪':['力を出せ！','もっと強く！','諦めるな！','全力だ！'],
+      },
+      bandBg:'linear-gradient(90deg,#c2410c,#f97316,#fdba74,#c2410c)',
+      title:'🐉 休憩終了！', titleColor:'#f97316',
+      bubbleMsg:'「甘えるな！さっさと戻ってこい💪🔥」',
+      bubbleBg:'rgba(249,115,22,.1)', bubbleBorder:'rgba(249,115,22,.35)', bubbleColor:'#fdba74',
+      msg:'教官はずっと見ていた。<br>休んだ分、全部勉強で返せ！',
+      okLabel:'🐉 はい！教官！', okBg:'linear-gradient(90deg,#ea580c,#f97316)', okColor:'#fff',
+    },
+    gorilla: {
+      bg:'linear-gradient(160deg,#130a1a,#21133a)', border:'#a78bfa',
+      chars:['🦍','💪','🍌','🏆'],
+      bubbles:{
+        '🦍':['ウホウホ！','伝説ゴリへ！','ゴリゴリいくゴリ！','ウホ！ウホ！'],
+        '💪':['筋肉！','強くなるゴリ！','ゴリ力！','パワー！'],
+        '🍌':['バナナ食べたゴリ！','エネルギー！','充電完了ゴリ！','うまいゴリ！'],
+        '🏆':['伝説ゴリ！','頂点へ！','ゴリ道まっしぐら！','優勝ゴリ！'],
+      },
+      bandBg:'linear-gradient(90deg,#7c3aed,#a78bfa,#c4b5fd,#7c3aed)',
+      title:'🦍 休憩終了！', titleColor:'#a78bfa',
+      bubbleMsg:'「ウホウホ！伝説ゴリへ、一歩一歩ゴリ🦍💪」',
+      bubbleBg:'rgba(167,139,250,.1)', bubbleBorder:'rgba(167,139,250,.35)', bubbleColor:'#c4b5fd',
+      msg:'休んだらゴリゴリ充電完了！<br>また一緒に積み上げていくゴリ！',
+      okLabel:'🦍 ゴリゴリ行く！', okBg:'linear-gradient(90deg,#7c3aed,#a78bfa)', okColor:'#fff',
+    },
+    samurai: {
+      bg:'linear-gradient(160deg,#1a0a0a,#2d0f0f)', border:'#f87171',
+      chars:['🥷','⚔️','🌸','🏯'],
+      bubbles:{
+        '🥷':['参る！','いざ！','静かに、されど速く！','集中！'],
+        '⚔️':['一刀両断！','斬！','刃を研げ！','切り開け！'],
+        '🌸':['散り際美しく','凛と咲く','侍の花','今が潮時'],
+        '🏯':['城を守れ！','帰城！','本丸へ！','出陣！'],
+      },
+      bandBg:'linear-gradient(90deg,#b91c1c,#f87171,#fca5a5,#b91c1c)',
+      title:'⚔️ 休憩終了！', titleColor:'#f87171',
+      bubbleMsg:'「刃を研いだか？さあ、再び学びの場へ🥷」',
+      bubbleBg:'rgba(248,113,113,.1)', bubbleBorder:'rgba(248,113,113,.35)', bubbleColor:'#fca5a5',
+      msg:'侍は休みながらも、心は磨き続ける。<br>今こそ、その剣を試す時だ。',
+      okLabel:'⚔️ 参る！', okBg:'linear-gradient(90deg,#dc2626,#f87171)', okColor:'#fff',
+    },
+    space: {
+      bg:'linear-gradient(160deg,#071e3d,#0d2b54)', border:'#38bdf8',
+      chars:['🚀','⭐','🌌','🛸'],
+      bubbles:{
+        '🚀':['発進！','エンジン全開！','次の星へ！','GO GO GO！'],
+        '⭐':['星を目指せ！','輝け！','もっと遠くへ！','満天の星！'],
+        '🌌':['宇宙は広い！','冒険だ！','未知の領域へ！','探検開始！'],
+        '🛸':['宇宙人来た！','UFO！','未確認だ！','コンタクト！'],
+      },
+      bandBg:'linear-gradient(90deg,#0369a1,#38bdf8,#7dd3fc,#0369a1)',
+      title:'🚀 休憩終了！', titleColor:'#38bdf8',
+      bubbleMsg:'「エンジン再点火！次の星を目指して発進🚀⭐」',
+      bubbleBg:'rgba(56,189,248,.1)', bubbleBorder:'rgba(56,189,248,.35)', bubbleColor:'#7dd3fc',
+      msg:'宇宙では休憩も必要だ。<br>でも今は、また旅を続ける時間だよ。',
+      okLabel:'🚀 発進！', okBg:'linear-gradient(90deg,#0369a1,#38bdf8)', okColor:'#fff',
+    },
+  };
+
+  // 現在のストーリーIDを取得
+  function getCurrentStoryId(){
+    try{
+      const cust = JSON.parse(localStorage.getItem('study-cust')||'{}');
+      const id = cust.storyId || 'none';
+      return STORY_POPUP[id] ? id : 'none';
+    }catch(e){ return 'none'; }
+  }
+
+  // ランナー帯を初期化（JSアニメ）
+  let _runnerRaf = null, _runnerInterval = null;
+  function initRunnerBand(band, storyId){
+    if(!band) return;
+    band.querySelectorAll('.brk-runner-char,.brk-runner-bubble').forEach(e=>e.remove());
+    const d = STORY_POPUP[storyId] || STORY_POPUP.none;
+    band.style.background = d.bandBg;
+    band.style.backgroundSize = '400% 100%';
+    band.style.animation = 'brkBandShift 8s ease infinite';
+    const bw = band.offsetWidth || 300;
+    const baseSpeed = 110;
+    const runners = d.chars.map((emoji,i)=>{
+      const el2 = document.createElement('div');
+      el2.className = 'brk-runner-char';
+      el2.textContent = emoji;
+      const sz = 1.3 + Math.random() * 1.1;
+      el2.style.cssText = 'position:absolute;top:50%;transform:translateY(-50%);font-size:'+sz+'rem;white-space:nowrap;filter:drop-shadow(1px 1px 0 rgba(255,255,255,.4));will-change:transform,left;z-index:2;';
+      el2.style.animation = 'brkRunBounce .28s ease-in-out infinite alternate';
+      band.appendChild(el2);
+      return { el:el2, emoji, x:bw+60+i*90, speed:baseSpeed*(0.6+Math.random()*0.9) };
+    });
+    function frame(){
+      const bw2 = band.offsetWidth||300;
+      runners.forEach(r=>{
+        r.x -= r.speed/60;
+        if(r.x < -80){ r.x=bw2+60+Math.random()*80; r.speed=baseSpeed*(0.6+Math.random()*0.9); }
+        r.el.style.left = r.x+'px';
+      });
+      _runnerRaf = requestAnimationFrame(frame);
+    }
+    _runnerRaf = requestAnimationFrame(frame);
+    _runnerInterval = setInterval(()=>{
+      const r = runners[Math.floor(Math.random()*runners.length)];
+      const bw2 = band.offsetWidth||300;
+      if(r.x<20||r.x>bw2-20) return;
+      const txts = d.bubbles[r.emoji]||['！'];
+      const txt = txts[Math.floor(Math.random()*txts.length)];
+      const bub = document.createElement('div');
+      bub.className = 'brk-runner-bubble';
+      bub.textContent = txt;
+      bub.style.cssText = 'position:absolute;background:#fff;border:2px solid rgba(0,0,0,.12);border-radius:11px 11px 11px 3px;padding:3px 8px;font-size:.58rem;font-weight:800;color:#1a202c;white-space:nowrap;pointer-events:none;z-index:10;box-shadow:2px 2px 0 rgba(0,0,0,.07);animation:brkBubblePop .25s cubic-bezier(.34,1.56,.64,1) both;top:4px;left:'+Math.max(4,Math.min(r.x-10,bw2-130))+'px';
+      band.appendChild(bub);
+      r.el.style.animation = 'brkRunJump .5s cubic-bezier(.4,0,.2,1) forwards';
+      setTimeout(()=>{ r.el.style.animation='brkRunBounce .28s ease-in-out infinite alternate'; },520);
+      setTimeout(()=>bub.remove(),1400);
+    },900);
+  }
+  function stopRunnerBand(band){
+    if(_runnerRaf){ cancelAnimationFrame(_runnerRaf); _runnerRaf=null; }
+    if(_runnerInterval){ clearInterval(_runnerInterval); _runnerInterval=null; }
+    if(band) band.querySelectorAll('.brk-runner-char,.brk-runner-bubble').forEach(e=>e.remove());
+  }
+
+  // ── ポップアップ表示 ──────────────────────
+  function showBreakEndPopup(){
+    const storyId = getCurrentStoryId();
+    const d = STORY_POPUP[storyId] || STORY_POPUP.none;
+    let popup = document.getElementById('break-end-popup');
+    if(!popup){
+      popup = document.createElement('div');
+      popup.id = 'break-end-popup';
+      popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translateX(-50%) translateY(-50%);width:min(340px,92vw);border-radius:18px;overflow:hidden;z-index:19999;box-shadow:0 12px 48px rgba(0,0,0,.55);display:none;animation:brkPopIn .35s cubic-bezier(.34,1.56,.64,1) both;';
+      document.body.appendChild(popup);
+    }
+    popup.style.background = d.bg;
+    popup.style.border = '2px solid '+d.border;
+    popup.style.display = 'block';
+    popup.innerHTML =
+      '<div id="break-end-band" style="position:relative;overflow:hidden;height:60px;border-top:1px solid rgba(255,255,255,.2);border-bottom:1px solid rgba(255,255,255,.2);"></div>'
+      +'<div style="padding:14px 18px 0;">'
+      +'<div style="font-size:.98rem;font-weight:800;color:'+d.titleColor+';margin-bottom:6px;">'+d.title+'</div>'
+      +'<div style="display:inline-block;background:'+d.bubbleBg+';border:1px solid '+d.bubbleBorder+';border-radius:12px 12px 12px 2px;padding:7px 13px;font-size:.72rem;font-weight:700;color:'+d.bubbleColor+';line-height:1.6;margin-bottom:10px;">'+d.bubbleMsg+'</div>'
+      +'<div style="font-size:.7rem;color:var(--text-muted);line-height:1.75;margin-bottom:14px;">'+d.msg+'</div>'
+      +'<button id="break-end-ok" style="width:100%;border:none;padding:12px;font-size:.84rem;font-weight:800;cursor:pointer;background:'+d.okBg+';color:'+d.okColor+';letter-spacing:.03em;">'+d.okLabel+'</button>'
+      +'</div>';
+    const band = document.getElementById('break-end-band');
+    stopRunnerBand(band);
+    initRunnerBand(band, storyId);
+    document.getElementById('break-end-ok').onclick = onPopupOk;
+  }
+
+  function hideBreakEndPopup(){
+    const popup = document.getElementById('break-end-popup');
+    if(popup) popup.style.display = 'none';
+    const band = document.getElementById('break-end-band');
+    stopRunnerBand(band);
+  }
+
+  // ポップアップOK押下
+  function onPopupOk(){
+    hideBreakEndPopup();
+    // 超過表示をリセット・ボタンを戻す
+    clearInterval(_breakInterval); _breakInterval = null;
+    _overrunMode = false; _overrunStart = 0; _breakEndTime = 0;
+    localStorage.removeItem(LS_KEY);
+    updateBreakUI(null);
+    // SWが動いていたなら再開
+    if(_swWasRunning && typeof window._swStart === 'function'){
+      window._swStart();
+    }
+    _swWasRunning = false;
+  }
+
+  // ── タイマー終了処理 ──────────────────────
+  function onBreakZero(){
+    _overrunMode  = true;
+    _overrunStart = Date.now();
+    // 音で通知
+    try{
+      const ctx = new (window.AudioContext||window.webkitAudioContext)();
+      [0,0.25,0.5].forEach(delay=>{
+        const osc=ctx.createOscillator(), gain=ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value=880; osc.type='sine';
+        gain.gain.setValueAtTime(0.3,ctx.currentTime+delay);
+        gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+delay+0.4);
+        osc.start(ctx.currentTime+delay); osc.stop(ctx.currentTime+delay+0.4);
+      });
+    }catch(e){}
+    showBreakEndPopup();
+  }
+
+  // ── UI更新ループ ──────────────────────────
+  function updateBreakUI(remainSec){
+    const status  = el('break-timer-status');
+    const btnsRow = el('break-btns-row');
+    const disp    = el('break-timer-display');
+    const label   = el('break-timer-label');
+    if(!disp) return;
+    if(remainSec === null){
+      if(status)  status.style.display='none';
+      if(btnsRow) btnsRow.style.display='grid';
+      return;
+    }
+    if(btnsRow) btnsRow.style.display='none';
+    if(status)  status.style.display='flex';
+    if(_overrunMode){
+      disp.textContent='+'+fmtBreak(remainSec);
+      disp.style.color='#f97316';
+      if(status){status.style.borderColor='#f97316';status.style.background='rgba(249,115,22,.08)';}
+      if(label){label.textContent='超過中';label.style.color='#f97316';}
+    } else {
+      disp.textContent=fmtBreak(remainSec);
+      disp.style.color='var(--accent)';
+      if(status){status.style.borderColor='var(--accent)';status.style.background='var(--surface2)';}
+      if(label){label.textContent='残り';label.style.color='var(--text-muted)';}
+    }
+  }
+
+  // ── アプリ内タイマー開始 ─────────────────
+  function startInAppTimer(minutes){
+    // SWの状態を記憶してから止める
+    _swWasRunning = (typeof window._swIsRunningGetter==='function') ? window._swIsRunningGetter() : false;
+    if(_swWasRunning && typeof window._swStop==='function') window._swStop();
+    clearInterval(_breakInterval);
+    _overrunMode = false; _overrunStart = 0;
+    _breakEndTime = Date.now() + minutes*60*1000;
+    localStorage.setItem(LS_KEY, String(_breakEndTime));
+    let _zeroFired = false;
+    _breakInterval = setInterval(()=>{
+      const rem = Math.ceil((_breakEndTime - Date.now())/1000);
+      if(rem <= 0){
+        if(!_zeroFired){ _zeroFired=true; onBreakZero(); }
+        const over = Math.floor((Date.now()-_overrunStart)/1000);
+        updateBreakUI(over);
+      } else {
+        updateBreakUI(rem);
+      }
+    },200);
+    updateBreakUI(minutes*60);
+  }
+
+  // ── 復帰時にタイマー状態を復元 ────────────
+  function restoreBreakTimer(){
+    const saved = parseInt(localStorage.getItem(LS_KEY)||'0',10);
+    if(!saved) return;
+    const rem = Math.ceil((saved-Date.now())/1000);
+    _breakEndTime = saved;
+    let _zeroFired = false;
+    if(rem <= 0){
+      // すでに終了時刻を過ぎていた→即超過モードで表示＋ポップアップ
+      localStorage.removeItem(LS_KEY);
+      _overrunMode = true;
+      _overrunStart = saved; // 終了予定時刻からカウント
+      onBreakZero();
+      _breakInterval = setInterval(()=>{
+        const over = Math.floor((Date.now()-_overrunStart)/1000);
+        updateBreakUI(over);
+      },200);
+    } else {
+      _overrunMode = false;
+      _breakInterval = setInterval(()=>{
+        const r = Math.ceil((_breakEndTime-Date.now())/1000);
+        if(r <= 0){
+          if(!_zeroFired){ _zeroFired=true; onBreakZero(); }
+          const over = Math.floor((Date.now()-_overrunStart)/1000);
+          updateBreakUI(over);
+        } else { updateBreakUI(r); }
+      },200);
+      updateBreakUI(rem);
+    }
+  }
+
+  // iOS：手順案内パネルをトグル
+  function showIosGuide(){
+    const guide = el('break-ios-guide');
+    if(!guide) return;
+    guide.style.display = (guide.style.display==='block') ? 'none' : 'block';
+  }
+
+  // ── 公開関数 ─────────────────────────────
+  window.startBreakTimer = function(minutes){
+    if(isIos()){ showIosGuide(); } else { startInAppTimer(minutes); }
+  };
+  window.startBreakTimerCustom = function(){
+    if(isIos()){ showIosGuide(); return; }
+    const input = prompt('休憩時間を分で入力してください（1〜60）','5');
+    if(input===null) return;
+    const m = parseInt(input,10);
+    if(isNaN(m)||m<1||m>60){ alert('1〜60の数字を入力してください'); return; }
+    startInAppTimer(m);
+  };
+  window.cancelBreakTimer = function(){
+    clearInterval(_breakInterval); _breakInterval=null;
+    _overrunMode=false; _overrunStart=0; _breakEndTime=0;
+    localStorage.removeItem(LS_KEY);
+    updateBreakUI(null);
+    hideBreakEndPopup();
+    _swWasRunning=false;
+  };
+
+  restoreBreakTimer();
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&!_breakInterval) restoreBreakTimer(); });
+  window.addEventListener('focus',()=>{ if(!_breakInterval) restoreBreakTimer(); });
+
+})();
 
 // 30秒ごとに確認
 setInterval(checkStudyDateChanged, 30000);
@@ -7974,6 +8420,12 @@ function _triggerCrazy10FinaleBtn(h,m,dateStr){
   text-shadow:0 2px 8px rgba(0,0,0,.7);
   animation:niyaAppRiseText var(--dur,4.0s) cubic-bezier(.15,.7,.35,1) forwards;
 }
+/* ── 休憩タイマー ポップアップ・ランナー帯 アニメ ── */
+@keyframes brkPopIn{from{transform:translateX(-50%) translateY(-50%) scale(.85);opacity:0}to{transform:translateX(-50%) translateY(-50%) scale(1);opacity:1}}
+@keyframes brkBandShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes brkRunBounce{from{transform:translateY(-50%) scaleY(1) rotate(-5deg);}to{transform:translateY(calc(-50% + 6px)) scaleY(.85) rotate(5deg);}}
+@keyframes brkRunJump{0%{transform:translateY(-50%);}40%{transform:translateY(calc(-50% - 22px)) rotate(-12deg);}100%{transform:translateY(-50%);}}
+@keyframes brkBubblePop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
 </style>
 <script>
 (function(){
