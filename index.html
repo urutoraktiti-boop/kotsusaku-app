@@ -207,7 +207,7 @@
 <div style="font-size:2.2rem;line-height:1;margin-bottom:10px;">🥸</div>
 <div style="font-size:1.05rem;font-weight:800;color:#fde8f7;margin-bottom:4px;">ニヤ🥸ボタン 実装!!</div>
 <div id="update-version-text" style="font-size:.82rem;font-weight:700;color:#fde8f7;margin-bottom:10px;">アプリやホームページから見つけてね。</div>
-<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">押すとニヤニヤするっぺ🥸<br>見つけたらぜひ押してみてね！</div>
+<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">☕ 休憩ボタン出現<br>🌸 ストーリー別の激励</div>
 <div id="update-data-note" style="font-size:.66rem;color:#fca5a5;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.22);border-radius:8px;padding:7px 10px;margin-bottom:12px;line-height:1.65;text-align:left;">※キャッシュ・サイトデータを削除すると、端末内の記録が消える場合があります。</div>
 <button id="update-reload-btn" style="display:block;width:100%;background:#f472b6;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:800;cursor:pointer;margin-bottom:12px;letter-spacing:.03em;">
 ✅ 今すぐ更新する
@@ -6460,7 +6460,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
   function _initVersion(ver) {
     CURRENT_VERSION = ver;
     var badge = document.getElementById('ver-badge');
-    if (badge) badge.textContent = '(' + ver.replace('kotsusaku-','') + '・休憩ボタン実装)';
+    if (badge) badge.textContent = '(' + ver.replace('kotsusaku-','') + ')';
   }
 
   // バナーを1回だけ表示し、ボタンに単一のリスナーをセット
@@ -6473,6 +6473,9 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
     if (!banner) return;
     var vtxt = document.getElementById('update-version-text');
     if (vtxt) vtxt.textContent = '設定画面からご確認できます。';
+    // リリースノートをv93用に設定
+    var rnotes = document.getElementById('update-release-notes');
+    if (rnotes) rnotes.innerHTML = '☕ 休憩ボタン出現<br>🌸 ストーリー別の激励';
     banner.style.display = 'flex';
 
     var btn = document.getElementById('update-reload-btn');
@@ -6511,7 +6514,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
       if (sessionStorage.getItem('_swJustUpdated') === '1') {
         sessionStorage.removeItem('_swJustUpdated');
         var badge = document.getElementById('ver-badge');
-        if (badge) badge.textContent = '(' + CURRENT_VERSION.replace('kotsusaku-','') + '・休憩ボタン実装)';
+        if (badge) badge.textContent = '(' + CURRENT_VERSION.replace('kotsusaku-','') + ')';
         return;
       }
     } catch(e){}
@@ -6522,7 +6525,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
         if (!latest) return;
         // ver-badgeはlatestで表示する
         var badge = document.getElementById('ver-badge');
-        if (badge) badge.textContent = '(' + latest.replace('kotsusaku-','') + '・休憩ボタン実装)';
+        if (badge) badge.textContent = '(' + latest.replace('kotsusaku-','') + ')';
         // CURRENT_VERSION（このファイルが持つバージョン）と比較して更新バナーを出す
         if (latest !== CURRENT_VERSION) {
           showUpdateBanner(latest, null);
@@ -6532,7 +6535,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
       .catch(function(){
         // オフライン時はフォールバック値のまま ver-badge を表示
         var badge = document.getElementById('ver-badge');
-        if (badge) badge.textContent = '(' + CURRENT_VERSION.replace('kotsusaku-','') + '・休憩ボタン実装)';
+        if (badge) badge.textContent = '(' + CURRENT_VERSION.replace('kotsusaku-','') + ')';
       });
   }
 
