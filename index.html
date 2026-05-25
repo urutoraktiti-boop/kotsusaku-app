@@ -207,7 +207,7 @@
 <div style="font-size:2.2rem;line-height:1;margin-bottom:10px;">🥸</div>
 <div style="font-size:1.05rem;font-weight:800;color:#fde8f7;margin-bottom:4px;">ニヤ🥸ボタン 実装!!</div>
 <div id="update-version-text" style="font-size:.82rem;font-weight:700;color:#fde8f7;margin-bottom:10px;">アプリやホームページから見つけてね。</div>
-<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">☕ 休憩ボタン出現<br>🌸 ストーリー別の激励</div>
+<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">☕ 休憩モーダル（ストーリー連動）<br>🥦 プリセット5・10・30・60分</div>
 <div id="update-data-note" style="font-size:.66rem;color:#fca5a5;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.22);border-radius:8px;padding:7px 10px;margin-bottom:12px;line-height:1.65;text-align:left;">※キャッシュ・サイトデータを削除すると、端末内の記録が消える場合があります。</div>
 <button id="update-reload-btn" style="display:block;width:100%;background:#f472b6;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:800;cursor:pointer;margin-bottom:12px;letter-spacing:.03em;">
 ✅ 今すぐ更新する
@@ -688,17 +688,15 @@
 <button class="sw-icon-btn" id="badge-open-btn" onclick="openBadgePanel()" title="バッジコレクション">🏅<span class="badge-count" id="badge-count" style="font-size:.55rem;vertical-align:super;"></span></button>
 </div>
 </div>
-<!-- ボタングリッド：スタート・ストップ・休憩5分・カスタム・リセット -->
+<!-- ボタングリッド：スタート・ストップ・休憩・リセット -->
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
   <!-- 左列：スタート ＋ 休憩エリア（ボタン／カウントダウンをトグル） -->
   <div style="display:flex;flex-direction:column;gap:6px;">
     <button class="sw-btn start" id="sw-start-btn">▶ スタート</button>
-    <!-- 通常時：2ボタン -->
-    <div id="break-btns-row" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-      <button class="sw-btn" id="break-5-btn" onclick="startBreakTimer(5)"
-        style="background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-size:.68rem;padding:4px 0;">☕ 5分</button>
-      <button class="sw-btn" id="break-custom-btn" onclick="startBreakTimerCustom()"
-        style="background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-size:.68rem;padding:4px 0;">☕✏️</button>
+    <!-- 通常時：休憩ボタン1つ -->
+    <div id="break-btns-row">
+      <button class="sw-btn" id="break-main-btn" onclick="openBreakModal()"
+        style="background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-size:.75rem;padding:6px 0;width:100%;transition:background .15s,border-color .15s,color .15s;">☕ 休憩</button>
     </div>
     <!-- カウントダウン中：同じ領域にカウントダウン表示 -->
     <div id="break-timer-status" style="display:none;background:var(--surface2);border:1px solid var(--accent);border-radius:8px;padding:3px 8px;align-items:center;gap:6px;">
@@ -1213,7 +1211,7 @@ function trackEvent(name, params) {
   if (!analytics || !name) return;
   try {
     analytics.logEvent(name, Object.assign({
-      app_version: 'kotsusaku-v93'
+      app_version: 'kotsusaku-v94'
     }, params || {}));
   } catch(e) {
     console.warn('Analytics送信エラー:', e);
@@ -1437,7 +1435,7 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
     const now = new Date().toISOString();
     const base = {
       userId: getAnonymousId(),
-      appVersion: 'kotsusaku-v93',
+      appVersion: 'kotsusaku-v94',
       lastAccess: now,
       firstAccess: getFirstAccess(),
       os: device.os,
@@ -5554,6 +5552,24 @@ function updateStoryMainCard(){
   const loopBadge=$('story-loop-badge'),loopCounter=$('story-loop-counter');
   if(!charEl||!titleEl||!msgEl)return;
   const s=getActiveStory();
+  // ── 休憩ボタン外観をストーリーに連動 ──
+  const brkBtn=$('break-main-btn');
+  if(brkBtn){
+    const _BRK_BTN={
+      none:     {bg:'var(--surface2)',border:'var(--border)',color:'var(--text-muted)',text:'☕ 休憩'},
+      itachacha:{bg:'rgba(74,222,128,.12)',border:'#4ade80',color:'#4ade80',text:'🥦 ニヤニヤ休憩'},
+      spartan:  {bg:'rgba(249,115,22,.12)',border:'#f97316',color:'#f97316',text:'🔥 休憩（命令）'},
+      gorilla:  {bg:'rgba(167,139,250,.12)',border:'#a78bfa',color:'#a78bfa',text:'🦍 ゴリ休憩'},
+      samurai:  {bg:'rgba(248,113,113,.12)',border:'#f87171',color:'#f87171',text:'⚔️ 休息'},
+      space:    {bg:'rgba(56,189,248,.12)',border:'#38bdf8',color:'#38bdf8',text:'🚀 休憩（補給）'},
+    };
+    const sid=CUST&&CUST.storyId||'none';
+    const bd=_BRK_BTN[sid]||_BRK_BTN.none;
+    brkBtn.style.background=bd.bg;
+    brkBtn.style.border='1px solid '+bd.border;
+    brkBtn.style.color=bd.color;
+    brkBtn.textContent=bd.text;
+  }
   if(!s){
     charEl.textContent='📖';
     titleEl.textContent='ストーリーなし';
@@ -6452,7 +6468,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v93'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v94'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
 
@@ -6475,7 +6491,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
     if (vtxt) vtxt.textContent = '設定画面からご確認できます。';
     // リリースノートをv93用に設定
     var rnotes = document.getElementById('update-release-notes');
-    if (rnotes) rnotes.innerHTML = '☕ 休憩ボタン出現<br>🌸 ストーリー別の激励';
+    if (rnotes) rnotes.innerHTML = '☕ 休憩モーダル（ストーリー連動）<br>🥦 プリセット5・10・30・60分';
     banner.style.display = 'flex';
 
     var btn = document.getElementById('update-reload-btn');
@@ -6665,7 +6681,7 @@ function checkStudyDateChanged() {
     if(remainSec === null){
       // 非表示（通常状態）
       if(status)  status.style.display = 'none';
-      if(btnsRow) btnsRow.style.display = 'grid';
+      if(btnsRow) btnsRow.style.display = 'block';
       return;
     }
 
@@ -7012,13 +7028,238 @@ function checkStudyDateChanged() {
   window.startBreakTimer = function(minutes){
     startInAppTimer(minutes);
   };
-  window.startBreakTimerCustom = function(){
-    const input = prompt('休憩時間を分で入力してください（1〜60）','5');
-    if(input===null) return;
-    const m = parseInt(input,10);
-    if(isNaN(m)||m<1||m>60){ alert('1〜60の数字を入力してください'); return; }
-    startInAppTimer(m);
+  // ── 休憩モーダル開閉（window公開） ──────────
+  window.openBreakModal = function(){
+    // ストーリー取得
+    let storyId='none';
+    try{ const c=JSON.parse(localStorage.getItem('study-cust')||'{}'); storyId=c.storyId||'none'; }catch(e){}
+    const BSTORY={
+      none:{
+        btnBg:'var(--surface2)',btnBorder:'var(--border)',btnColor:'var(--text-muted)',btnText:'☕ 休憩',
+        title:'☕ 休憩時間を設定',desc:'プリセットを選ぶか、分数を直接入力',
+        presets:[{icon:'☕',min:5,lbl:'短い休憩'},{icon:'📖',min:10,lbl:'軽い息抜き'},{icon:'🌸',min:30,lbl:'がっつり休憩'},{icon:'✏️',min:60,lbl:'超長休憩'}],
+        customLbl:'カスタム',okText:'☕ 休憩スタート！',okBg:'var(--accent)',
+      },
+      itachacha:{
+        btnBg:'rgba(74,222,128,.12)',btnBorder:'#4ade80',btnColor:'#4ade80',btnText:'🥦 ニヤニヤ休憩',
+        title:'🥦 ニヤニヤ時間を設定',desc:'ニヤニヤしながら分数を選ぶっぺ！',
+        presets:[{icon:'🥦',min:5,lbl:'ニヤニヤ5分'},{icon:'🥸',min:10,lbl:'ぺっぺ10分'},{icon:'🦍',min:30,lbl:'ゴリニヤ30分'},{icon:'🌸',min:60,lbl:'満開60分'}],
+        customLbl:'カスタムっぺ',okText:'☕ニヤ🥸スタート!!',okBg:'#16a34a',
+      },
+      spartan:{
+        btnBg:'rgba(249,115,22,.12)',btnBorder:'#f97316',btnColor:'#f97316',btnText:'🔥 休憩（命令）',
+        title:'🐉 休憩時間を設定せよ',desc:'休憩も訓練のうちだ。時間を選べ！',
+        presets:[{icon:'⚡',min:5,lbl:'短期休憩'},{icon:'🔥',min:10,lbl:'標準休憩'},{icon:'⚔️',min:30,lbl:'長期休憩'},{icon:'🐉',min:60,lbl:'完全休息'}],
+        customLbl:'指定時間',okText:'🐉 休憩開始！かかれ！',okBg:'#ea580c',
+      },
+      gorilla:{
+        btnBg:'rgba(167,139,250,.12)',btnBorder:'#a78bfa',btnColor:'#a78bfa',btnText:'🦍 ゴリ休憩',
+        title:'🦍 ゴリゴリ休憩を設定',desc:'ゴリラも休む。ウホ、分数を選べ！',
+        presets:[{icon:'🍌',min:5,lbl:'バナナ1本'},{icon:'💪',min:10,lbl:'筋肉補充'},{icon:'🦍',min:30,lbl:'ゴリ昼寝'},{icon:'🏆',min:60,lbl:'王者の休息'}],
+        customLbl:'ウホ指定',okText:'🦍 ゴリゴリ休憩！ウホ！',okBg:'#7c3aed',
+      },
+      samurai:{
+        btnBg:'rgba(248,113,113,.12)',btnBorder:'#f87171',btnColor:'#f87171',btnText:'⚔️ 休息',
+        title:'⚔️ 休息の間を設定',desc:'刃を休める時間を定めよ',
+        presets:[{icon:'🌸',min:5,lbl:'一息'},{icon:'🥷',min:10,lbl:'瞑想'},{icon:'⚔️',min:30,lbl:'鋭気養成'},{icon:'🏯',min:60,lbl:'城で休息'}],
+        customLbl:'時間を定める',okText:'⚔️ 参る！休息開始！',okBg:'#dc2626',
+      },
+      space:{
+        btnBg:'rgba(56,189,248,.12)',btnBorder:'#38bdf8',btnColor:'#38bdf8',btnText:'🚀 休憩（補給）',
+        title:'🚀 補給時間を設定',desc:'宇宙では休憩も任務のうちだ',
+        presets:[{icon:'⭐',min:5,lbl:'軌道修正'},{icon:'🌌',min:10,lbl:'星間飛行'},{icon:'🛸',min:30,lbl:'エネルギー補給'},{icon:'🚀',min:60,lbl:'完全休止'}],
+        customLbl:'時間を設定',okText:'🚀 発進！補給完了！',okBg:'#0284c7',
+      },
+    };
+    const s=BSTORY[storyId]||BSTORY.none;
+
+    // 既存モーダルがあれば削除
+    const existing=document.getElementById('break-modal-overlay');
+    if(existing){existing.remove();return;}
+
+    // ── オーバーレイ生成 ──
+    const ov=document.createElement('div');
+    ov.id='break-modal-overlay';
+    ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:19998;display:flex;align-items:center;justify-content:center;padding:16px;animation:brkModalOvFade .15s ease;';
+    ov.addEventListener('click',function(e){if(e.target===ov)closeBreakModal();});
+
+    // ── モーダル本体 ──
+    const box=document.createElement('div');
+    box.style.cssText='background:var(--surface);border:1px solid var(--border);border-radius:20px;width:100%;max-width:320px;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,.6);animation:brkModalPop .22s cubic-bezier(.34,1.56,.64,1);';
+
+    // ヘッダー
+    const head=document.createElement('div');
+    head.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:14px 18px 12px;border-bottom:1px solid var(--border);';
+    head.innerHTML='<div style="font-size:.9rem;font-weight:800;color:var(--text);">'+s.title+'</div>'
+      +'<button id="brk-modal-close" style="background:transparent;border:none;color:var(--text-muted);font-size:1.1rem;cursor:pointer;padding:2px 6px;border-radius:6px;">✕</button>';
+
+    // ボディ
+    const body=document.createElement('div');
+    body.style.cssText='padding:16px 18px 8px;';
+
+    // desc
+    const desc=document.createElement('div');
+    desc.style.cssText='font-size:.65rem;color:var(--text-muted);margin-bottom:14px;text-align:center;line-height:1.6;';
+    desc.textContent=s.desc;
+
+    // プリセットグリッド
+    const grid=document.createElement('div');
+    grid.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;';
+    let selectedMin=s.presets[0].min;
+    s.presets.forEach(function(p,i){
+      const pb=document.createElement('button');
+      pb.dataset.min=p.min;
+      pb.style.cssText='background:var(--surface2);border:1.5px solid '+(i===0?'var(--accent)':'var(--border)')+';border-radius:12px;padding:11px 0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;width:100%;transition:background .15s,border-color .15s;';
+      pb.innerHTML='<span style="font-size:1.3rem;line-height:1;">'+p.icon+'</span>'
+        +'<span style="font-size:1.1rem;font-weight:800;color:'+(i===0?'var(--accent)':'var(--text)')+';">'+p.min+'</span>'
+        +'<span style="font-size:.55rem;color:'+(i===0?'var(--accent)':'var(--text-muted)')+';">'+p.lbl+'</span>';
+      pb.addEventListener('click',function(){
+        selectedMin=p.min;
+        // 全リセット
+        grid.querySelectorAll('button').forEach(function(b){
+          b.style.borderColor='var(--border)';
+          b.querySelectorAll('span')[1].style.color='var(--text)';
+          b.querySelectorAll('span')[2].style.color='var(--text-muted)';
+        });
+        // アクティブ
+        pb.style.borderColor='var(--accent)';
+        pb.querySelectorAll('span')[1].style.color='var(--accent)';
+        pb.querySelectorAll('span')[2].style.color='var(--accent)';
+        inp.value=p.min;
+        validate();
+      });
+      grid.appendChild(pb);
+    });
+
+    // カスタム入力行
+    const customRow=document.createElement('div');
+    customRow.style.cssText='display:flex;align-items:center;gap:8px;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:9px 13px;margin-bottom:10px;transition:border-color .2s;';
+
+    const stepperCol=document.createElement('div');
+    stepperCol.style.cssText='display:flex;flex-direction:column;gap:3px;flex-shrink:0;';
+    const stepUp=document.createElement('button');
+    stepUp.textContent='＋';
+    stepUp.style.cssText='background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);border-radius:5px;width:26px;height:21px;font-size:.7rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;';
+    const stepDn=document.createElement('button');
+    stepDn.textContent='－';
+    stepDn.style.cssText=stepUp.style.cssText;
+    stepperCol.appendChild(stepUp);
+    stepperCol.appendChild(stepDn);
+
+    const customLbl=document.createElement('span');
+    customLbl.style.cssText='font-size:.65rem;color:var(--text-muted);white-space:nowrap;flex-shrink:0;';
+    customLbl.textContent=s.customLbl;
+
+    const inp=document.createElement('input');
+    inp.type='number';inp.min='1';inp.max='120';inp.value=s.presets[0].min;
+    inp.style.cssText='flex:1;background:transparent;border:none;color:var(--text);font-size:1.3rem;font-weight:800;text-align:center;outline:none;font-variant-numeric:tabular-nums;min-width:0;-moz-appearance:textfield;';
+
+    const unitLbl=document.createElement('span');
+    unitLbl.style.cssText='font-size:.75rem;color:var(--text-muted);font-weight:700;flex-shrink:0;';
+    unitLbl.textContent='分';
+
+    customRow.appendChild(stepperCol);
+    customRow.appendChild(customLbl);
+    customRow.appendChild(inp);
+    customRow.appendChild(unitLbl);
+
+    // バリデーションメッセージ
+    const valMsg=document.createElement('div');
+    valMsg.style.cssText='font-size:.62rem;text-align:center;min-height:16px;margin-bottom:6px;font-weight:700;opacity:0;transition:opacity .2s;';
+
+    // フッター
+    const foot=document.createElement('div');
+    foot.style.cssText='display:flex;gap:8px;padding:0 18px 16px;';
+    const cancelBtn=document.createElement('button');
+    cancelBtn.textContent='キャンセル';
+    cancelBtn.style.cssText='flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);border-radius:10px;padding:10px;font-size:.75rem;font-weight:700;cursor:pointer;';
+    cancelBtn.addEventListener('click',closeBreakModal);
+    const okBtn=document.createElement('button');
+    okBtn.textContent=s.okText;
+    okBtn.style.cssText='flex:2;background:'+s.okBg+';border:none;color:#fff;border-radius:10px;padding:10px;font-size:.78rem;font-weight:800;cursor:pointer;';
+
+    foot.appendChild(cancelBtn);
+    foot.appendChild(okBtn);
+
+    // ── バリデーション関数 ──
+    function validate(){
+      const v=parseInt(inp.value);
+      if(isNaN(v)||v<1||v>120){
+        valMsg.textContent='1〜120 の数字を入力してください';
+        valMsg.style.color='#f87171';valMsg.style.opacity='1';
+        okBtn.disabled=true;okBtn.style.opacity='.38';okBtn.style.cursor='default';
+      } else {
+        valMsg.textContent=v+'分 スタートします！';
+        valMsg.style.color='var(--checked)';valMsg.style.opacity='1';
+        okBtn.disabled=false;okBtn.style.opacity='1';okBtn.style.cursor='pointer';
+        selectedMin=v;
+      }
+    }
+
+    // ステッパーイベント
+    function doStep(d){
+      let v=(parseInt(inp.value)||5)+d;
+      v=Math.min(120,Math.max(1,v));
+      inp.value=v;
+      // プリセット連動
+      grid.querySelectorAll('button').forEach(function(pb){
+        const match=parseInt(pb.dataset.min)===v;
+        pb.style.borderColor=match?'var(--accent)':'var(--border)';
+        pb.querySelectorAll('span')[1].style.color=match?'var(--accent)':'var(--text)';
+        pb.querySelectorAll('span')[2].style.color=match?'var(--accent)':'var(--text-muted)';
+      });
+      validate();
+    }
+    stepUp.addEventListener('click',function(){doStep(1);});
+    stepDn.addEventListener('click',function(){doStep(-1);});
+
+    // inp入力イベント
+    inp.addEventListener('input',function(){
+      const v=parseInt(inp.value);
+      grid.querySelectorAll('button').forEach(function(pb){
+        const match=parseInt(pb.dataset.min)===v;
+        pb.style.borderColor=match?'var(--accent)':'var(--border)';
+        pb.querySelectorAll('span')[1].style.color=match?'var(--accent)':'var(--text)';
+        pb.querySelectorAll('span')[2].style.color=match?'var(--accent)':'var(--text-muted)';
+      });
+      validate();
+    });
+    inp.addEventListener('focus',function(){customRow.style.borderColor='var(--accent)';});
+    inp.addEventListener('blur', function(){customRow.style.borderColor='var(--border)';});
+    inp.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();okBtn.click();}if(e.key==='Escape')closeBreakModal();});
+
+    // OKイベント
+    okBtn.addEventListener('click',function(){
+      const v=Math.min(120,Math.max(1,parseInt(inp.value)||0));
+      if(isNaN(v)||v<1)return;
+      closeBreakModal();
+      startInAppTimer(v);
+    });
+
+    // ヘッダー閉じるボタン
+    head.querySelector('#brk-modal-close').addEventListener('click',closeBreakModal);
+
+    // 組み立て
+    body.appendChild(desc);
+    body.appendChild(grid);
+    body.appendChild(customRow);
+    body.appendChild(valMsg);
+    box.appendChild(head);
+    box.appendChild(body);
+    box.appendChild(foot);
+    ov.appendChild(box);
+    document.body.appendChild(ov);
+
+    validate();
+    // モーダル開いたらinputにフォーカス
+    setTimeout(function(){inp.focus();inp.select();},80);
   };
+
+  function closeBreakModal(){
+    const ov=document.getElementById('break-modal-overlay');
+    if(ov)ov.remove();
+  }
+  window.closeBreakModal=closeBreakModal;
   window.cancelBreakTimer = function(){
     clearInterval(_breakInterval); _breakInterval=null;
     _overrunMode=false; _overrunStart=0; _breakEndTime=0;
@@ -8419,6 +8660,8 @@ function _triggerCrazy10FinaleBtn(h,m,dateStr){
 @keyframes brkRunBounce{from{transform:translateY(-50%) scaleY(1) rotate(-5deg);}to{transform:translateY(calc(-50% + 6px)) scaleY(.85) rotate(5deg);}}
 @keyframes brkRunJump{0%{transform:translateY(-50%);}40%{transform:translateY(calc(-50% - 22px)) rotate(-12deg);}100%{transform:translateY(-50%);}}
 @keyframes brkBubblePop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes brkModalOvFade{from{opacity:0}to{opacity:1}}
+@keyframes brkModalPop{from{opacity:0;transform:scale(.85) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
 </style>
 <script>
 (function(){
