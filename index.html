@@ -1191,7 +1191,7 @@ function trackEvent(name, params) {
   if (!analytics || !name) return;
   try {
     analytics.logEvent(name, Object.assign({
-      app_version: 'kotsusaku-v92'
+      app_version: 'kotsusaku-v93'
     }, params || {}));
   } catch(e) {
     console.warn('Analytics送信エラー:', e);
@@ -1415,7 +1415,7 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
     const now = new Date().toISOString();
     const base = {
       userId: getAnonymousId(),
-      appVersion: 'kotsusaku-v92',
+      appVersion: 'kotsusaku-v93',
       lastAccess: now,
       firstAccess: getFirstAccess(),
       os: device.os,
@@ -1653,22 +1653,115 @@ function getSyncCode() {
   return code;
 }
 let _cloudSaveTimer = null;
+
+// ── 手順5: 削除ログ込みマージ関数 ──────────────────────────────
+// localData/cloudData     : study-data の形式 { "2026-05-25": { "8:00": 数値ortrueorundefined } }
+// localDels/cloudDels     : study-deletes の形式 { "2026-05-25": { "8:00": 数値 } }
+// 戻り値: { data: マージ済みstudy-data, deletes: マージ済みstudy-deletes }
+function mergeStudyData(localData, cloudData, localDels, cloudDels) {
+  const mergedData = {};
+  const mergedDels = {};
+  const allDays = new Set([
+    ...Object.keys(localData||{}),
+    ...Object.keys(cloudData||{}),
+    ...Object.keys(localDels||{}),
+    ...Object.keys(cloudDels||{})
+  ]);
+  for (const ds of allDays) {
+    const lDay = (localData||{})[ds] || {};
+    const cDay = (cloudData||{})[ds] || {};
+    const lDel = (localDels||{})[ds] || {};
+    const cDel = (cloudDels||{})[ds] || {};
+    const allKeys = new Set([
+      ...Object.keys(lDay), ...Object.keys(cDay),
+      ...Object.keys(lDel), ...Object.keys(cDel)
+    ]);
+    const dayData = {};
+    const dayDels = {};
+    for (const key of allKeys) {
+      // チェック時刻（true は後方互換: 1 として扱う）
+      const lCheck = lDay[key] ? (lDay[key]===true ? 1 : Number(lDay[key])) : 0;
+      const cCheck = cDay[key] ? (cDay[key]===true ? 1 : Number(cDay[key])) : 0;
+      // 削除時刻（なければ 0）
+      const lDel_ = lDel[key] ? Number(lDel[key]) : 0;
+      const cDel_ = cDel[key] ? Number(cDel[key]) : 0;
+      const latestCheck = Math.max(lCheck, cCheck);
+      const latestDel   = Math.max(lDel_, cDel_);
+      if (latestCheck > 0 && latestCheck >= latestDel) {
+        // チェック済み（チェックの方が新しいか同時刻）
+        dayData[key] = latestCheck === 1 ? true : latestCheck; // true互換を維持
+      } else if (latestDel > 0) {
+        // 削除の方が新しい → 削除ログだけ残す
+        dayDels[key] = latestDel;
+      }
+      // 両方0 → 何もしない
+    }
+    if (Object.keys(dayData).length > 0) mergedData[ds] = dayData;
+    if (Object.keys(dayDels).length > 0) mergedDels[ds] = dayDels;
+  }
+  return { data: mergedData, deletes: mergedDels };
+}
+
+// ── 手順8: 復帰時クラウド確認（read間隔制限付き） ──────────────
+const _SYNC_THROTTLE_KEY = 'kotsusaku-last-sync-read';
+const _SYNC_THROTTLE_MS  = 3 * 60 * 1000; // 最短3分
+let _syncInProgress = false;
+async function syncFromCloudIfNeeded() {
+  if (!db || _syncInProgress) return;
+  const lastRead = parseInt(LS.get(_SYNC_THROTTLE_KEY, '0') || '0', 10);
+  if (Date.now() - lastRead < _SYNC_THROTTLE_MS) return; // スロットル
+  _syncInProgress = true;
+  try {
+    const doc = await db.collection('users').doc(getSyncCode()).get();
+    LS.set(_SYNC_THROTTLE_KEY, String(Date.now()));
+    if (!doc.exists) return;
+    const d = doc.data();
+    const cloudData    = JSON.parse(d.studyData    || '{}');
+    const cloudDeletes = JSON.parse(d.studyDeletes || '{}');
+    const merged = mergeStudyData(data, cloudData, studyDeletes, cloudDeletes);
+    data = merged.data;
+    studyDeletes = merged.deletes;
+    LS.set('study-data',    JSON.stringify(data));
+    LS.set('study-deletes', JSON.stringify(studyDeletes));
+    // 表示を更新
+    if (currentView === 'daily')   { refreshGrid(); updateStats(); }
+    if (currentView === 'weekly')  { if(typeof renderWeekly==='function')renderWeekly(); }
+    if (currentView === 'monthly') { if(typeof renderMonthly==='function')renderMonthly(); }
+  } catch(e) { console.warn('syncFromCloudIfNeeded エラー:', e); }
+  finally { _syncInProgress = false; }
+}
+
+// ── 手順6: saveToCloud（保存前マージ＋削除ログ送信） ──────────
 function saveToCloud() {
   if (!db) return; // Firebase未初期化（オフライン時）はスキップ
   if (_cloudSaveTimer) clearTimeout(_cloudSaveTimer);
   _cloudSaveTimer = setTimeout(async () => {
     try {
+      // 保存前にクラウドを読んでマージ
+      const snap = await db.collection('users').doc(getSyncCode()).get();
+      if (snap.exists) {
+        const d = snap.data();
+        const cloudData    = JSON.parse(d.studyData    || '{}');
+        const cloudDeletes = JSON.parse(d.studyDeletes || '{}');
+        const merged = mergeStudyData(data, cloudData, studyDeletes, cloudDeletes);
+        data = merged.data;
+        studyDeletes = merged.deletes;
+        LS.set('study-data',    JSON.stringify(data));
+        LS.set('study-deletes', JSON.stringify(studyDeletes));
+        LS.set(_SYNC_THROTTLE_KEY, String(Date.now())); // readカウント更新
+      }
       await db.collection('users').doc(getSyncCode()).set({
-        studyData: JSON.stringify(data),
-        studyNotes: JSON.stringify(notes),
-        studyCust: LS.get('study-cust',''),
-        studyBadges: LS.get('study-badges',''),
+        studyData:    JSON.stringify(data),
+        studyDeletes: JSON.stringify(studyDeletes),
+        studyNotes:   JSON.stringify(notes),
+        studyCust:    LS.get('study-cust',''),
+        studyBadges:  LS.get('study-badges',''),
         studyMilestones: LS.get('study-milestones',''),
-        studyGoal: LS.get('study-goal',''),
-        studyWeekGoal: LS.get('study-week-goal',''),
-        studyMonthGoal: LS.get('study-month-goal',''),
-        examDate: LS.get('exam-date',''),
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        studyGoal:    LS.get('study-goal',''),
+        studyWeekGoal:LS.get('study-week-goal',''),
+        studyMonthGoal:LS.get('study-month-goal',''),
+        examDate:     LS.get('exam-date',''),
+        updatedAt:    firebase.firestore.FieldValue.serverTimestamp()
       });
     } catch(e) { console.warn('クラウド保存エラー:', e); }
   }, 3000);
@@ -1678,28 +1771,52 @@ async function saveToCloudNow() {
   if (!db) return false;
   if (_cloudSaveTimer) { clearTimeout(_cloudSaveTimer); _cloudSaveTimer = null; }
   try {
+    // 保存前にクラウドを読んでマージ
+    const snap = await db.collection('users').doc(getSyncCode()).get();
+    if (snap.exists) {
+      const d = snap.data();
+      const cloudData    = JSON.parse(d.studyData    || '{}');
+      const cloudDeletes = JSON.parse(d.studyDeletes || '{}');
+      const merged = mergeStudyData(data, cloudData, studyDeletes, cloudDeletes);
+      data = merged.data;
+      studyDeletes = merged.deletes;
+      LS.set('study-data',    JSON.stringify(data));
+      LS.set('study-deletes', JSON.stringify(studyDeletes));
+      LS.set(_SYNC_THROTTLE_KEY, String(Date.now()));
+    }
     await db.collection('users').doc(getSyncCode()).set({
-      studyData: JSON.stringify(data),
-      studyNotes: JSON.stringify(notes),
-      studyCust: LS.get('study-cust',''),
-      studyBadges: LS.get('study-badges',''),
+      studyData:    JSON.stringify(data),
+      studyDeletes: JSON.stringify(studyDeletes),
+      studyNotes:   JSON.stringify(notes),
+      studyCust:    LS.get('study-cust',''),
+      studyBadges:  LS.get('study-badges',''),
       studyMilestones: LS.get('study-milestones',''),
-      studyGoal: LS.get('study-goal',''),
-      studyWeekGoal: LS.get('study-week-goal',''),
-      studyMonthGoal: LS.get('study-month-goal',''),
-      examDate: LS.get('exam-date',''),
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      studyGoal:    LS.get('study-goal',''),
+      studyWeekGoal:LS.get('study-week-goal',''),
+      studyMonthGoal:LS.get('study-month-goal',''),
+      examDate:     LS.get('exam-date',''),
+      updatedAt:    firebase.firestore.FieldValue.serverTimestamp()
     });
     return true;
   } catch(e) { console.warn('クラウド即時保存エラー:', e); return false; }
 }
+// ── 手順7: loadFromCloud（全上書きではなくマージ反映） ─────────
 async function loadFromCloud(code) {
   if (!db) return false; // Firebase未初期化（オフライン時）はスキップ
   try {
     const doc = await db.collection('users').doc(code).get();
     if (doc.exists) {
       const d = doc.data();
-      if (d.studyData) { data = JSON.parse(d.studyData); LS.set('study-data', d.studyData); }
+      if (d.studyData) {
+        const cloudData    = JSON.parse(d.studyData    || '{}');
+        const cloudDeletes = JSON.parse(d.studyDeletes || '{}');
+        const merged = mergeStudyData(data, cloudData, studyDeletes, cloudDeletes);
+        data = merged.data;
+        studyDeletes = merged.deletes;
+        LS.set('study-data',    JSON.stringify(data));
+        LS.set('study-deletes', JSON.stringify(studyDeletes));
+        LS.set(_SYNC_THROTTLE_KEY, String(Date.now()));
+      }
       if (d.studyNotes) { notes = JSON.parse(d.studyNotes); LS.set('study-notes', d.studyNotes); }
       if (d.studyCust) { LS.set('study-cust', d.studyCust); loadCust(); applyAllCust(); }
       if (d.studyBadges) { LS.set('study-badges', d.studyBadges); loadBadges(); }
@@ -1968,8 +2085,15 @@ function toDateStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart
 function parseDate(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
 function fmt(min){return Math.floor(min/60)+' h '+min%60+' m';}
 function toStudyDateStr(d){const dt=new Date(d||Date.now());if(dt.getHours()<4)dt.setDate(dt.getDate()-1);return toDateStr(dt);}
+// === 削除ログ (study-deletes) ===
+// studyDeletes[ds][key] = タイムスタンプ(ms) … そのブロックを最後に外した時刻
+let studyDeletes={};
+function loadDeletes(){try{studyDeletes=JSON.parse(LS.get('study-deletes','{}'));}catch{studyDeletes={};}}
+function saveDeletes(){LS.set('study-deletes',JSON.stringify(studyDeletes));}
+
 function load(){try{data=JSON.parse(LS.get('study-data','{}'));}catch{data={};}}
-function save(){LS.set('study-data',JSON.stringify(data));saveToCloud();}
+
+function save(){LS.set('study-data',JSON.stringify(data));saveDeletes();saveToCloud();}
 
 let notes={};
 function loadNotes(){try{notes=JSON.parse(LS.get('study-notes','{}'));}catch{notes={};}}
@@ -3616,12 +3740,19 @@ function isLucky(h,m){
 }
 function isChecked(ds,h,m){return !!(data[ds]&&data[ds][h+':'+m]);}
 function toggle(ds,h,m){
+  const key=h+':'+m;
+  const now=Date.now();
   if(!data[ds])data[ds]={};
-  if(data[ds][h+':'+m]){
-    delete data[ds][h+':'+m];
+  if(data[ds][key]){
+    // チェックを外す → data から削除し、削除ログに時刻を記録
+    delete data[ds][key];
     if(Object.keys(data[ds]).length===0)delete data[ds];
+    if(!studyDeletes[ds])studyDeletes[ds]={};
+    studyDeletes[ds][key]=now;
   }else{
-    data[ds][h+':'+m]=true;
+    // チェックを入れる → タイムスタンプで記録し、削除ログがあれば消す
+    data[ds][key]=now;
+    if(studyDeletes[ds])delete studyDeletes[ds][key];
   }
   save();
   // ブロックタップ時にsummaryへ差分送信
@@ -3695,7 +3826,7 @@ function showToast(msg,isError=false){
   setTimeout(()=>t.classList.remove('show'),_toastDuration(msg));
 }
 $('export-btn').addEventListener('click',()=>{
-  const backup={version:1,exportedAt:new Date().toISOString(),studyData:JSON.parse(LS.get('study-data','{}')),studyNotes:JSON.parse(LS.get('study-notes','{}')),studyGoal:localStorage.getItem('study-goal'),studyWeekGoal:localStorage.getItem('study-week-goal'),studyMonthGoal:localStorage.getItem('study-month-goal'),examDate:LS.get('exam-date'),theme:LS.get('study-theme'),badges:localStorage.getItem('study-badges'),milestones:localStorage.getItem('study-milestones'),customizations:LS.get('study-cust')};
+  const backup={version:1,exportedAt:new Date().toISOString(),studyData:JSON.parse(LS.get('study-data','{}')),studyDeletes:JSON.parse(LS.get('study-deletes','{}')),studyNotes:JSON.parse(LS.get('study-notes','{}')),studyGoal:localStorage.getItem('study-goal'),studyWeekGoal:localStorage.getItem('study-week-goal'),studyMonthGoal:localStorage.getItem('study-month-goal'),examDate:LS.get('exam-date'),theme:LS.get('study-theme'),badges:localStorage.getItem('study-badges'),milestones:localStorage.getItem('study-milestones'),customizations:LS.get('study-cust')};
   const json=JSON.stringify(backup,null,2);
   const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);
@@ -3722,6 +3853,7 @@ $('import-file-input').addEventListener('change',function(){
       const exportDate=backup.exportedAt?new Date(backup.exportedAt).toLocaleString('ja-JP'):'不明';
       if(!confirm('バックアップ（'+exportDate+'）を復元します。\n現在のデータは上書きされます。よろしいですか？'))return;
       LS.set('study-data',JSON.stringify(backup.studyData));
+      LS.set('study-deletes',JSON.stringify(backup.studyDeletes||{}));
       if(backup.studyNotes)LS.set('study-notes',JSON.stringify(backup.studyNotes));
       if(backup.studyGoal)LS.set('study-goal',backup.studyGoal);
       if(backup.studyWeekGoal)LS.set('study-week-goal',backup.studyWeekGoal);
@@ -3731,7 +3863,7 @@ $('import-file-input').addEventListener('change',function(){
       if(backup.badges)LS.set('study-badges',backup.badges);
       if(backup.milestones)LS.set('study-milestones',backup.milestones);
       if(backup.customizations)LS.set('study-cust',backup.customizations);
-      load();loadNotes();loadGoal();loadCountdown();loadBadges();loadMilestones();loadCust();
+      load();loadDeletes();loadNotes();loadGoal();loadCountdown();loadBadges();loadMilestones();loadCust();
       applyTheme(LS.get('study-theme','light'));
       applyAllCust();
       lastBloomPct=-1;lastWeeklyPct=-1;lastMonthlyPct=-1;lastLv=0;
@@ -3745,10 +3877,10 @@ $('import-file-input').addEventListener('change',function(){
 $('clear-all-btn').addEventListener('click',()=>{
   if(!confirm('すべての学習データ・設定をクリアします。\nこの操作は元に戻せません。よろしいですか？'))return;
   if(!confirm('本当にすべて削除してよろしいですか？'))return;
-  ['study-data','study-notes','study-goal','study-week-goal','study-month-goal','exam-date','study-theme','study-badges','study-milestones','weekly-goal-achieved','monthly-goal-achieved','study-cust'].forEach(k=>LS.del(k));
+  ['study-data','study-deletes','study-notes','study-goal','study-week-goal','study-month-goal','exam-date','study-theme','study-badges','study-milestones','weekly-goal-achieved','monthly-goal-achieved','study-cust'].forEach(k=>LS.del(k));
   clearMilestoneToastFlags();
   clearChachaToastFlag();
-  data={};notes={};earnedBadges={};achievedMs={};GOAL=120;WEEK_GOAL=600;MONTH_GOAL=1800;CUST={...CUST_DEFAULTS};
+  data={};notes={};studyDeletes={};earnedBadges={};achievedMs={};GOAL=120;WEEK_GOAL=600;MONTH_GOAL=1800;CUST={...CUST_DEFAULTS};
   lastBloomPct=-1;lastWeeklyPct=-1;lastMonthlyPct=-1;lastLv=0;
   currentDate=toStudyDateStr(new Date());
   loadGoal();loadCountdown();applyTheme('dark');applyAllCust();
@@ -4280,7 +4412,10 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
   }
   function autoCheck(boundaryMs){
     const{h,blockMin,ds}=boundaryToBlock(boundaryMs);if(!data[ds])data[ds]={};const key=h+':'+blockMin;
-    if(!data[ds][key]){data[ds][key]=true;save();if(currentView==='daily'&&currentDate===ds){refreshGrid();updateStats();if(typeof renderCrazy10Stars==='function')renderCrazy10Stars();if(typeof renderAsajukuStars==='function')renderAsajukuStars();}
+    if(!data[ds][key]){
+      data[ds][key]=boundaryMs; // タイムスタンプで記録
+      if(studyDeletes[ds])delete studyDeletes[ds][key]; // 削除ログがあれば消す
+      save();if(currentView==='daily'&&currentDate===ds){refreshGrid();updateStats();if(typeof renderCrazy10Stars==='function')renderCrazy10Stars();if(typeof renderAsajukuStars==='function')renderAsajukuStars();}
       if(typeof trackEvent==='function')trackEvent('ten_min_check',{source:'stopwatch'});
       hintEl.textContent=String(h===0?24:h).padStart(2,'0')+':'+String(blockMin).padStart(2,'0')+' '+getActiveCheckEmoji();
       playCheckSound();setTimeout(updateSwHint,3000);
@@ -6113,10 +6248,10 @@ function _renderQuotesList(){
   if(rstBtn)rstBtn.addEventListener('click',()=>{
     if(!confirm('設定と学習データをすべてリセットします。\n日々の入力記録も含めてすべて初期状態に戻ります。\nよろしいですか？'))return;
     if(!confirm('本当にすべてリセットしてよろしいですか？\nこの操作は元に戻せません。'))return;
-    ['study-data','study-notes','study-goal','study-week-goal','study-month-goal','exam-date','study-theme','study-badges','study-milestones','weekly-goal-achieved','monthly-goal-achieved','study-cust'].forEach(k=>LS.del(k));
+    ['study-data','study-deletes','study-notes','study-goal','study-week-goal','study-month-goal','exam-date','study-theme','study-badges','study-milestones','weekly-goal-achieved','monthly-goal-achieved','study-cust'].forEach(k=>LS.del(k));
     clearMilestoneToastFlags();
     clearChachaToastFlag();
-    data={};notes={};earnedBadges={};achievedMs={};GOAL=120;WEEK_GOAL=600;MONTH_GOAL=1800;CUST={...CUST_DEFAULTS};
+    data={};notes={};studyDeletes={};earnedBadges={};achievedMs={};GOAL=120;WEEK_GOAL=600;MONTH_GOAL=1800;CUST={...CUST_DEFAULTS};
     lastBloomPct=-1;lastWeeklyPct=-1;lastMonthlyPct=-1;lastLv=0;
     currentDate=toStudyDateStr(new Date());
     loadGoal();loadCountdown();applyTheme('dark');applyAllCust();
@@ -6128,7 +6263,7 @@ function _renderQuotesList(){
   });
 })();
 
-loadCust();load();loadNotes();loadGoal();loadBadges();loadMilestones();loadCountdown();
+loadCust();load();loadDeletes();loadNotes();loadGoal();loadBadges();loadMilestones();loadCountdown();
 // クラウドから自動同期（初回起動時）
 (async () => {
   const ok = await loadFromCloud(getSyncCode());
@@ -6291,7 +6426,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v92'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v93'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
 
@@ -6466,6 +6601,7 @@ setInterval(checkStudyDateChanged, 30000);
 // アプリに戻ってきた時にも確認
 window.addEventListener('focus', function(){
   checkStudyDateChanged();
+  syncFromCloudIfNeeded(); // 復帰時クラウド確認（間隔制限付き）
   if(typeof _showAsajukuPopupIfNeeded==='function')setTimeout(_showAsajukuPopupIfNeeded,300);
 });
 
@@ -6473,6 +6609,7 @@ window.addEventListener('focus', function(){
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) {
     checkStudyDateChanged();
+    syncFromCloudIfNeeded(); // 復帰時クラウド確認（間隔制限付き）
     if(typeof _showAsajukuPopupIfNeeded==='function')setTimeout(_showAsajukuPopupIfNeeded,300);
   }
 });
