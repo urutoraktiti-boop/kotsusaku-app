@@ -6862,7 +6862,14 @@ function checkStudyDateChanged() {
     popup.innerHTML =
       '<div id="break-end-band" style="position:relative;overflow:hidden;height:60px;border-top:1px solid rgba(255,255,255,.2);border-bottom:1px solid rgba(255,255,255,.2);"></div>'
       +'<div style="padding:14px 18px 0;">'
-      +'<div style="font-size:.98rem;font-weight:800;color:'+d.titleColor+';margin-bottom:6px;">'+d.title+'</div>'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">'
+      +'<div style="font-size:.98rem;font-weight:800;color:'+d.titleColor+';">'+d.title+'</div>'
+      // 超過時間表示エリア（カウントアップ中にリアルタイム更新）
+      +'<div id="break-end-overrun" style="display:flex;align-items:center;gap:4px;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.4);border-radius:99px;padding:3px 10px;">'
+      +'<span style="font-size:.6rem;font-weight:700;color:#f97316;">超過</span>'
+      +'<span id="break-end-overrun-time" style="font-size:.82rem;font-weight:800;color:#f97316;font-variant-numeric:tabular-nums;min-width:3em;text-align:right;">+00:00</span>'
+      +'</div>'
+      +'</div>'
       +'<div style="display:inline-block;background:'+d.bubbleBg+';border:1px solid '+d.bubbleBorder+';border-radius:12px 12px 12px 2px;padding:7px 13px;font-size:.72rem;font-weight:700;color:'+d.bubbleColor+';line-height:1.6;margin-bottom:10px;">'+d.bubbleMsg+'</div>'
       +'<div style="font-size:.7rem;color:var(--text-muted);line-height:1.75;margin-bottom:14px;">'+d.msg+'</div>'
       +'<button id="break-end-ok" style="width:100%;border:none;padding:12px;font-size:.84rem;font-weight:800;cursor:pointer;background:'+d.okBg+';color:'+d.okColor+';letter-spacing:.03em;">'+d.okLabel+'</button>'
@@ -6933,6 +6940,9 @@ function checkStudyDateChanged() {
       disp.style.color='#f97316';
       if(status){status.style.borderColor='#f97316';status.style.background='rgba(249,115,22,.08)';}
       if(label){label.textContent='超過中';label.style.color='#f97316';}
+      // ポップアップ内の超過時間も同時更新
+      const popupTime = el('break-end-overrun-time');
+      if(popupTime) popupTime.textContent = '+'+fmtBreak(remainSec);
     } else {
       disp.textContent=fmtBreak(remainSec);
       disp.style.color='var(--accent)';
