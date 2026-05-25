@@ -715,18 +715,6 @@
     <button class="sw-btn reset" id="sw-reset-btn" title="リセット" style="font-size:.7rem;padding:4px 0;">↺ リセット</button>
   </div>
 </div>
-<!-- iOS案内（iPhoneのみ表示） -->
-<div id="break-ios-guide" style="display:none;margin-top:6px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;">
-  <div style="font-size:.62rem;font-weight:700;color:var(--text-muted);margin-bottom:4px;">📱 iPhoneでの休憩タイマーの使い方</div>
-  <ol style="font-size:.6rem;color:var(--text-muted);line-height:1.9;padding-left:1.2em;">
-    <li>iPhoneの「時計」アプリを開く</li>
-    <li>下の「タイマー」をタップ</li>
-    <li>時間を設定して「開始」をタップ</li>
-    <li>このアプリに戻って勉強スタート🌸</li>
-  </ol>
-  <button onclick="document.getElementById('break-ios-guide').style.display='none'"
-    style="margin-top:6px;background:transparent;border:none;color:var(--text-muted);font-size:.6rem;cursor:pointer;padding:0;">閉じる ✕</button>
-</div>
 </div>
 </div>
 <div id="challenge-overlay" class="badge-overlay" onclick="if(event.target===this)toggleChallengePopup()">
@@ -7007,19 +6995,11 @@ function checkStudyDateChanged() {
     }
   }
 
-  // iOS：手順案内パネルをトグル
-  function showIosGuide(){
-    const guide = el('break-ios-guide');
-    if(!guide) return;
-    guide.style.display = (guide.style.display==='block') ? 'none' : 'block';
-  }
-
-  // ── 公開関数 ─────────────────────────────
+  // 公開関数
   window.startBreakTimer = function(minutes){
-    if(isIos()){ showIosGuide(); } else { startInAppTimer(minutes); }
+    startInAppTimer(minutes);
   };
   window.startBreakTimerCustom = function(){
-    if(isIos()){ showIosGuide(); return; }
     const input = prompt('休憩時間を分で入力してください（1〜60）','5');
     if(input===null) return;
     const m = parseInt(input,10);
