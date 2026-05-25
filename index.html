@@ -3875,7 +3875,7 @@ $('import-file-input').addEventListener('change',function(){
       const exportDate=backup.exportedAt?new Date(backup.exportedAt).toLocaleString('ja-JP'):'不明';
       if(!confirm('バックアップ（'+exportDate+'）を復元します。\n現在のデータは上書きされます。よろしいですか？'))return;
       LS.set('study-data',JSON.stringify(backup.studyData));
-      if(backup.studyDeletes)LS.set('study-deletes',JSON.stringify(backup.studyDeletes));
+      LS.set('study-deletes',JSON.stringify(backup.studyDeletes||{}));
       if(backup.studyNotes)LS.set('study-notes',JSON.stringify(backup.studyNotes));
       if(backup.studyGoal)LS.set('study-goal',backup.studyGoal);
       if(backup.studyWeekGoal)LS.set('study-week-goal',backup.studyWeekGoal);
