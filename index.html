@@ -4464,7 +4464,8 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
     processClockBoundaries(stopAt);
     swElapsed+=Math.max(0,stopAt-swLastStart);
     swRunning=false;swLastStart=0;swStopAt=0;clearInterval(swInterval);
-    dispEl.textContent=fmtSw(swElapsed);clearSwRunningUi();hintEl.textContent='24時間以上経過したため朝4時で自動停止しました';persistSw();
+    swElapsed=0;swCheckedCount=0;swCheckedBoundaries=[];
+    dispEl.textContent='00:00';clearSwRunningUi();hintEl.textContent='24時間以上経過したため朝4時で自動停止しました';localStorage.removeItem(SW_STATE_KEY);
     if(typeof showEasterToast==='function')showEasterToast('⏱ 24時間以上経過したため、朝4時でストップウォッチを自動停止しました');
     if(typeof trackEvent==='function')trackEvent('stopwatch_auto_stop_24h_4am');
     return true;
@@ -6822,22 +6823,43 @@ function checkStudyDateChanged() {
     band.style.animation = 'brkBandShift 8s ease infinite';
     const bw = band.offsetWidth || 300;
     const baseSpeed = 110;
+    // 帯の高さ中央Y（アイコン基準）
+    const bandH = band.offsetHeight || 60;
+    const charCenterY = bandH * 0.5; // アイコン中心のtop px
+    const bubOffsetX = 8;   // アイコン左端から右へのずらし量
+    const bubOffsetY = -28; // アイコン中心から上へのずらし量（斜め右上）
     const runners = d.chars.map((emoji,i)=>{
       const el2 = document.createElement('div');
       el2.className = 'brk-runner-char';
       el2.textContent = emoji;
       const sz = 1.3 + Math.random() * 1.1;
-      el2.style.cssText = 'position:absolute;top:50%;transform:translateY(-50%);font-size:'+sz+'rem;white-space:nowrap;filter:drop-shadow(1px 1px 0 rgba(255,255,255,.4));will-change:transform,left;z-index:2;';
+      el2.style.cssText = 'position:absolute;top:50%;transform:translateY(-50%);font-size:'+sz+'rem;white-space:nowrap;filter:drop-shadow(1px 1px 0 rgba(255,255,255,.4));will-change:left;z-index:2;';
       el2.style.animation = 'brkRunBounce .28s ease-in-out infinite alternate';
       band.appendChild(el2);
-      return { el:el2, emoji, x:bw+60+i*90, speed:baseSpeed*(0.6+Math.random()*0.9) };
+      // 吹き出し：クランプなし、キャラと完全連動
+      const bub = document.createElement('div');
+      bub.className = 'brk-runner-bubble';
+      bub.style.cssText = 'position:absolute;background:#fff;border:2px solid rgba(0,0,0,.12);border-radius:11px 11px 11px 3px;padding:3px 8px;font-size:.58rem;font-weight:800;color:#1a202c;white-space:nowrap;pointer-events:none;z-index:10;box-shadow:2px 2px 0 rgba(0,0,0,.07);display:none;';
+      band.appendChild(bub);
+      return { el:el2, bubEl:bub, emoji, x:bw+60+i*90, speed:baseSpeed*(0.6+Math.random()*0.9), bubVisible:false };
     });
     function frame(){
       const bw2 = band.offsetWidth||300;
       runners.forEach(r=>{
         r.x -= r.speed/60;
-        if(r.x < -80){ r.x=bw2+60+Math.random()*80; r.speed=baseSpeed*(0.6+Math.random()*0.9); }
+        if(r.x < -80){
+          r.x = bw2+60+Math.random()*80;
+          r.speed = baseSpeed*(0.6+Math.random()*0.9);
+          // 帯外に出たら吹き出しも消す
+          r.bubVisible = false;
+          r.bubEl.style.display = 'none';
+        }
         r.el.style.left = r.x+'px';
+        // 吹き出しをアイコンの斜め右上に完全追従（クランプなし）
+        if(r.bubVisible){
+          r.bubEl.style.left = (r.x + bubOffsetX)+'px';
+          r.bubEl.style.top  = (charCenterY + bubOffsetY)+'px';
+        }
       });
       _runnerRaf = requestAnimationFrame(frame);
     }
@@ -6845,17 +6867,21 @@ function checkStudyDateChanged() {
     _runnerInterval = setInterval(()=>{
       const r = runners[Math.floor(Math.random()*runners.length)];
       const bw2 = band.offsetWidth||300;
-      if(r.x<20||r.x>bw2-20) return;
+      // 帯内に完全に見えているキャラだけ対象
+      if(r.x < 20 || r.x > bw2 - 20) return;
       const txts = d.bubbles[r.emoji]||['！'];
       const txt = txts[Math.floor(Math.random()*txts.length)];
-      const bub = document.createElement('div');
-      bub.className = 'brk-runner-bubble';
-      bub.textContent = txt;
-      bub.style.cssText = 'position:absolute;background:#fff;border:2px solid rgba(0,0,0,.12);border-radius:11px 11px 11px 3px;padding:3px 8px;font-size:.58rem;font-weight:800;color:#1a202c;white-space:nowrap;pointer-events:none;z-index:10;box-shadow:2px 2px 0 rgba(0,0,0,.07);animation:brkBubblePop .25s cubic-bezier(.34,1.56,.64,1) both;top:4px;left:'+Math.max(4,Math.min(r.x-10,bw2-130))+'px';
-      band.appendChild(bub);
+      r.bubEl.textContent = txt;
+      r.bubEl.style.left = (r.x + bubOffsetX)+'px';
+      r.bubEl.style.top  = (charCenterY + bubOffsetY)+'px';
+      r.bubEl.style.display = '';
+      r.bubEl.style.animation = 'none';
+      void r.bubEl.offsetWidth;
+      r.bubEl.style.animation = 'brkBubblePop .25s cubic-bezier(.34,1.56,.64,1) both';
+      r.bubVisible = true;
       r.el.style.animation = 'brkRunJump .5s cubic-bezier(.4,0,.2,1) forwards';
-      setTimeout(()=>{ r.el.style.animation='brkRunBounce .28s ease-in-out infinite alternate'; },520);
-      setTimeout(()=>bub.remove(),1400);
+      setTimeout(()=>{ r.el.style.animation='brkRunBounce .28s ease-in-out infinite alternate'; }, 520);
+      setTimeout(()=>{ r.bubVisible = false; r.bubEl.style.display='none'; }, 1400);
     },900);
   }
   function stopRunnerBand(band){
@@ -7272,6 +7298,7 @@ function checkStudyDateChanged() {
   restoreBreakTimer();
   document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&!_breakInterval) restoreBreakTimer(); });
   window.addEventListener('focus',()=>{ if(!_breakInterval) restoreBreakTimer(); });
+
 
 })();
 
