@@ -3694,12 +3694,22 @@ function _itachachaBlockClass(h,m){
 }
 function onHourBtn(h){
   const allChecked=MINS.every(m=>isChecked(currentDate,h,m));
+  const now=Date.now();
   if(!data[currentDate])data[currentDate]={};
   if(allChecked){
-    MINS.forEach(m=>{delete data[currentDate][h+':'+m];});
+    MINS.forEach(m=>{
+      const key=h+':'+m;
+      delete data[currentDate][key];
+      if(!studyDeletes[currentDate])studyDeletes[currentDate]={};
+      studyDeletes[currentDate][key]=now;
+    });
     if(Object.keys(data[currentDate]).length===0)delete data[currentDate];
   }else{
-    MINS.forEach(m=>{data[currentDate][h+':'+m]=true;});
+    MINS.forEach(m=>{
+      const key=h+':'+m;
+      data[currentDate][key]=now;
+      if(studyDeletes[currentDate])delete studyDeletes[currentDate][key];
+    });
   }
   save();refreshGrid();updateStats();
   if(typeof renderCrazy10Stars==='function')renderCrazy10Stars();
