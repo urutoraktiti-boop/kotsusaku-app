@@ -7,7 +7,8 @@
     deleted: 'kskotsu_deleted',
     kp: 'kskotsu_kp',
     subjectPrefix: 'kskotsu_subject_',
-    typePrefix: 'kskotsu_type_'
+    typePrefix: 'kskotsu_type_',
+    typeCategoryPrefix: 'kskotsu_type_category_'
   };
 
   const DEFAULT_SUBJECTS = ['資格勉強', 'テキスト確認', '問題演習', '復習', '暗記', 'その他'];
@@ -167,6 +168,7 @@
     selectedType: '',
     selectedCategory: 'other',
     priority: 3,
+    addDetailsOpen: false,
     pickerMode: null,
     editingTaskId: null,
     floatTimer: null
@@ -310,13 +312,25 @@
     return prefix + (getCurrentStory() || 'default');
   }
 
+  function typeCategoryKey() {
+    return STORE.typeCategoryPrefix + (getCurrentStory() || 'default');
+  }
+
+  function typeCategoryMap() {
+    const map = readJson(typeCategoryKey(), {});
+    return map && typeof map === 'object' && !Array.isArray(map) ? map : {};
+  }
+
+  function saveTypeCategoryMap(map) {
+    writeJson(typeCategoryKey(), map || {});
+  }
+
   function getList(kind) {
     const key = listKey(kind);
     const defaults = defaultsFor(kind);
     const saved = readJson(key, null);
-    if (!Array.isArray(saved) || !saved.length) return defaults.slice();
-    const merged = saved.concat(defaults.filter((item) => !saved.includes(item)));
-    return merged.slice(0, 60);
+    if (!Array.isArray(saved)) return defaults.slice();
+    return saved.slice(0, 60);
   }
 
   function saveList(kind, list) {
@@ -332,6 +346,8 @@
 
   function categoryFor(type) {
     const t = String(type || '');
+    const custom = typeCategoryMap()[t];
+    if (custom && CATEGORY_LABELS[custom]) return custom;
     if (/模試|答練|試合/.test(t)) return 'mock';
     if (/講義|視聴|配信|教え|指導/.test(t)) return 'lecture';
     if (/過去問/.test(t)) return 'past';
@@ -398,11 +414,15 @@
     root.id = 'ks-task-root';
     root.innerHTML = `
       <div class="ks-task-sheet" id="ks-task-sheet" aria-hidden="true">
-        <div class="ks-task-panel" role="dialog" aria-modal="true" aria-label="コツ（タスク）管理">
+        <div class="ks-task-panel" role="dialog" aria-modal="true" aria-label="コツ（タスク）習得">
           <div class="ks-task-header">
             <div class="ks-task-title-row">
-              <div class="ks-task-title">📋 コツ（タスク）管理</div>
-              <button class="ks-task-close" type="button" data-ks-action="close">×</button>
+              <div class="ks-task-title">📋 コツ（タスク）習得</div>
+              <div class="ks-task-title-actions">
+                <button class="ks-task-save-close" type="button" data-ks-action="save-close">💾 保存して閉じる</button>
+                <span class="ks-task-version" title="コツ習得 v98">v98</span>
+                <button class="ks-task-close" type="button" data-ks-action="close">×</button>
+              </div>
             </div>
             <div class="ks-task-kp">
               <div class="ks-task-kp-top">
@@ -483,6 +503,7 @@
       const tabEl = event.target.closest('[data-ks-tab]');
       const choiceMain = event.target.closest('[data-ks-choice]');
       const choiceDel = event.target.closest('[data-ks-delete-choice]');
+      const choiceRename = event.target.closest('[data-ks-rename-choice]');
       const taskEl = event.target.closest('[data-ks-task]');
       const templateEl = event.target.closest('[data-ks-template]');
 
@@ -497,6 +518,11 @@
 
       if (choiceDel) {
         deleteChoice(choiceDel.dataset.ksDeleteChoice);
+        return;
+      }
+
+      if (choiceRename) {
+        renameChoice(choiceRename.dataset.ksRenameChoice);
         return;
       }
 
@@ -516,12 +542,14 @@
         if (event.target.closest('[data-ks-task-toggle]')) toggleDone(id);
         if (event.target.closest('[data-ks-task-detail]')) openDetail(id);
         if (event.target.closest('[data-ks-task-delete]')) deleteTask(id);
+        if (event.target.closest('[data-ks-task-move]')) moveTask(id, event.target.closest('[data-ks-task-move]').dataset.ksTaskMove);
         return;
       }
 
       if (!actionEl) return;
       const action = actionEl.dataset.ksAction;
       if (action === 'close') close();
+      if (action === 'save-close') saveAndClose();
       if (action === 'picker-close') closePicker();
       if (action === 'picker-add') addChoice();
       if (action === 'detail-close') closeDetail();
@@ -529,6 +557,7 @@
       if (action === 'pick-subject') openPicker('subject');
       if (action === 'pick-type') openPicker('type');
       if (action === 'add-task') addTask();
+      if (action === 'toggle-add-details') toggleAddDetails();
       if (action === 'save-template') saveTemplate();
       if (action === 'carry-all') carryAll();
       if (action === 'accept-carry') acceptCarry();
@@ -566,6 +595,12 @@
     closeDetail();
   }
 
+  function saveAndClose() {
+    afterDataChange();
+    notify('保存しました');
+    close();
+  }
+
   function setPage(page) {
     state.page = page;
     document.querySelectorAll('.ks-task-tab').forEach((btn) => btn.classList.toggle('is-active', btn.dataset.ksTab === page));
@@ -597,10 +632,46 @@
     }
   }
 
+  function taskFallbackOrder(task) {
+    const created = Date.parse(task.createdAt || task.updatedAt || '') || 0;
+    return (Number(task.priority) || 3) * 10000000000000 + created;
+  }
+
+  function taskOrderValue(task) {
+    return Number.isFinite(Number(task.sortOrder)) ? Number(task.sortOrder) : taskFallbackOrder(task);
+  }
+
+  function compareTaskOrder(a, b) {
+    const order = taskOrderValue(a) - taskOrderValue(b);
+    if (order) return order;
+    return taskFallbackOrder(a) - taskFallbackOrder(b);
+  }
+
+  function normalizeTodoOrder(list) {
+    const todo = list.filter((task) => task.status === 'todo').sort(compareTaskOrder);
+    todo.forEach((task, idx) => {
+      task.sortOrder = (idx + 1) * 1000;
+    });
+  }
+
+  function assignTaskOrder(list, task) {
+    const todo = list.filter((item) => item !== task && item.status === 'todo').sort(compareTaskOrder);
+    if (!todo.length) {
+      task.sortOrder = 1000;
+      return;
+    }
+    const insertAt = todo.findIndex((item) => (Number(item.priority) || 3) > (Number(task.priority) || 3));
+    const before = insertAt === -1 ? todo[todo.length - 1] : todo[insertAt - 1];
+    const after = insertAt === -1 ? null : todo[insertAt];
+    const beforeOrder = before ? taskOrderValue(before) : 0;
+    const afterOrder = after ? taskOrderValue(after) : beforeOrder + 2000;
+    task.sortOrder = (beforeOrder + afterOrder) / 2;
+  }
+
   function renderToday() {
     const { list } = todayTasks();
     const active = list.filter((task) => task.status !== 'carried');
-    const todo = active.filter((task) => task.status !== 'done').sort((a, b) => a.priority - b.priority);
+    const todo = active.filter((task) => task.status !== 'done').sort(compareTaskOrder);
     const done = active.filter((task) => task.status === 'done').sort((a, b) => String(b.completedAt || '').localeCompare(String(a.completedAt || '')));
     const doneMins = done.reduce((sum, task) => sum + (Number(task.actualMins) || 0), 0);
 	    const pct = active.length ? Math.round(done.length / active.length * 100) : 0;
@@ -631,22 +702,28 @@
 	            <div class="ks-task-add-title">今日のコツを追加</div>
 	            <div class="ks-task-add-sub">科目・種類・量を決めて積み上げます</div>
 	          </div>
-	          <span class="ks-task-category-pill cat-${escapeHtml(selectedCategory)}">${escapeHtml(selectedLabel.icon)} ${escapeHtml(selectedLabel.name)}</span>
 	        </div>
 	        <div class="ks-task-add-row">
-          <button class="ks-task-picker ${state.selectedSubject ? 'has-value' : ''}" type="button" data-ks-action="pick-subject">${escapeHtml(state.selectedSubject || '📚 科目')}</button>
-          <button class="ks-task-picker ${state.selectedType ? 'has-value' : ''}" type="button" data-ks-action="pick-type">${escapeHtml(state.selectedType || '✏️ 種類')}</button>
-          <button class="ks-task-add-btn" type="button" data-ks-action="add-task">＋コツ</button>
+          <button class="ks-task-picker ${state.selectedSubject ? 'has-value' : ''}" type="button" data-ks-action="pick-subject"><span class="ks-task-step-num">①</span>${escapeHtml(state.selectedSubject || '科目')}</button>
+          <button class="ks-task-picker ${state.selectedType ? 'has-value' : ''}" type="button" data-ks-action="pick-type"><span class="ks-task-step-num">②</span>${escapeHtml(state.selectedType || '種類')}</button>
+          <button class="ks-task-add-btn" type="button" data-ks-action="add-task"><span class="ks-task-step-num">③</span>＋コツ</button>
         </div>
-        <div class="ks-task-detail-grid">
-          <div class="ks-task-field"><div class="ks-task-label">予定量</div><input class="ks-task-input" id="ks-task-plan-amt" type="number" min="0" placeholder="20"></div>
-          <div class="ks-task-field"><div class="ks-task-label">単位</div><input class="ks-task-input" id="ks-task-unit" maxlength="12" placeholder="${escapeHtml(unitFor(state.selectedType))}"></div>
-          <div class="ks-task-field"><div class="ks-task-label">予定分</div><input class="ks-task-input" id="ks-task-plan-mins" type="number" min="0" placeholder="30"></div>
-          <button class="ks-task-small-btn" type="button" data-ks-action="save-template" title="テンプレート保存">⭐保存</button>
-        </div>
-        <div class="ks-task-priority-row">
-          <span class="ks-task-priority-label">優先度</span>
-          ${[1, 2, 3, 4].map((n) => `<button class="ks-task-pri ${state.priority === n ? 'is-active' : ''}" type="button" data-ks-action="priority" data-priority="${n}">${priorityLabel(n)}</button>`).join('')}
+        <button class="ks-task-detail-toggle" type="button" data-ks-action="toggle-add-details" aria-expanded="${state.addDetailsOpen ? 'true' : 'false'}">
+          <span>詳細設定</span>
+          <span class="ks-task-category-pill cat-${escapeHtml(selectedCategory)}">${escapeHtml(selectedLabel.icon)} ${escapeHtml(selectedLabel.name)}</span>
+          <span class="ks-task-detail-arrow">${state.addDetailsOpen ? '▲' : '▼'}</span>
+        </button>
+        <div class="ks-task-add-details ${state.addDetailsOpen ? 'is-open' : ''}" id="ks-task-add-details">
+          <div class="ks-task-detail-grid">
+            <div class="ks-task-field"><div class="ks-task-label">予定量</div><input class="ks-task-input" id="ks-task-plan-amt" type="number" min="0" placeholder="20"></div>
+            <div class="ks-task-field"><div class="ks-task-label">単位</div><input class="ks-task-input" id="ks-task-unit" maxlength="12" placeholder="${escapeHtml(unitFor(state.selectedType))}"></div>
+            <div class="ks-task-field"><div class="ks-task-label">予定分</div><input class="ks-task-input" id="ks-task-plan-mins" type="number" min="0" placeholder="30"></div>
+            <button class="ks-task-small-btn" type="button" data-ks-action="save-template" title="テンプレート保存">⭐保存</button>
+          </div>
+          <div class="ks-task-priority-row">
+            <span class="ks-task-priority-label">優先度</span>
+            ${[1, 2, 3, 4].map((n) => `<button class="ks-task-pri ${state.priority === n ? 'is-active' : ''}" type="button" data-ks-action="priority" data-priority="${n}">${priorityLabel(n)}</button>`).join('')}
+          </div>
         </div>
         <div class="ks-task-template-strip">${renderTemplates()}</div>
       </div>
@@ -689,6 +766,7 @@
             ${meta.length ? `<div class="ks-task-card-meta">${meta.map((item) => `<span class="ks-task-chip ${/KP/.test(item) ? 'kp' : ''}">${item}</span>`).join('')}</div>` : ''}
           </div>
           <div class="ks-task-card-actions">
+            ${task.status === 'todo' ? '<button class="ks-task-icon-btn" type="button" data-ks-task-move="up" title="上へ">↑</button><button class="ks-task-icon-btn" type="button" data-ks-task-move="down" title="下へ">↓</button>' : ''}
             <button class="ks-task-icon-btn" type="button" data-ks-task-detail title="詳細">✏️</button>
             <button class="ks-task-icon-btn" type="button" data-ks-task-delete title="削除">×</button>
           </div>
@@ -777,6 +855,18 @@
     renderToday();
   }
 
+  function toggleAddDetails() {
+    state.addDetailsOpen = !state.addDetailsOpen;
+    const details = $('ks-task-add-details');
+    const toggle = document.querySelector('[data-ks-action="toggle-add-details"]');
+    if (details) details.classList.toggle('is-open', state.addDetailsOpen);
+    if (toggle) {
+      toggle.setAttribute('aria-expanded', state.addDetailsOpen ? 'true' : 'false');
+      const arrow = toggle.querySelector('.ks-task-detail-arrow');
+      if (arrow) arrow.textContent = state.addDetailsOpen ? '▲' : '▼';
+    }
+  }
+
   function addTask(template) {
     const subject = template ? template.subject : (state.selectedSubject || '未分類');
     const type = template ? template.type : state.selectedType;
@@ -789,7 +879,7 @@
     const unit = template ? template.unit : (($('ks-task-unit') && $('ks-task-unit').value.trim()) || unitFor(type));
     const priority = template ? template.priority : state.priority;
     const { data, today, list } = todayTasks();
-    list.push({
+    const task = {
       id: Date.now() + '-' + Math.floor(Math.random() * 100000),
       date: today,
 	      subject,
@@ -808,7 +898,9 @@
       completedAt: null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
-    });
+    };
+    assignTaskOrder(list, task);
+    list.push(task);
     data[today] = list;
     saveTasks(data);
     mru('subject', subject);
@@ -893,6 +985,25 @@
     notify('削除しました');
   }
 
+  function moveTask(id, direction) {
+    const { data, today, list } = todayTasks();
+    const todo = list.filter((task) => task.status === 'todo').sort(compareTaskOrder);
+    const index = todo.findIndex((item) => String(item.id) === String(id));
+    if (index === -1) return;
+    const nextIndex = direction === 'up' ? index - 1 : index + 1;
+    if (nextIndex < 0 || nextIndex >= todo.length) return;
+    const moved = todo[index];
+    todo[index] = todo[nextIndex];
+    todo[nextIndex] = moved;
+    todo.forEach((task, idx) => {
+      task.sortOrder = (idx + 1) * 1000;
+      touchTask(task);
+    });
+    data[today] = list;
+    saveTasks(data);
+    render();
+  }
+
   function openDetail(id) {
     const { list } = todayTasks();
     const task = list.find((item) => String(item.id) === String(id));
@@ -960,6 +1071,7 @@
           <span style="color:var(--text-muted)">${value === current ? '✓' : '・'}</span>
           <span style="min-width:0;overflow:hidden;text-overflow:ellipsis">${escapeHtml(value)}</span>
         </button>
+        <button class="ks-task-choice-edit" type="button" data-ks-rename-choice="${escapeHtml(value)}">変更</button>
         <button class="ks-task-choice-del" type="button" data-ks-delete-choice="${escapeHtml(value)}">×</button>
       </div>
     `).join('');
@@ -993,6 +1105,40 @@
     if (state.pickerMode === 'type' && state.selectedType === value) state.selectedType = '';
     renderPicker();
     renderToday();
+  }
+
+  function renameChoice(value) {
+    if (!state.pickerMode) return;
+    const nextValue = window.prompt(state.pickerMode === 'subject' ? '科目名を変更' : '種類名を変更', value);
+    const renamed = String(nextValue || '').trim();
+    if (!renamed || renamed === value) return;
+    const list = getList(state.pickerMode);
+    if (list.includes(renamed)) {
+      notify('同じ名前がすでにあります', true);
+      return;
+    }
+    saveList(state.pickerMode, list.map((item) => item === value ? renamed : item));
+    if (state.pickerMode === 'subject') {
+      if (state.selectedSubject === value) state.selectedSubject = renamed;
+    } else {
+      const category = categoryFor(value);
+      const map = typeCategoryMap();
+      delete map[value];
+      map[renamed] = category;
+      saveTypeCategoryMap(map);
+      if (state.selectedType === value) {
+        state.selectedType = renamed;
+        state.selectedCategory = category;
+      }
+      saveTemplates(templates().map((tmpl) => {
+        if (!tmpl || tmpl.type !== value) return tmpl;
+        if (tmpl.storyId && tmpl.storyId !== getCurrentStory()) return tmpl;
+        return { ...tmpl, type: renamed, category };
+      }));
+    }
+    renderPicker();
+    renderToday();
+    notify('変更しました');
   }
 
   function carryCandidates() {
@@ -1120,7 +1266,7 @@
       lists: {}
     };
     Object.keys(localStorage).forEach((key) => {
-      if (key.indexOf(STORE.subjectPrefix) === 0 || key.indexOf(STORE.typePrefix) === 0) {
+      if (key.indexOf(STORE.subjectPrefix) === 0 || key.indexOf(STORE.typePrefix) === 0 || key.indexOf(STORE.typeCategoryPrefix) === 0) {
         data.lists[key] = localStorage.getItem(key);
       }
     });
@@ -1135,7 +1281,7 @@
     setKP(Number(payload.kp) || 0);
     if (payload.lists && typeof payload.lists === 'object') {
       Object.keys(payload.lists).forEach((key) => {
-        if (key.indexOf(STORE.subjectPrefix) === 0 || key.indexOf(STORE.typePrefix) === 0) {
+        if (key.indexOf(STORE.subjectPrefix) === 0 || key.indexOf(STORE.typePrefix) === 0 || key.indexOf(STORE.typeCategoryPrefix) === 0) {
           localStorage.setItem(key, payload.lists[key]);
         }
       });
@@ -1177,6 +1323,13 @@
     saveDeletedIds(Array.from(deleted));
     if (payload.lists && typeof payload.lists === 'object') {
       Object.keys(payload.lists).forEach((key) => {
+        if (key.indexOf(STORE.typeCategoryPrefix) === 0) {
+          const localMap = readJson(key, {});
+          let incomingMap = {};
+          try { incomingMap = JSON.parse(payload.lists[key] || '{}'); } catch (e) { incomingMap = {}; }
+          localStorage.setItem(key, JSON.stringify({ ...(localMap || {}), ...(incomingMap || {}) }));
+          return;
+        }
         if (key.indexOf(STORE.subjectPrefix) !== 0 && key.indexOf(STORE.typePrefix) !== 0) return;
         const local = readJson(key, []);
         let incoming = [];
@@ -1194,7 +1347,7 @@
 
   function clearAll() {
     Object.keys(localStorage).forEach((key) => {
-      if (key === STORE.tasks || key === STORE.templates || key === STORE.deleted || key === STORE.kp || key.indexOf(STORE.subjectPrefix) === 0 || key.indexOf(STORE.typePrefix) === 0) {
+      if (key === STORE.tasks || key === STORE.templates || key === STORE.deleted || key === STORE.kp || key.indexOf(STORE.subjectPrefix) === 0 || key.indexOf(STORE.typePrefix) === 0 || key.indexOf(STORE.typeCategoryPrefix) === 0) {
         localStorage.removeItem(key);
       }
     });

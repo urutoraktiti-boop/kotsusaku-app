@@ -208,7 +208,7 @@
 <div style="font-size:2.2rem;line-height:1;margin-bottom:10px;">🥸</div>
 <div style="font-size:1.05rem;font-weight:800;color:#fde8f7;margin-bottom:4px;">ニヤ🥸ボタン 実装!!</div>
 <div id="update-version-text" style="font-size:.82rem;font-weight:700;color:#fde8f7;margin-bottom:10px;">アプリやホームページから見つけてね。</div>
-<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">☕ 休憩モーダル（ストーリー連動）<br>🥦 プリセット5・10・30・60分</div>
+<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">📋 「コツ（タスク）習得」実装<br>✨ 今日のコツ追加画面を3ステップ化</div>
 <div id="update-data-note" style="font-size:.66rem;color:#fca5a5;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.22);border-radius:8px;padding:7px 10px;margin-bottom:12px;line-height:1.65;text-align:left;">※キャッシュ・サイトデータを削除すると、端末内の記録が消える場合があります。</div>
 <button id="update-reload-btn" style="display:block;width:100%;background:#f472b6;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:800;cursor:pointer;margin-bottom:12px;letter-spacing:.03em;">
 ✅ 今すぐ更新する
@@ -719,7 +719,7 @@
   <button class="ks-task-open-btn" id="ks-task-open-btn" type="button">
     <span class="ks-task-open-icon">📋</span>
     <span class="ks-task-open-main">
-      <span class="ks-task-open-title">コツ（タスク）管理</span>
+      <span class="ks-task-open-title">コツ（タスク）習得</span>
       <span class="ks-task-open-sub" data-ks-open-sub>今日のコツを追加</span>
     </span>
     <span class="ks-task-open-pct" data-ks-open-pct>0%</span>
@@ -1222,7 +1222,7 @@ function trackEvent(name, params) {
   if (!analytics || !name) return;
   try {
     analytics.logEvent(name, Object.assign({
-      app_version: 'kotsusaku-v94'
+      app_version: 'kotsusaku-v98'
     }, params || {}));
   } catch(e) {
     console.warn('Analytics送信エラー:', e);
@@ -1446,7 +1446,7 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
     const now = new Date().toISOString();
     const base = {
       userId: getAnonymousId(),
-      appVersion: 'kotsusaku-v94',
+      appVersion: 'kotsusaku-v98',
       lastAccess: now,
       firstAccess: getFirstAccess(),
       os: device.os,
@@ -1767,7 +1767,7 @@ function mergeKotsuTasksFromCloud(raw) {
   try {
     window.KotsuTasks.mergeData(JSON.parse(raw));
   } catch(e) {
-    console.warn('コツ（タスク）管理データ読込エラー:', e);
+    console.warn('コツ（タスク）習得データ読込エラー:', e);
   }
 }
 
@@ -6507,7 +6507,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v94'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v98'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
 
@@ -6528,9 +6528,9 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
     if (!banner) return;
     var vtxt = document.getElementById('update-version-text');
     if (vtxt) vtxt.textContent = '設定画面からご確認できます。';
-    // リリースノートをv93用に設定
+    // リリースノートを今回の更新内容に設定
     var rnotes = document.getElementById('update-release-notes');
-    if (rnotes) rnotes.innerHTML = '☕ 休憩モーダル（ストーリー連動）<br>🥦 プリセット5・10・30・60分';
+    if (rnotes) rnotes.innerHTML = '📋 「コツ（タスク）習得」実装<br>✨ 今日のコツ追加画面を3ステップ化';
     banner.style.display = 'flex';
 
     var btn = document.getElementById('update-reload-btn');
