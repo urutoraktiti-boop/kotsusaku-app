@@ -73,6 +73,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="stylesheet" href="./kotsu-tasks.css">
 </head>
 <body>
 <canvas id="fw-canvas"></canvas>
@@ -714,6 +715,16 @@
   </div>
 </div>
 </div>
+<div class="ks-task-entry">
+  <button class="ks-task-open-btn" id="ks-task-open-btn" type="button">
+    <span class="ks-task-open-icon">📋</span>
+    <span class="ks-task-open-main">
+      <span class="ks-task-open-title">コツ（タスク）管理</span>
+      <span class="ks-task-open-sub" data-ks-open-sub>今日のコツを追加</span>
+    </span>
+    <span class="ks-task-open-pct" data-ks-open-pct>0%</span>
+  </button>
+</div>
 </div>
 <div id="challenge-overlay" class="badge-overlay" onclick="if(event.target===this)toggleChallengePopup()">
 <div class="badge-panel">
@@ -1163,7 +1174,7 @@
   setTimeout(window.__kotsusakuEnsureForecast,900);
   setTimeout(window.__kotsusakuEnsureForecast,2000);
 })();
-</script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script><script>
+</script><script src="./kotsu-tasks.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script><script>
 
 const $=id=>document.getElementById(id);
 
@@ -1751,6 +1762,15 @@ async function syncFromCloudIfNeeded() {
   finally { _syncInProgress = false; }
 }
 
+function mergeKotsuTasksFromCloud(raw) {
+  if (!raw || !window.KotsuTasks || typeof window.KotsuTasks.mergeData !== 'function') return;
+  try {
+    window.KotsuTasks.mergeData(JSON.parse(raw));
+  } catch(e) {
+    console.warn('コツ（タスク）管理データ読込エラー:', e);
+  }
+}
+
 // ── 手順6: saveToCloud（保存前マージ＋削除ログ送信） ──────────
 function saveToCloud() {
   if (!db) return; // Firebase未初期化（オフライン時）はスキップ
@@ -1769,6 +1789,7 @@ function saveToCloud() {
         LS.set('study-data',    JSON.stringify(data));
         LS.set('study-deletes', JSON.stringify(studyDeletes));
         LS.set(_SYNC_THROTTLE_KEY, String(Date.now())); // readカウント更新
+        mergeKotsuTasksFromCloud(d.kotsuTasks);
       }
       await db.collection('users').doc(getSyncCode()).set({
         studyData:    JSON.stringify(data),
@@ -1781,6 +1802,7 @@ function saveToCloud() {
         studyWeekGoal:LS.get('study-week-goal',''),
         studyMonthGoal:LS.get('study-month-goal',''),
         examDate:     LS.get('exam-date',''),
+        kotsuTasks:   (window.KotsuTasks ? JSON.stringify(window.KotsuTasks.exportData()) : ''),
         updatedAt:    firebase.firestore.FieldValue.serverTimestamp()
       });
     } catch(e) { console.warn('クラウド保存エラー:', e); }
@@ -1803,6 +1825,7 @@ async function saveToCloudNow() {
       LS.set('study-data',    JSON.stringify(data));
       LS.set('study-deletes', JSON.stringify(studyDeletes));
       LS.set(_SYNC_THROTTLE_KEY, String(Date.now()));
+      mergeKotsuTasksFromCloud(d.kotsuTasks);
     }
     await db.collection('users').doc(getSyncCode()).set({
       studyData:    JSON.stringify(data),
@@ -1815,6 +1838,7 @@ async function saveToCloudNow() {
       studyWeekGoal:LS.get('study-week-goal',''),
       studyMonthGoal:LS.get('study-month-goal',''),
       examDate:     LS.get('exam-date',''),
+      kotsuTasks:   (window.KotsuTasks ? JSON.stringify(window.KotsuTasks.exportData()) : ''),
       updatedAt:    firebase.firestore.FieldValue.serverTimestamp()
     });
     return true;
@@ -1845,6 +1869,7 @@ async function loadFromCloud(code) {
       if (d.studyWeekGoal) { LS.set('study-week-goal', d.studyWeekGoal); }
       if (d.studyMonthGoal) { LS.set('study-month-goal', d.studyMonthGoal); }
       if (d.examDate) { LS.set('exam-date', d.examDate); }
+      mergeKotsuTasksFromCloud(d.kotsuTasks);
       loadGoal();
       return true;
     }
@@ -3856,7 +3881,7 @@ function showToast(msg,isError=false){
   setTimeout(()=>t.classList.remove('show'),_toastDuration(msg));
 }
 $('export-btn').addEventListener('click',()=>{
-  const backup={version:1,exportedAt:new Date().toISOString(),studyData:JSON.parse(LS.get('study-data','{}')),studyDeletes:JSON.parse(LS.get('study-deletes','{}')),studyNotes:JSON.parse(LS.get('study-notes','{}')),studyGoal:localStorage.getItem('study-goal'),studyWeekGoal:localStorage.getItem('study-week-goal'),studyMonthGoal:localStorage.getItem('study-month-goal'),examDate:LS.get('exam-date'),theme:LS.get('study-theme'),badges:localStorage.getItem('study-badges'),milestones:localStorage.getItem('study-milestones'),customizations:LS.get('study-cust')};
+  const backup={version:1,exportedAt:new Date().toISOString(),studyData:JSON.parse(LS.get('study-data','{}')),studyDeletes:JSON.parse(LS.get('study-deletes','{}')),studyNotes:JSON.parse(LS.get('study-notes','{}')),studyGoal:localStorage.getItem('study-goal'),studyWeekGoal:localStorage.getItem('study-week-goal'),studyMonthGoal:localStorage.getItem('study-month-goal'),examDate:LS.get('exam-date'),theme:LS.get('study-theme'),badges:localStorage.getItem('study-badges'),milestones:localStorage.getItem('study-milestones'),customizations:LS.get('study-cust'),kotsuTasks:window.KotsuTasks?window.KotsuTasks.exportData():null};
   const json=JSON.stringify(backup,null,2);
   const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);
@@ -3893,6 +3918,7 @@ $('import-file-input').addEventListener('change',function(){
       if(backup.badges)LS.set('study-badges',backup.badges);
       if(backup.milestones)LS.set('study-milestones',backup.milestones);
       if(backup.customizations)LS.set('study-cust',backup.customizations);
+      if(backup.kotsuTasks&&window.KotsuTasks)window.KotsuTasks.importData(backup.kotsuTasks);
       load();loadDeletes();loadNotes();loadGoal();loadCountdown();loadBadges();loadMilestones();loadCust();
       applyTheme(LS.get('study-theme','light'));
       applyAllCust();
@@ -3908,6 +3934,7 @@ $('clear-all-btn').addEventListener('click',()=>{
   if(!confirm('すべての学習データ・設定をクリアします。\nこの操作は元に戻せません。よろしいですか？'))return;
   if(!confirm('本当にすべて削除してよろしいですか？'))return;
   ['study-data','study-deletes','study-notes','study-goal','study-week-goal','study-month-goal','exam-date','study-theme','study-badges','study-milestones','weekly-goal-achieved','monthly-goal-achieved','study-cust'].forEach(k=>LS.del(k));
+  if(window.KotsuTasks)window.KotsuTasks.clearAll();
   clearMilestoneToastFlags();
   clearChachaToastFlag();
   data={};notes={};studyDeletes={};earnedBadges={};achievedMs={};GOAL=120;WEEK_GOAL=600;MONTH_GOAL=1800;CUST={...CUST_DEFAULTS};
@@ -6302,6 +6329,7 @@ function _renderQuotesList(){
     if(!confirm('設定と学習データをすべてリセットします。\n日々の入力記録も含めてすべて初期状態に戻ります。\nよろしいですか？'))return;
     if(!confirm('本当にすべてリセットしてよろしいですか？\nこの操作は元に戻せません。'))return;
     ['study-data','study-deletes','study-notes','study-goal','study-week-goal','study-month-goal','exam-date','study-theme','study-badges','study-milestones','weekly-goal-achieved','monthly-goal-achieved','study-cust'].forEach(k=>LS.del(k));
+    if(window.KotsuTasks)window.KotsuTasks.clearAll();
     clearMilestoneToastFlags();
     clearChachaToastFlag();
     data={};notes={};studyDeletes={};earnedBadges={};achievedMs={};GOAL=120;WEEK_GOAL=600;MONTH_GOAL=1800;CUST={...CUST_DEFAULTS};

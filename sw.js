@@ -5,11 +5,13 @@
 //   2. index.html の CURRENT_VERSION（フォールバック値）
 //   3. version.json の version
 // ============================================================
-const CACHE_VERSION = 'kotsusaku-v90';
+const CACHE_VERSION = 'kotsusaku-v94';
 const CACHE_FILES = [
   './',
   './index.html',
   './manifest.json',
+  './kotsu-tasks.css',
+  './kotsu-tasks.js',
   './icon.svg',
   './icon-192.png',
   './icon-512.png',
