@@ -170,6 +170,7 @@
     priority: 3,
     addDetailsOpen: false,
     pickerMode: null,
+    renamingChoice: '',
     editingTaskId: null,
     floatTimer: null
   };
@@ -420,7 +421,7 @@
               <div class="ks-task-title">📋 コツ（タスク）習得</div>
               <div class="ks-task-title-actions">
                 <button class="ks-task-save-close" type="button" data-ks-action="save-close">💾 保存して閉じる</button>
-                <span class="ks-task-version" title="コツ習得 v98">v98</span>
+                <span class="ks-task-version" title="コツ習得 v99">v99</span>
                 <button class="ks-task-close" type="button" data-ks-action="close">×</button>
               </div>
             </div>
@@ -483,6 +484,27 @@
           </div>
         </div>
       </div>
+      <div class="ks-task-rename-overlay" id="ks-task-rename-overlay">
+        <div class="ks-task-modal">
+          <div class="ks-task-modal-head">
+            <div>
+              <div class="ks-task-card-subj" id="ks-task-rename-sub">選択肢を変更</div>
+              <div class="ks-task-modal-title" id="ks-task-rename-title">名前を変更</div>
+            </div>
+            <button class="ks-task-close" type="button" data-ks-action="rename-close">×</button>
+          </div>
+          <div class="ks-task-modal-body">
+            <div class="ks-task-field">
+              <div class="ks-task-label">新しい名前</div>
+              <input class="ks-task-input" id="ks-task-rename-input" maxlength="32">
+            </div>
+          </div>
+          <div class="ks-task-detail-actions">
+            <button class="ks-task-add-btn" type="button" data-ks-action="rename-save">変更する</button>
+            <button class="ks-task-small-btn" type="button" data-ks-action="rename-close">キャンセル</button>
+          </div>
+        </div>
+      </div>
       <div class="ks-task-float" id="ks-task-float">
         <div class="ks-task-float-char" id="ks-task-float-char">🌸</div>
         <div>
@@ -510,6 +532,7 @@
       if (event.target.id === 'ks-task-sheet') close();
       if (event.target.id === 'ks-task-picker-overlay') closePicker();
       if (event.target.id === 'ks-task-detail-overlay') closeDetail();
+      if (event.target.id === 'ks-task-rename-overlay') closeRename();
 
       if (tabEl) {
         setPage(tabEl.dataset.ksTab);
@@ -554,6 +577,8 @@
       if (action === 'picker-add') addChoice();
       if (action === 'detail-close') closeDetail();
       if (action === 'detail-save') saveDetail();
+      if (action === 'rename-close') closeRename();
+      if (action === 'rename-save') saveRenameChoice();
       if (action === 'pick-subject') openPicker('subject');
       if (action === 'pick-type') openPicker('type');
       if (action === 'add-task') addTask();
@@ -1024,6 +1049,26 @@
     state.editingTaskId = null;
   }
 
+  function openRename(value) {
+    state.renamingChoice = value;
+    $('ks-task-rename-sub').textContent = state.pickerMode === 'subject' ? '科目を変更' : '種類を変更';
+    $('ks-task-rename-title').textContent = value;
+    $('ks-task-rename-input').value = value;
+    $('ks-task-rename-overlay').classList.add('is-open');
+    setTimeout(() => {
+      const input = $('ks-task-rename-input');
+      if (input) {
+        input.focus();
+        input.select();
+      }
+    }, 50);
+  }
+
+  function closeRename() {
+    if ($('ks-task-rename-overlay')) $('ks-task-rename-overlay').classList.remove('is-open');
+    state.renamingChoice = '';
+  }
+
   function saveDetail() {
     if (!state.editingTaskId) return;
     const { data, today, list } = todayTasks();
@@ -1109,8 +1154,13 @@
 
   function renameChoice(value) {
     if (!state.pickerMode) return;
-    const nextValue = window.prompt(state.pickerMode === 'subject' ? '科目名を変更' : '種類名を変更', value);
-    const renamed = String(nextValue || '').trim();
+    openRename(value);
+  }
+
+  function saveRenameChoice() {
+    if (!state.pickerMode || !state.renamingChoice) return;
+    const value = state.renamingChoice;
+    const renamed = String(($('ks-task-rename-input') && $('ks-task-rename-input').value) || '').trim();
     if (!renamed || renamed === value) return;
     const list = getList(state.pickerMode);
     if (list.includes(renamed)) {
@@ -1138,6 +1188,7 @@
     }
     renderPicker();
     renderToday();
+    closeRename();
     notify('変更しました');
   }
 

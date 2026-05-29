@@ -730,7 +730,8 @@
 }
 
 .ks-task-picker-overlay,
-.ks-task-detail-overlay {
+.ks-task-detail-overlay,
+.ks-task-rename-overlay {
   position: fixed;
   inset: 0;
   z-index: 10040;
@@ -741,7 +742,8 @@
 }
 
 .ks-task-picker-overlay.is-open,
-.ks-task-detail-overlay.is-open {
+.ks-task-detail-overlay.is-open,
+.ks-task-rename-overlay.is-open {
   display: flex;
 }
 
