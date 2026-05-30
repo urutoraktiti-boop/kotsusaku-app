@@ -5,13 +5,23 @@
 //   2. index.html の CURRENT_VERSION（フォールバック値）
 //   3. version.json の version
 // ============================================================
-const CACHE_VERSION = 'kotsusaku-v99';
+const CACHE_VERSION = 'kotsusaku-v102';
 const CACHE_FILES = [
   './',
   './index.html',
   './manifest.json',
   './kotsu-tasks.css',
   './kotsu-tasks.js',
+  './assets/stories/mystery/story_mystery_005.png',
+  './assets/stories/mystery/story_mystery_010.png',
+  './assets/stories/mystery/story_mystery_020.png',
+  './assets/stories/mystery/story_mystery_030.png',
+  './assets/stories/mystery/story_mystery_040.png',
+  './assets/stories/mystery/story_mystery_050.png',
+  './assets/stories/mystery/story_mystery_065.png',
+  './assets/stories/mystery/story_mystery_080.png',
+  './assets/stories/mystery/story_mystery_088.png',
+  './assets/stories/mystery/story_mystery_100.png',
   './icon.svg',
   './icon-192.png',
   './icon-512.png',

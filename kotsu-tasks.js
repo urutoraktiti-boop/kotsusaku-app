@@ -6,9 +6,43 @@
     templates: 'kskotsu_templates',
     deleted: 'kskotsu_deleted',
     kp: 'kskotsu_kp',
+    storyProgress: 'task-story-progress',
+    equipmentUnlocked: 'task-equipment-unlocked',
+    taskDataAlias: 'task-data',
+    taskSettings: 'task-settings',
     subjectPrefix: 'kskotsu_subject_',
     typePrefix: 'kskotsu_type_',
     typeCategoryPrefix: 'kskotsu_type_category_'
+  };
+
+  const STORY_EVOLUTION_STAGES = [
+    { count: 0, icon: '🐣', name: 'はじまりの姿', desc: 'ここからストーリーが育っていきます。', image: 'assets/stories/common/story_common_000.png' },
+    { count: 5, icon: '🌿', name: '小さな一歩', desc: '最初の積み上げが形になりました。', image: 'assets/stories/mystery/story_mystery_005.png' },
+    { count: 10, icon: '✨', name: '見習いの光', desc: 'コツコツの流れが見えてきました。', image: 'assets/stories/mystery/story_mystery_010.png' },
+    { count: 20, icon: '🌱', name: '芽生えの段階', desc: '小さな変化が育ち始めています。', image: 'assets/stories/mystery/story_mystery_020.png' },
+    { count: 30, icon: '🍃', name: '旅立ちの装い', desc: '続ける力が姿に出てきました。', image: 'assets/stories/mystery/story_mystery_030.png' },
+    { count: 40, icon: '🌱', name: 'つぼみの段階', desc: '次の変化が、もうそこまで来ています。', image: 'assets/stories/mystery/story_mystery_040.png' },
+    { count: 50, icon: '🔔', name: '節目の合図', desc: '半分まで来ました。しっかり積み上がっています。', image: 'assets/stories/mystery/story_mystery_050.png' },
+    { count: 65, icon: '💫', name: '成長の証', desc: '努力の輪郭がはっきりしてきました。', image: 'assets/stories/mystery/story_mystery_065.png' },
+    { count: 80, icon: '🗡️', name: '突破の力', desc: 'あと少し。ここまで来た自分を信じて進めます。', image: 'assets/stories/mystery/story_mystery_080.png' },
+    { count: 88, icon: '👑', name: '王冠の段階', desc: '大きな達成が近づいています。', image: 'assets/stories/mystery/story_mystery_088.png' },
+    { count: 100, icon: '🌟', name: '完成の姿', desc: '100コツ到達。続きは101コツ目から始まります。', image: 'assets/stories/mystery/story_mystery_100.png' }
+  ];
+
+  const STORY_EVOLUTION_OVERRIDES = {
+    itachacha: [
+      { name: 'ただのニヤピヨ', desc: 'ここから、ニヤリと始まります。', icon: '🐣' },
+      { name: '朝の小枝ピヨ', desc: '小さな枝を持って、今日も再出発。', icon: '🌿' },
+      { name: 'ニヤリメガネピヨ', desc: '見える。コツコツの勝ち筋が見える。', icon: '😏' },
+      { name: 'ブロの芽ピヨ', desc: '頭にブロッコリーの気配が芽生えました。', icon: '🥦' },
+      { name: '葉っぱマントピヨ', desc: 'やさしく、しぶとく、積み上げる姿。', icon: '🍃' },
+      { name: 'つぼみピヨ', desc: '次の変化が、もうそこまで来ています。', icon: '🌱' },
+      { name: 'イタチャチャ鐘ピヨ', desc: '節目の鐘が鳴りました。ニヤリ。', icon: '🔔' },
+      { name: '半ブロピヨ', desc: '半分以上ブロ。かなりいい感じです。', icon: '🥦' },
+      { name: 'ブロッ剣ピヨ', desc: 'ブロッコリーの剣で、迷いをサクッと。', icon: '🗡️' },
+      { name: 'イタチャチャ王冠ピヨ', desc: 'ここまで来た人だけの、ちょっと変な王冠。', icon: '👑' },
+      { name: '完全体ブロピヨ', desc: '100コツ到達。続きは101コツ目から始まります。', icon: '🌟' }
+    ]
   };
 
   const DEFAULT_SUBJECTS = ['資格勉強', 'テキスト確認', '問題演習', '復習', '暗記', 'その他'];
@@ -224,6 +258,7 @@
 
   function saveTasks(data) {
     writeJson(STORE.tasks, data);
+    writeJson(STORE.taskDataAlias, data);
     afterDataChange();
   }
 
@@ -262,6 +297,82 @@
 
   function addKP(amount) {
     setKP(getKP() + amount);
+  }
+
+  function evolutionStagesFor(storyId) {
+    const overrides = STORY_EVOLUTION_OVERRIDES[storyId] || [];
+    return STORY_EVOLUTION_STAGES.map((stage, idx) => ({ ...stage, ...(overrides[idx] || {}) }));
+  }
+
+  function evolutionStageFor(count, storyId) {
+    const stages = evolutionStagesFor(storyId);
+    return stages.filter((stage) => count >= stage.count).pop() || stages[0];
+  }
+
+  function nextEvolutionStage(count, storyId) {
+    return evolutionStagesFor(storyId).find((stage) => stage.count > count) || null;
+  }
+
+  function completedCountForStory(storyId) {
+    const data = tasksByDate();
+    let count = 0;
+    Object.values(data).forEach((list) => {
+      if (!Array.isArray(list)) return;
+      list.forEach((task) => {
+        if (!task || task.status !== 'done') return;
+        if (task.storyId ? task.storyId === storyId : storyId === getCurrentStory()) count += 1;
+      });
+    });
+    return count;
+  }
+
+  function storyProgressSnapshot(storyId) {
+    const id = storyId || getCurrentStory();
+    const count = completedCountForStory(id);
+    const stage = evolutionStageFor(count, id);
+    const next = nextEvolutionStage(count, id);
+    return {
+      storyId: id,
+      count,
+      stage,
+      next,
+      nextRemaining: next ? Math.max(0, next.count - count) : 0,
+      percent: Math.min(100, Math.round(count / 100 * 100))
+    };
+  }
+
+  function syncStoryProgress(storyId) {
+    const snapshot = storyProgressSnapshot(storyId);
+    const key = snapshot.storyId || 'default';
+    const progress = readJson(STORE.storyProgress, {});
+    progress[key] = {
+      count: snapshot.count,
+      stage: snapshot.stage.count,
+      stageName: snapshot.stage.name,
+      nextStage: snapshot.next ? snapshot.next.count : null,
+      nextRemaining: snapshot.nextRemaining,
+      completed100: snapshot.count >= 100,
+      updatedAt: new Date().toISOString()
+    };
+    if (key === 'itachacha') progress.mystery = progress[key];
+    writeJson(STORE.storyProgress, progress);
+
+    const unlocked = readJson(STORE.equipmentUnlocked, {});
+    const storyUnlocked = unlocked[key] && typeof unlocked[key] === 'object' ? unlocked[key] : {};
+    evolutionStagesFor(key).forEach((stage) => {
+      if (snapshot.count >= stage.count && !storyUnlocked[stage.count]) {
+        storyUnlocked[stage.count] = {
+          name: stage.name,
+          icon: stage.icon,
+          condition: stage.count + 'コツ',
+          unlockedAt: new Date().toISOString()
+        };
+      }
+    });
+    unlocked[key] = storyUnlocked;
+    if (key === 'itachacha') unlocked.mystery = storyUnlocked;
+    writeJson(STORE.equipmentUnlocked, unlocked);
+    return snapshot;
   }
 
   function todayTasks() {
@@ -397,6 +508,7 @@
   }
 
   function afterDataChange() {
+    syncStoryProgress();
     updateButtonSummary();
     if (typeof window.saveToCloud === 'function') window.saveToCloud();
   }
@@ -419,9 +531,9 @@
           <div class="ks-task-header">
             <div class="ks-task-title-row">
               <div class="ks-task-title">📋 コツ（タスク）習得</div>
+              <button class="ks-task-save-close" type="button" data-ks-action="save-close">💾 保存して閉じる</button>
               <div class="ks-task-title-actions">
-                <button class="ks-task-save-close" type="button" data-ks-action="save-close">💾 保存して閉じる</button>
-                <span class="ks-task-version" title="コツ習得 v99">v99</span>
+                <span class="ks-task-version" title="コツ習得 v102">v102</span>
                 <button class="ks-task-close" type="button" data-ks-action="close">×</button>
               </div>
             </div>
@@ -516,6 +628,7 @@
     document.body.appendChild(root);
     bindEvents(root);
     state.mounted = true;
+    syncStoryProgress();
     updateButtonSummary();
   }
 
@@ -589,6 +702,7 @@
       if (action === 'toggle-done-list') toggleDoneList();
       if (action === 'delete-template') deleteTemplate(actionEl.dataset.id);
       if (action === 'priority') setPriority(Number(actionEl.dataset.priority));
+      if (action === 'open-story-settings') openStorySettings();
     });
 
     root.addEventListener('keydown', function (event) {
@@ -620,6 +734,19 @@
     closeDetail();
   }
 
+  function openStorySettings() {
+    close();
+    if (typeof window.openCustPanel === 'function') {
+      window.openCustPanel();
+      setTimeout(() => {
+        const target = document.querySelector('[data-story-card="' + getCurrentStory() + '"]') || document.querySelector('[data-story-card]');
+        if (target && typeof target.scrollIntoView === 'function') target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 120);
+      return;
+    }
+    notify('メイン設定からストーリーを変更できます');
+  }
+
   function saveAndClose() {
     afterDataChange();
     notify('保存しました');
@@ -639,6 +766,7 @@
     if (state.page === 'today') renderToday();
     if (state.page === 'equip') renderEquip();
     if (state.page === 'stats') renderStats();
+    syncStoryProgress();
     updateButtonSummary();
   }
 
@@ -701,18 +829,13 @@
     const doneMins = done.reduce((sum, task) => sum + (Number(task.actualMins) || 0), 0);
 	    const pct = active.length ? Math.round(done.length / active.length * 100) : 0;
 	    const carryCount = carryCandidates().length;
-	    const story = getStoryMeta();
+    const story = getStoryMeta();
+      const evolution = syncStoryProgress();
 	    const selectedCategory = categoryFor(state.selectedType);
 	    const selectedLabel = categoryLabel(selectedCategory);
 
 	    $('ks-task-page-today').innerHTML = `
-      <div class="ks-task-story">
-        <div class="ks-task-story-char">${escapeHtml(story.icon)}</div>
-        <div>
-          <div class="ks-task-story-name">${escapeHtml(story.name)}</div>
-          <div class="ks-task-story-msg">${escapeHtml(story.msg)}</div>
-        </div>
-      </div>
+      ${renderStoryEvolutionCompact(story, evolution)}
       ${carryCount ? `<div class="ks-task-story"><div class="ks-task-story-char">🔄</div><div style="flex:1"><div class="ks-task-story-name">昨日の未完了が ${carryCount} 件あります</div><div class="ks-task-story-msg">今日に取り込めます</div></div><button class="ks-task-small-btn" type="button" data-ks-action="accept-carry">今日へ</button></div>` : ''}
       <div class="ks-task-summary">
         <div class="ks-task-summary-item"><div class="ks-task-summary-num">${active.length}</div><div class="ks-task-summary-label">合計</div></div>
@@ -760,6 +883,49 @@
     `;
   }
 
+  function renderStoryEvolutionCompact(story, snapshot) {
+    const stage = snapshot.stage;
+    const nextText = snapshot.next
+      ? `次の進化まであと ${snapshot.nextRemaining} コツ`
+      : '100コツに到達しました';
+    return `
+      <div class="ks-task-evolution-row">
+        <div class="ks-task-story-mini">
+          <div class="ks-task-evo-label">ストーリー</div>
+          <button class="ks-task-story-pill" type="button" data-ks-action="open-story-settings">
+            <span class="ks-task-story-pill-icon">${escapeHtml(story.icon)}</span>
+            <span class="ks-task-story-pill-name">${escapeHtml(shortStoryName(story.name))}</span>
+          </button>
+          <button class="ks-task-story-change" type="button" data-ks-action="open-story-settings">変更</button>
+        </div>
+        <div class="ks-task-evolution-strip">
+          <div class="ks-task-evo-visual">
+            <img src="${escapeHtml(stage.image)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+            <div class="ks-task-evo-fallback">${escapeHtml(stage.icon)}</div>
+          </div>
+          <div class="ks-task-evo-main">
+            <div class="ks-task-evo-label">ストーリー進化</div>
+            <div class="ks-task-evo-top">
+              <div class="ks-task-evo-name">${escapeHtml(stage.name)}</div>
+              <div class="ks-task-evo-count">${snapshot.count}/100</div>
+            </div>
+            <div class="ks-task-track"><div class="ks-task-fill" style="width:${snapshot.percent}%"></div></div>
+            <div class="ks-task-evo-msg">${escapeHtml(nextText)}</div>
+          </div>
+          <div class="ks-task-evo-next">
+            <div class="ks-task-evo-next-num">${snapshot.next ? snapshot.nextRemaining : 'OK'}</div>
+            <div class="ks-task-evo-next-label">${snapshot.next ? '次まで' : '到達'}<br>コツ</div>
+          </div>
+        </div>
+      </div>
+      ${snapshot.count >= 100 ? '<div class="ks-task-evolution-complete">100コツ到達。ここまで積み上げたこと自体が、ちゃんとあなたの力です。</div>' : ''}
+    `;
+  }
+
+  function shortStoryName(name) {
+    return String(name || 'ストーリー').replace(/成長記|の道|の旅|の特訓|試験|合格への道|への挑戦/g, '').slice(0, 6) || 'ストーリー';
+  }
+
   function renderTemplates() {
     const list = templates();
     if (!list.length) return '<span class="ks-task-template">テンプレなし</span>';
@@ -784,7 +950,7 @@
 	    return `
 	      <div class="ks-task-card cat-${escapeHtml(category)} pri-${escapeHtml(task.priority || 3)} ${task.status === 'done' ? 'is-done' : ''}" data-ks-task="${escapeHtml(task.id)}">
 	        <div class="ks-task-card-top">
-	          <button class="ks-task-check" type="button" data-ks-task-toggle>${task.status === 'done' ? '✓' : ''}</button>
+	          <button class="ks-task-check" type="button" data-ks-task-toggle>${task.status === 'done' ? '習得済' : '習得'}</button>
 	          <div class="ks-task-card-main">
 	            <div class="ks-task-card-subj"><span class="ks-task-category-dot">${escapeHtml(label.icon)}</span>${escapeHtml(task.subject || '未分類')}</div>
             <div class="ks-task-card-type">${escapeHtml(task.type)}</div>
@@ -804,6 +970,7 @@
     const story = getStoryMeta();
     const equipment = equipmentMetaForStory();
     const counts = categoryCounts();
+    const evolution = syncStoryProgress();
     const rows = Object.entries(equipment).map(([category, meta]) => {
       const count = counts[category] || 0;
       const level = equipLevel(count);
@@ -828,7 +995,38 @@
           <div class="ks-task-story-msg">現在のストーリーに合わせて育ちます</div>
         </div>
       </div>
+      ${renderStoryEvolutionCodex(evolution)}
       <div class="ks-task-equip-grid">${rows}</div>
+    `;
+  }
+
+  function renderStoryEvolutionCodex(snapshot) {
+    const unlocked = (readJson(STORE.equipmentUnlocked, {})[snapshot.storyId]) || {};
+    return `
+      <div class="ks-task-codex">
+        <div class="ks-task-section-head" style="margin-top:0">
+          <span>ストーリー進化図鑑</span>
+          <span style="color:var(--accent)">${snapshot.count}コツ</span>
+        </div>
+        <div class="ks-task-codex-list">
+          ${evolutionStagesFor(snapshot.storyId).map((stage) => {
+            const isOpen = snapshot.count >= stage.count;
+            const isCurrent = snapshot.stage.count === stage.count;
+            const item = unlocked[stage.count] || null;
+            const date = item && item.unlockedAt ? item.unlockedAt.slice(0, 10) : '';
+            return `
+              <div class="ks-task-codex-row ${isOpen ? 'is-open' : 'is-locked'} ${isCurrent ? 'is-current' : ''}">
+                <div class="ks-task-codex-icon">${isOpen ? escapeHtml(stage.icon) : '？'}</div>
+                <div class="ks-task-codex-main">
+                  <div class="ks-task-codex-name">${escapeHtml(stage.name)}${isCurrent ? '<span>装備中</span>' : ''}</div>
+                  <div class="ks-task-codex-desc">${escapeHtml(stage.desc)}</div>
+                  <div class="ks-task-codex-meta">解放条件 ${stage.count}コツ${date ? ' / 解放日 ' + escapeHtml(date) : ''}</div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
     `;
   }
 
@@ -976,6 +1174,8 @@
     const { data, today, list } = todayTasks();
     const task = list.find((item) => String(item.id) === String(id));
     if (!task) return;
+    const storyId = task.storyId || getCurrentStory();
+    const beforeEvolutionStage = storyProgressSnapshot(storyId).stage.count;
     if (task.status === 'done') {
       task.status = 'todo';
       task.completedAt = null;
@@ -995,7 +1195,9 @@
     data[today] = list;
     saveTasks(data);
     render();
-    showFloat(task);
+    const afterEvolution = syncStoryProgress(storyId);
+    const unlockedStage = afterEvolution && afterEvolution.stage.count > beforeEvolutionStage ? afterEvolution : null;
+    showFloat(task, unlockedStage);
   }
 
   function deleteTask(id) {
@@ -1253,7 +1455,7 @@
     if (el) el.style.display = el.style.display === 'none' ? 'flex' : 'none';
   }
 
-  function showFloat(task) {
+  function showFloat(task, unlockedEvolution) {
     const story = getStoryMeta();
     const messages = {
       gorilla: '完了ゴリ。強くなったゴリ。',
@@ -1262,8 +1464,10 @@
       itachacha: 'ニヤニヤ……コツを積みましたね。',
       spartan: 'よくやった。次だ。'
     };
-    $('ks-task-float-char').textContent = story.icon;
-    $('ks-task-float-msg').textContent = messages[getCurrentStory()] || 'コツを積みました。';
+    $('ks-task-float-char').textContent = unlockedEvolution ? unlockedEvolution.stage.icon : story.icon;
+    $('ks-task-float-msg').textContent = unlockedEvolution
+      ? (unlockedEvolution.count >= 100 ? 'ストーリー進化が100コツに到達しました。' : unlockedEvolution.stage.name + 'を解放しました。')
+      : (messages[getCurrentStory()] || 'コツを積みました。');
     $('ks-task-float-kp').textContent = '+' + task.earnedKP + ' KP';
     $('ks-task-float').classList.add('is-show');
     clearTimeout(state.floatTimer);
@@ -1314,6 +1518,9 @@
       templates: templates(),
       deleted: deletedIds(),
       kp: getKP(),
+      storyProgress: readJson(STORE.storyProgress, {}),
+      equipmentUnlocked: readJson(STORE.equipmentUnlocked, {}),
+      taskSettings: readJson(STORE.taskSettings, {}),
       lists: {}
     };
     Object.keys(localStorage).forEach((key) => {
@@ -1327,9 +1534,13 @@
   function importData(payload) {
     if (!payload || typeof payload !== 'object') return;
     writeJson(STORE.tasks, payload.tasks || {});
+    writeJson(STORE.taskDataAlias, payload.tasks || {});
     writeJson(STORE.templates, Array.isArray(payload.templates) ? payload.templates : []);
     saveDeletedIds(Array.isArray(payload.deleted) ? payload.deleted : []);
     setKP(Number(payload.kp) || 0);
+    writeJson(STORE.storyProgress, payload.storyProgress || {});
+    writeJson(STORE.equipmentUnlocked, payload.equipmentUnlocked || {});
+    writeJson(STORE.taskSettings, payload.taskSettings || {});
     if (payload.lists && typeof payload.lists === 'object') {
       Object.keys(payload.lists).forEach((key) => {
         if (key.indexOf(STORE.subjectPrefix) === 0 || key.indexOf(STORE.typePrefix) === 0 || key.indexOf(STORE.typeCategoryPrefix) === 0) {
@@ -1337,6 +1548,7 @@
         }
       });
     }
+    syncStoryProgress();
     updateButtonSummary();
     if (state.open) render();
   }
@@ -1370,8 +1582,11 @@
     });
 
     writeJson(STORE.tasks, mergedTasks);
+    writeJson(STORE.taskDataAlias, mergedTasks);
     writeJson(STORE.templates, Array.from(templateMap.values()).slice(0, 40));
     saveDeletedIds(Array.from(deleted));
+    writeJson(STORE.storyProgress, { ...(payload.storyProgress || {}), ...readJson(STORE.storyProgress, {}) });
+    writeJson(STORE.equipmentUnlocked, { ...(payload.equipmentUnlocked || {}), ...readJson(STORE.equipmentUnlocked, {}) });
     if (payload.lists && typeof payload.lists === 'object') {
       Object.keys(payload.lists).forEach((key) => {
         if (key.indexOf(STORE.typeCategoryPrefix) === 0) {
@@ -1391,6 +1606,7 @@
     }
     const earned = Object.values(mergedTasks).flat().reduce((sum, task) => sum + (task.status === 'done' ? Number(task.earnedKP || calcTaskKP(task)) : 0), 0);
     setKP(Math.max(getKP(), Number(payload.kp) || 0, earned));
+    syncStoryProgress();
     updateButtonSummary();
     if (state.open) render();
     return exportData();
@@ -1398,7 +1614,7 @@
 
   function clearAll() {
     Object.keys(localStorage).forEach((key) => {
-      if (key === STORE.tasks || key === STORE.templates || key === STORE.deleted || key === STORE.kp || key.indexOf(STORE.subjectPrefix) === 0 || key.indexOf(STORE.typePrefix) === 0 || key.indexOf(STORE.typeCategoryPrefix) === 0) {
+      if (key === STORE.tasks || key === STORE.templates || key === STORE.deleted || key === STORE.kp || key === STORE.storyProgress || key === STORE.equipmentUnlocked || key === STORE.taskDataAlias || key === STORE.taskSettings || key.indexOf(STORE.subjectPrefix) === 0 || key.indexOf(STORE.typePrefix) === 0 || key.indexOf(STORE.typeCategoryPrefix) === 0) {
         localStorage.removeItem(key);
       }
     });
