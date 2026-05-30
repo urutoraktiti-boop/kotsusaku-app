@@ -100,12 +100,42 @@
   };
 
   const TOP_STORY_CHARACTERS = {
-    gorilla: { kind: 'gorilla', bounce: 'ゴリー', runIdle: '待機ゴリ', runActive: '走るゴリ' },
-    itachacha: { kind: 'broccoli', bounce: 'ニヤリ', runIdle: '待つブロ', runActive: 'サクサク' },
-    spartan: { kind: 'oni', bounce: 'やれ！', runIdle: '構えろ', runActive: '走れ！' },
-    space: { kind: 'rocket', bounce: '発射', runIdle: '待機中', runActive: '加速' },
-    samurai: { kind: 'swordsman', bounce: '一閃', runIdle: '納刀', runActive: '参る' },
-    default: { kind: 'chick', bounce: 'ピヨ', runIdle: '待つピヨ', runActive: 'ぴょん' }
+    gorilla: {
+      kind: 'gorilla',
+      bounce: ['ゴリー', 'コツゴリ', 'うほっ', '強くなる', 'バナナ後で', 'ナイスゴリ', '一歩ゴリ'],
+      runIdle: ['待機ゴリ', '準備ゴリ', '肩ならし', 'まだ本気前', 'バナナ充電', '呼吸ゴリ'],
+      runActive: ['走るゴリ', 'うほ走り', 'いけるゴリ', '筋肉点火', 'ドスドス', '今日も勝つ']
+    },
+    itachacha: {
+      kind: 'broccoli',
+      bounce: ['ニヤリ', 'コツブロ', '芽が出た', '緑の勝ち', 'ブロっと', 'いい食感', '育ってる'],
+      runIdle: ['待つブロ', '光合成中', '根を張る', 'まだ蒸し前', 'ニヤ待ち', '葉っぱ休憩'],
+      runActive: ['サクサク', 'ブロ走り', '伸びてる', '緑加速', '房で勝つ', 'ニヤ加速']
+    },
+    spartan: {
+      kind: 'oni',
+      bounce: ['やれ！', 'まだいける', 'よし次だ', '甘えるな', 'でも休め', '鬼ナイス', '一歩前へ'],
+      runIdle: ['構えろ', '待機だ', '深呼吸しろ', '目をそらすな', '準備完了', '面は熱い'],
+      runActive: ['走れ！', '止まるな', '鬼ダッシュ', 'よくやった', 'その調子', '気合いだ']
+    },
+    space: {
+      kind: 'rocket',
+      bounce: ['発射', 'コツ軌道', '燃料OK', '星へ一歩', '浮いてる', '通信良好', '推進中'],
+      runIdle: ['待機中', '充填中', '秒読み前', '管制待ち', '宇宙服OK', '軌道計算'],
+      runActive: ['加速', '発進！', '推力全開', '星まで行こ', 'ワープ気分', '軌道に乗る']
+    },
+    samurai: {
+      kind: 'swordsman',
+      bounce: ['一閃', 'コツ斬り', 'よき一太刀', '刃が冴える', '修行中', '斬れてる', '静かに強い'],
+      runIdle: ['納刀', '間合い待ち', '息を整え', 'まだ抜かぬ', '集中', '足元よし'],
+      runActive: ['参る', '駆ける', '一歩抜刀', '迷いなし', '道は前', '今日も斬る']
+    },
+    default: {
+      kind: 'chick',
+      bounce: ['ピヨ', 'コツピヨ', 'ぴょん', 'えらいピヨ', '羽ばたく前', '小さく勝つ', 'ナイスピヨ'],
+      runIdle: ['待つピヨ', '準備ピヨ', '羽休め', 'まだ卵気分', 'ひと休み', 'あたため中'],
+      runActive: ['ぴょん', '走るピヨ', 'いけるピヨ', '羽ばたけ', '小走り中', 'ピヨ加速']
+    }
   };
 
   const KP_RANKS = [
@@ -217,7 +247,8 @@
     editingTaskId: null,
     floatTimer: null,
     topStoryBounceTimer: null,
-    topStoryWatchTimer: null
+    topStoryWatchTimer: null,
+    topStoryComment: null
   };
 
   function $(id) {
@@ -412,6 +443,14 @@
     return TOP_STORY_CHARACTERS[storyId] || TOP_STORY_CHARACTERS.default;
   }
 
+  function sampleTopStoryLine(lines, previous) {
+    if (!Array.isArray(lines) || !lines.length) return '';
+    if (lines.length === 1) return lines[0];
+    let next = lines[Math.floor(Math.random() * lines.length)];
+    if (next === previous) next = lines[(lines.indexOf(next) + 1) % lines.length];
+    return next;
+  }
+
   function isStopwatchRunning() {
     const disp = document.getElementById('sw-display');
     const stopBtn = document.getElementById('sw-stop-btn');
@@ -421,6 +460,17 @@
   function updateTopStoryCharacters() {
     const conf = topStoryCharacterFor(getCurrentStory());
     const running = isStopwatchRunning();
+    const storyId = getCurrentStory();
+    const commentKey = storyId + ':' + (running ? 'run' : 'idle');
+    const now = Date.now();
+    if (!state.topStoryComment || state.topStoryComment.key !== commentKey || now >= state.topStoryComment.nextAt) {
+      state.topStoryComment = {
+        key: commentKey,
+        runner: sampleTopStoryLine(running ? conf.runActive : conf.runIdle, state.topStoryComment && state.topStoryComment.runner),
+        bouncer: sampleTopStoryLine(conf.bounce, state.topStoryComment && state.topStoryComment.bouncer),
+        nextAt: now + (running ? 4200 : 7600)
+      };
+    }
     const runner = document.querySelector('[data-ks-runner]');
     const runnerChar = document.querySelector('[data-ks-runner-char]');
     const runnerBubble = document.querySelector('[data-ks-runner-bubble]');
@@ -429,8 +479,8 @@
     if (runner) runner.classList.toggle('is-running', running);
     if (runnerChar) runnerChar.dataset.ksKind = conf.kind;
     if (bouncerChar) bouncerChar.dataset.ksKind = conf.kind;
-    if (runnerBubble) runnerBubble.textContent = running ? conf.runActive : conf.runIdle;
-    if (bouncerBubble) bouncerBubble.textContent = conf.bounce;
+    if (runnerBubble) runnerBubble.textContent = state.topStoryComment.runner;
+    if (bouncerBubble) bouncerBubble.textContent = state.topStoryComment.bouncer;
   }
 
   function scheduleTopStoryBouncer() {
