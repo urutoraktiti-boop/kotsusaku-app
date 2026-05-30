@@ -684,8 +684,10 @@
 <div class="sw-hint" id="sw-hint">10分ごとに 🌸</div>
 </div>
 <div class="sw-icon-btns">
-<button class="sw-icon-btn" id="sw-screenshot-btn" onclick="exportDailyReport()" title="今日のスクショ">📸</button>
-<button class="sw-icon-btn" id="challenge-fab" onclick="toggleChallengePopup()" title="今週のチャレンジ">🎯</button>
+<div class="ks-runner-slot" data-ks-runner aria-hidden="true">
+  <span class="ks-story-bubble" data-ks-runner-bubble>いくよ</span>
+  <span class="ks-story-character ks-story-runner" data-ks-runner-char></span>
+</div>
 <button class="sw-icon-btn" id="badge-open-btn" onclick="openBadgePanel()" title="バッジコレクション">🏅<span class="badge-count" id="badge-count" style="font-size:.55rem;vertical-align:super;"></span></button>
 </div>
 </div>
@@ -716,14 +718,21 @@
 </div>
 </div>
 <div class="ks-task-entry">
-  <button class="ks-task-open-btn" id="ks-task-open-btn" type="button">
+  <div class="ks-task-open-btn" id="ks-task-open-btn" role="button" tabindex="0">
     <span class="ks-task-open-icon">📋</span>
     <span class="ks-task-open-main">
-      <span class="ks-task-open-title">コツ（タスク）習得</span>
+      <span class="ks-task-open-title-row">
+        <span class="ks-task-open-title">コツ（タスク）習得</span>
+        <span class="ks-task-open-pct" data-ks-open-pct>0%</span>
+      </span>
       <span class="ks-task-open-sub" data-ks-open-sub>今日のコツを追加</span>
     </span>
-    <span class="ks-task-open-pct" data-ks-open-pct>0%</span>
-  </button>
+    <span class="ks-bouncer-slot" data-ks-bouncer aria-hidden="true">
+      <span class="ks-story-bubble" data-ks-bouncer-bubble>コツ</span>
+      <span class="ks-story-character ks-story-bouncer" data-ks-bouncer-char></span>
+    </span>
+    <button class="ks-task-challenge-btn" id="challenge-fab" type="button" onclick="event.stopPropagation();toggleChallengePopup()" title="今週のチャレンジ">🎯</button>
+  </div>
 </div>
 </div>
 <div id="challenge-overlay" class="badge-overlay" onclick="if(event.target===this)toggleChallengePopup()">
@@ -1222,7 +1231,7 @@ function trackEvent(name, params) {
   if (!analytics || !name) return;
   try {
     analytics.logEvent(name, Object.assign({
-      app_version: 'kotsusaku-v102'
+      app_version: 'kotsusaku-v103-story-characters'
     }, params || {}));
   } catch(e) {
     console.warn('Analytics送信エラー:', e);
@@ -1446,7 +1455,7 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
     const now = new Date().toISOString();
     const base = {
       userId: getAnonymousId(),
-      appVersion: 'kotsusaku-v102',
+      appVersion: 'kotsusaku-v103-story-characters',
       lastAccess: now,
       firstAccess: getFirstAccess(),
       os: device.os,
@@ -6539,7 +6548,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v102'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v103-story-characters'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
 

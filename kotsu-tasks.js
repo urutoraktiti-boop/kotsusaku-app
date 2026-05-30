@@ -99,6 +99,15 @@
     shindanshi: { icon: '💼', name: '中小企業診断士', msg: '知識を事例へつなげよう。' }
   };
 
+  const TOP_STORY_CHARACTERS = {
+    gorilla: { kind: 'gorilla', bounce: 'ゴリー', runIdle: '待機ゴリ', runActive: '走るゴリ' },
+    itachacha: { kind: 'broccoli', bounce: 'ニヤリ', runIdle: '待つブロ', runActive: 'サクサク' },
+    spartan: { kind: 'oni', bounce: 'やれ！', runIdle: '構えろ', runActive: '走れ！' },
+    space: { kind: 'rocket', bounce: '発射', runIdle: '待機中', runActive: '加速' },
+    samurai: { kind: 'swordsman', bounce: '一閃', runIdle: '納刀', runActive: '参る' },
+    default: { kind: 'chick', bounce: 'ピヨ', runIdle: '待つピヨ', runActive: 'ぴょん' }
+  };
+
   const KP_RANKS = [
     { min: 0, icon: '🌱', name: 'コツ見習い' },
     { min: 100, icon: '📝', name: 'コツ学習者' },
@@ -206,7 +215,9 @@
     pickerMode: null,
     renamingChoice: '',
     editingTaskId: null,
-    floatTimer: null
+    floatTimer: null,
+    topStoryBounceTimer: null,
+    topStoryWatchTimer: null
   };
 
   function $(id) {
@@ -395,6 +406,53 @@
   function getStoryMeta() {
     const id = getCurrentStory();
     return STORY_META[id] || STORY_META.samurai;
+  }
+
+  function topStoryCharacterFor(storyId) {
+    return TOP_STORY_CHARACTERS[storyId] || TOP_STORY_CHARACTERS.default;
+  }
+
+  function isStopwatchRunning() {
+    const disp = document.getElementById('sw-display');
+    const stopBtn = document.getElementById('sw-stop-btn');
+    return !!((disp && disp.classList.contains('running')) || (stopBtn && !stopBtn.disabled));
+  }
+
+  function updateTopStoryCharacters() {
+    const conf = topStoryCharacterFor(getCurrentStory());
+    const running = isStopwatchRunning();
+    const runner = document.querySelector('[data-ks-runner]');
+    const runnerChar = document.querySelector('[data-ks-runner-char]');
+    const runnerBubble = document.querySelector('[data-ks-runner-bubble]');
+    const bouncerChar = document.querySelector('[data-ks-bouncer-char]');
+    const bouncerBubble = document.querySelector('[data-ks-bouncer-bubble]');
+    if (runner) runner.classList.toggle('is-running', running);
+    if (runnerChar) runnerChar.dataset.ksKind = conf.kind;
+    if (bouncerChar) bouncerChar.dataset.ksKind = conf.kind;
+    if (runnerBubble) runnerBubble.textContent = running ? conf.runActive : conf.runIdle;
+    if (bouncerBubble) bouncerBubble.textContent = conf.bounce;
+  }
+
+  function scheduleTopStoryBouncer() {
+    const bouncer = document.querySelector('[data-ks-bouncer]');
+    if (!bouncer) return;
+    clearTimeout(state.topStoryBounceTimer);
+    const delay = 1800 + Math.floor(Math.random() * 3600);
+    state.topStoryBounceTimer = setTimeout(() => {
+      const mode = Math.random() < .35 ? 'hop-fast' : 'hop-calm';
+      bouncer.classList.remove('hop-calm', 'hop-fast');
+      void bouncer.offsetWidth;
+      bouncer.classList.add(mode);
+      setTimeout(() => bouncer.classList.remove(mode), mode === 'hop-fast' ? 1300 : 1700);
+      scheduleTopStoryBouncer();
+    }, delay);
+  }
+
+  function startTopStoryWatcher() {
+    updateTopStoryCharacters();
+    scheduleTopStoryBouncer();
+    clearInterval(state.topStoryWatchTimer);
+    state.topStoryWatchTimer = setInterval(updateTopStoryCharacters, 700);
   }
 
   function equipmentGroup() {
@@ -1509,6 +1567,7 @@
     const pctEl = button.querySelector('[data-ks-open-pct]');
     if (sub) sub.textContent = list.length ? `残り${todo}件 / ${done.length}完了` : '今日のコツを追加';
     if (pctEl) pctEl.textContent = list.length ? `${pct}%` : '0%';
+    updateTopStoryCharacters();
   }
 
   function exportData() {
@@ -1630,8 +1689,14 @@
     if (button && !button.dataset.ksBound) {
       button.dataset.ksBound = '1';
       button.addEventListener('click', open);
+      button.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        open();
+      });
     }
     updateButtonSummary();
+    startTopStoryWatcher();
   }
 
   window.KotsuTasks = {
