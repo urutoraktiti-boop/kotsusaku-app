@@ -677,7 +677,7 @@
               <div class="ks-task-title">📋 コツ習慣</div>
               <button class="ks-task-save-close" type="button" data-ks-action="save-close">💾 保存して閉じる</button>
               <div class="ks-task-title-actions">
-                <span class="ks-task-version">v106</span>
+                <span class="ks-task-version">v107</span>
                 <button class="ks-task-close" type="button" data-ks-action="close">×</button>
               </div>
             </div>

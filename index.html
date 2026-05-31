@@ -73,7 +73,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="stylesheet" href="./kotsu-tasks.css?v=kotsusaku-v106-template-polish">
+<link rel="stylesheet" href="./kotsu-tasks.css?v=kotsusaku-v107-update-popup-latest">
 </head>
 <body>
 <canvas id="fw-canvas"></canvas>
@@ -206,9 +206,9 @@
 <div id="update-banner" style="display:none;position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,.72);align-items:center;justify-content:center;padding:20px;">
 <div style="background:#0f1117;border:2px solid #f472b6;border-radius:20px;padding:28px 24px;max-width:380px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(244,114,182,.35);">
 <div style="font-size:2.2rem;line-height:1;margin-bottom:10px;">📋</div>
-<div id="update-title-text" style="font-size:1.05rem;font-weight:800;color:#fde8f7;margin-bottom:4px;">コツ習慣のバグ修正が完了しました</div>
-<div id="update-version-text" style="font-size:.82rem;font-weight:700;color:#fde8f7;margin-bottom:10px;">テンプレートが重複しにくくなりました。</div>
-<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">⭐ 同じテンプレートの重複保存を防止<br>🗑️ 削除したテンプレートが戻りにくくなりました</div>
+<div id="update-title-text" style="font-size:1.05rem;font-weight:800;color:#fde8f7;margin-bottom:4px;">更新のお知らせを整理しました</div>
+<div id="update-version-text" style="font-size:.82rem;font-weight:700;color:#fde8f7;margin-bottom:10px;">最新の更新だけ分かるようにしました。</div>
+<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">✅ 更新ポップアップの連続表示を抑制<br>📋 コツ習慣まわりの表示を調整</div>
 <div id="update-data-note" style="font-size:.66rem;color:#fca5a5;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.22);border-radius:8px;padding:7px 10px;margin-bottom:12px;line-height:1.65;text-align:left;">※キャッシュ・サイトデータを削除すると、端末内の記録が消える場合があります。</div>
 <button id="update-reload-btn" style="display:block;width:100%;background:#f472b6;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:800;cursor:pointer;margin-bottom:12px;letter-spacing:.03em;">
 ✅ 今すぐ更新する
@@ -1183,7 +1183,7 @@
   setTimeout(window.__kotsusakuEnsureForecast,900);
   setTimeout(window.__kotsusakuEnsureForecast,2000);
 })();
-</script><script src="./kotsu-tasks.js?v=kotsusaku-v106-template-polish"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script><script>
+</script><script src="./kotsu-tasks.js?v=kotsusaku-v107-update-popup-latest"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script><script>
 
 const $=id=>document.getElementById(id);
 
@@ -1231,7 +1231,7 @@ function trackEvent(name, params) {
   if (!analytics || !name) return;
   try {
     analytics.logEvent(name, Object.assign({
-      app_version: 'kotsusaku-v106-template-polish'
+      app_version: 'kotsusaku-v107-update-popup-latest'
     }, params || {}));
   } catch(e) {
     console.warn('Analytics送信エラー:', e);
@@ -1455,7 +1455,7 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
     const now = new Date().toISOString();
     const base = {
       userId: getAnonymousId(),
-      appVersion: 'kotsusaku-v106-template-polish',
+      appVersion: 'kotsusaku-v107-update-popup-latest',
       lastAccess: now,
       firstAccess: getFirstAccess(),
       os: device.os,
@@ -6548,9 +6548,17 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v106-template-polish'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v107-update-popup-latest'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
+  var _latestVersionLabel = null;
+  var UPDATE_PROMPT_SEEN_KEY = '_kotsusakuUpdatePromptSeenVersion';
+  var UPDATE_PROMPT_APPLIED_KEY = '_kotsusakuUpdatePromptAppliedVersion';
+  var UPDATE_COPY = {
+    title: '更新のお知らせを整理しました',
+    body: '最新の更新だけ分かるようにしました。',
+    notes: '✅ 更新ポップアップの連続表示を抑制<br>📋 コツ習慣まわりの表示を調整'
+  };
 
   // ver-badge と CURRENT_VERSION を version.json の値で初期化
   function _initVersion(ver) {
@@ -6562,18 +6570,25 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
   // バナーを1回だけ表示し、ボタンに単一のリスナーをセット
   function showUpdateBanner(latestLabel, workerToSkip) {
     if (_bannerShown) return;
+    var promptVersion = latestLabel || _latestVersionLabel || 'latest-update';
+    try {
+      if (sessionStorage.getItem(UPDATE_PROMPT_SEEN_KEY) === promptVersion ||
+          sessionStorage.getItem(UPDATE_PROMPT_APPLIED_KEY) === promptVersion) {
+        return;
+      }
+      sessionStorage.setItem(UPDATE_PROMPT_SEEN_KEY, promptVersion);
+    } catch(e){}
     _bannerShown = true;
     if (workerToSkip) _pendingWorker = workerToSkip;
 
     var banner = document.getElementById('update-banner');
     if (!banner) return;
     var title = document.getElementById('update-title-text');
-    if (title) title.textContent = 'コツ習慣のバグ修正が完了しました';
+    if (title) title.textContent = UPDATE_COPY.title;
     var vtxt = document.getElementById('update-version-text');
-    if (vtxt) vtxt.innerHTML = 'テンプレートが重複しにくくなりました。';
-    // リリースノートを今回の更新内容に設定
+    if (vtxt) vtxt.innerHTML = UPDATE_COPY.body;
     var rnotes = document.getElementById('update-release-notes');
-    if (rnotes) rnotes.innerHTML = '⭐ 同じテンプレートの重複保存を防止<br>🗑️ 削除したテンプレートが戻りにくくなりました';
+    if (rnotes) rnotes.innerHTML = UPDATE_COPY.notes;
     banner.style.display = 'flex';
 
     var btn = document.getElementById('update-reload-btn');
@@ -6582,7 +6597,10 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
       btn.textContent = '⏳ 更新中...';
       btn.disabled = true;
       // リロード後に再度バナーが出ないよう「更新済み」フラグを立てる
-      try { sessionStorage.setItem('_swJustUpdated','1'); } catch(e){}
+      try {
+        sessionStorage.setItem('_swJustUpdated','1');
+        sessionStorage.setItem(UPDATE_PROMPT_APPLIED_KEY, promptVersion);
+      } catch(e){}
       if (_pendingWorker) {
         _pendingWorker.postMessage('SKIP_WAITING');
         setTimeout(function(){ window.location.reload(true); }, 1500);
@@ -6621,13 +6639,19 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
       .then(function(data){
         var latest = data && data.version;
         if (!latest) return;
+        _latestVersionLabel = latest;
         // ver-badgeはlatestで表示する
         var badge = document.getElementById('ver-badge');
         if (badge) badge.textContent = '(' + latest.replace('kotsusaku-','') + ')';
-        // CURRENT_VERSION（このファイルが持つバージョン）と比較して更新バナーを出す
-        if (latest !== CURRENT_VERSION) {
-          showUpdateBanner(latest, null);
+        if (latest === CURRENT_VERSION) {
+          try {
+            sessionStorage.removeItem(UPDATE_PROMPT_SEEN_KEY);
+            sessionStorage.removeItem(UPDATE_PROMPT_APPLIED_KEY);
+          } catch(e){}
+          return;
         }
+        // CURRENT_VERSION（このファイルが持つバージョン）と比較して更新バナーを出す
+        showUpdateBanner(latest, null);
         // ※ CURRENT_VERSION はここでは上書きしない（比較基準として維持）
       })
       .catch(function(){

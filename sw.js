@@ -5,7 +5,7 @@
 //   2. index.html の CURRENT_VERSION（フォールバック値）
 //   3. version.json の version
 // ============================================================
-const CACHE_VERSION = 'kotsusaku-v106-template-polish';
+const CACHE_VERSION = 'kotsusaku-v107-update-popup-latest';
 const CACHE_FILES = [
   './',
   './index.html',
