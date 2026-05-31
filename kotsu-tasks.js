@@ -995,7 +995,6 @@
     const story = getStoryMeta();
       const evolution = syncStoryProgress();
 	    const selectedCategory = categoryFor(state.selectedType);
-	    const selectedLabel = categoryLabel(selectedCategory);
 
 	    $('ks-task-page-today').innerHTML = `
       ${renderStoryEvolutionCompact(story, evolution)}
@@ -1007,7 +1006,8 @@
         <div class="ks-task-summary-item"><div class="ks-task-summary-num" style="color:var(--accent)">${pct}%</div><div class="ks-task-summary-label">達成率</div></div>
       </div>
       <div class="ks-task-track" style="margin:-4px 0 10px"><div class="ks-task-fill" style="width:${pct}%"></div></div>
-      <div class="ks-task-template-card">
+      <div class="ks-task-add cat-${escapeHtml(selectedCategory)}">
+        <div class="ks-task-add-title">今日のコツを追加</div>
         <div class="ks-task-template-head">
           <div>
             <div class="ks-task-template-title">保存済みコツ</div>
@@ -1015,21 +1015,15 @@
           </div>
         </div>
         <div class="ks-task-template-strip">${renderTemplates()}</div>
+        <div class="ks-task-manual-flow">
+          <div class="ks-task-add-sub">科目と種類を選んで、最後に内容を確認します</div>
+          <div class="ks-task-add-row">
+            <button class="ks-task-picker ${state.selectedSubject ? 'has-value' : ''}" type="button" data-ks-action="pick-subject"><span class="ks-task-step-num">①</span>${escapeHtml(state.selectedSubject || '科目')}</button>
+            <button class="ks-task-picker ${state.selectedType ? 'has-value' : ''}" type="button" data-ks-action="pick-type"><span class="ks-task-step-num">②</span>${escapeHtml(state.selectedType || '種類')}</button>
+            <button class="ks-task-add-btn" type="button" data-ks-action="add-task"><span class="ks-task-step-num">③</span>確認</button>
+          </div>
+        </div>
       </div>
-		      <div class="ks-task-add cat-${escapeHtml(selectedCategory)}">
-		        <div class="ks-task-add-head">
-		          <div>
-		            <div class="ks-task-add-title">今日のコツを追加</div>
-		            <div class="ks-task-add-sub">科目と種類を選んで、最後に優先度を確認します</div>
-		          </div>
-		        </div>
-		        <div class="ks-task-add-row">
-	          <button class="ks-task-picker ${state.selectedSubject ? 'has-value' : ''}" type="button" data-ks-action="pick-subject"><span class="ks-task-step-num">①</span>${escapeHtml(state.selectedSubject || '科目')}</button>
-	          <button class="ks-task-picker ${state.selectedType ? 'has-value' : ''}" type="button" data-ks-action="pick-type"><span class="ks-task-step-num">②</span>${escapeHtml(state.selectedType || '種類')}</button>
-	          <button class="ks-task-add-btn" type="button" data-ks-action="add-task"><span class="ks-task-step-num">③</span>確認</button>
-	        </div>
-          <div class="ks-task-add-hint"><span class="ks-task-category-pill cat-${escapeHtml(selectedCategory)}">${escapeHtml(selectedLabel.icon)} ${escapeHtml(selectedLabel.name)}</span><span>③で優先度を確認して追加します</span></div>
-	      </div>
       <div class="ks-task-section-head"><span>未完了 <span style="color:var(--accent)">${todo.length}</span> 件</span><button class="ks-task-small-btn" type="button" data-ks-action="carry-all">全部→明日</button></div>
       <div class="ks-task-list">${todo.length ? todo.map(renderTaskCard).join('') : '<div class="ks-task-empty">今日のコツを積んでみましょう</div>'}</div>
       <button class="ks-task-small-btn" type="button" data-ks-action="toggle-done-list" style="width:100%;margin-top:10px">完了したコツ（${done.length}件）</button>
@@ -1508,8 +1502,13 @@
         <div class="ks-task-confirm-icon">${escapeHtml(label.icon)}</div>
         <div class="ks-task-confirm-main">
           <div class="ks-task-confirm-name">${escapeHtml(state.selectedSubject || '未分類')} / ${escapeHtml(state.selectedType || '')}</div>
-          <div class="ks-task-confirm-note">予定量や分数は、追加後にカードの✏️から編集できます</div>
+          <div class="ks-task-confirm-note">必要なところだけ軽く調整できます</div>
         </div>
+      </div>
+      <div class="ks-task-confirm-fields">
+        <div class="ks-task-field"><div class="ks-task-label">予定量</div><input class="ks-task-input" id="ks-task-plan-amt" type="number" min="0" placeholder="20"></div>
+        <div class="ks-task-field"><div class="ks-task-label">単位</div><input class="ks-task-input" id="ks-task-unit" maxlength="12" placeholder="${escapeHtml(unitFor(state.selectedType))}"></div>
+        <div class="ks-task-field"><div class="ks-task-label">予定分</div><input class="ks-task-input" id="ks-task-plan-mins" type="number" min="0" placeholder="30"></div>
       </div>
       <div class="ks-task-priority-box">
         <div class="ks-task-priority-label">優先度</div>
@@ -1518,7 +1517,7 @@
         </div>
       </div>
       <div class="ks-task-confirm-actions">
-        <button class="ks-task-small-btn" type="button" data-ks-action="add-confirm-save-add">⭐ 保存して追加</button>
+        <button class="ks-task-small-btn" type="button" data-ks-action="add-confirm-save-add">⭐ 保存</button>
         <button class="ks-task-add-btn" type="button" data-ks-action="add-confirm-add">＋ コツ追加</button>
       </div>
     `;
@@ -1734,17 +1733,53 @@
     return { stars: '★☆☆☆☆', next: 5, progress: Math.round(count / 5 * 100) };
   }
 
+  function dateObject(dateStr) {
+    return new Date(dateStr + 'T12:00:00');
+  }
+
+  function completedCountBetween(startDate, endDate) {
+    const data = tasksByDate();
+    let count = 0;
+    Object.keys(data).forEach((date) => {
+      const current = dateObject(date);
+      if (current < startDate || current > endDate) return;
+      (data[date] || []).forEach((task) => {
+        if (task.status === 'done') count += 1;
+      });
+    });
+    return count;
+  }
+
+  function periodCompletedCounts(todayKey) {
+    const today = dateObject(todayKey);
+    const weekStart = dateObject(todayKey);
+    weekStart.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+    const weekEnd = dateObject(todayKey);
+    weekEnd.setTime(weekStart.getTime());
+    weekEnd.setDate(weekStart.getDate() + 6);
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1, 12);
+    const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0, 12);
+    return {
+      week: completedCountBetween(weekStart, weekEnd),
+      month: completedCountBetween(monthStart, monthEnd)
+    };
+  }
+
   function updateButtonSummary() {
     const button = $('ks-task-open-btn');
     if (!button) return;
-    const list = (tasksByDate()[studyDate(0)] || []).filter((task) => task.status !== 'carried');
+    const todayKey = studyDate(0);
+    const list = (tasksByDate()[todayKey] || []).filter((task) => task.status !== 'carried');
     const done = list.filter((task) => task.status === 'done');
     const todo = list.length - done.length;
     const pct = list.length ? Math.round(done.length / list.length * 100) : 0;
     const sub = button.querySelector('[data-ks-open-sub]');
-    const pctEl = button.querySelector('[data-ks-open-pct]');
-    if (sub) sub.textContent = list.length ? `残り${todo}件 / ${done.length}完了` : '今日のコツを追加';
-    if (pctEl) pctEl.textContent = list.length ? `${pct}%` : '0%';
+    const weekEl = button.querySelector('[data-ks-open-week]');
+    const monthEl = button.querySelector('[data-ks-open-month]');
+    const periods = periodCompletedCounts(todayKey);
+    if (sub) sub.textContent = list.length ? `今日 ${done.length}/${list.length} 残${todo} ${pct}%` : '今日のコツを追加';
+    if (weekEl) weekEl.textContent = `週${periods.week}`;
+    if (monthEl) monthEl.textContent = `月${periods.month}`;
     updateTopStoryCharacters();
   }
 

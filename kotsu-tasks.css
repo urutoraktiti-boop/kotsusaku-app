@@ -43,7 +43,9 @@
 }
 
 .ks-task-open-title-row {
-  display: flex;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 7px;
   min-width: 0;
@@ -53,6 +55,8 @@
   font-size: .72rem;
   font-weight: 900;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ks-runner-slot,
@@ -342,10 +346,24 @@
   text-overflow: ellipsis;
 }
 
-.ks-task-open-pct {
-  font-size: .7rem;
+.ks-task-open-sub-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.ks-task-open-stat {
+  border: 1px solid rgba(79, 142, 247, .22);
+  border-radius: 99px;
+  background: rgba(79, 142, 247, .08);
+  color: var(--accent);
+  font-size: .52rem;
   font-weight: 900;
-  color: var(--checked);
+  line-height: 1;
+  padding: 3px 6px;
   white-space: nowrap;
 }
 
@@ -971,10 +989,12 @@
   font-size: .84rem;
   font-weight: 900;
   color: var(--text);
+  margin-bottom: 9px;
 }
 
 .ks-task-add-sub {
   margin-top: 3px;
+  margin-bottom: 7px;
   font-size: .58rem;
   color: var(--text-muted);
   line-height: 1.5;
@@ -1008,6 +1028,12 @@
   display: grid;
   grid-template-columns: 1fr 1fr auto;
   gap: 6px;
+}
+
+.ks-task-manual-flow {
+  border-top: 1px solid var(--border);
+  margin-top: 10px;
+  padding-top: 10px;
 }
 
 .ks-task-picker,
@@ -1452,6 +1478,13 @@
   line-height: 1.5;
 }
 
+.ks-task-confirm-fields {
+  display: grid;
+  grid-template-columns: 1fr .8fr 1fr;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
 .ks-task-priority-box {
   margin-bottom: 12px;
 }
@@ -1470,7 +1503,7 @@
 
 .ks-task-confirm-actions {
   display: grid;
-  grid-template-columns: 1fr 1.1fr;
+  grid-template-columns: .86fr 1.14fr;
   gap: 8px;
 }
 
@@ -1911,5 +1944,25 @@
 
   .ks-task-open-btn {
     padding: 7px 9px;
+  }
+}
+
+@media (max-width: 520px) {
+  .ks-task-add-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+    gap: 5px;
+  }
+
+  .ks-task-add-btn {
+    grid-column: auto;
+    padding: 0 8px;
+  }
+
+  .ks-task-picker {
+    padding: 0 7px;
+  }
+
+  .ks-task-confirm-fields {
+    grid-template-columns: 1fr .78fr 1fr;
   }
 }
