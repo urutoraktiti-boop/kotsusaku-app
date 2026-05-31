@@ -73,7 +73,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="stylesheet" href="./kotsu-tasks.css?v=kotsusaku-v107-update-popup-latest">
+<link rel="stylesheet" href="./kotsu-tasks.css?v=kotsusaku-v108-kotsu-input-improvement">
 </head>
 <body>
 <canvas id="fw-canvas"></canvas>
@@ -726,11 +726,9 @@
   <div class="ks-task-open-btn" id="ks-task-open-btn" role="button" tabindex="0">
     <span class="ks-task-open-icon">📋</span>
     <span class="ks-task-open-main">
-      <span class="ks-task-open-title-row">
+      <span class="ks-task-open-info-grid">
         <span class="ks-task-open-title">コツ（タスク）習得</span>
         <span class="ks-task-open-stat" data-ks-open-week>週0</span>
-      </span>
-      <span class="ks-task-open-sub-row">
         <span class="ks-task-open-sub" data-ks-open-sub>今日のコツを追加</span>
         <span class="ks-task-open-stat" data-ks-open-month>月0</span>
       </span>
@@ -1191,7 +1189,7 @@
   setTimeout(window.__kotsusakuEnsureForecast,900);
   setTimeout(window.__kotsusakuEnsureForecast,2000);
 })();
-</script><script src="./kotsu-tasks.js?v=kotsusaku-v107-update-popup-latest"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script><script>
+</script><script src="./kotsu-tasks.js?v=kotsusaku-v108-kotsu-input-improvement"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script><script>
 
 const $=id=>document.getElementById(id);
 
@@ -1239,7 +1237,7 @@ function trackEvent(name, params) {
   if (!analytics || !name) return;
   try {
     analytics.logEvent(name, Object.assign({
-      app_version: 'kotsusaku-v107-update-popup-latest'
+      app_version: 'kotsusaku-v108-kotsu-input-improvement'
     }, params || {}));
   } catch(e) {
     console.warn('Analytics送信エラー:', e);
@@ -1463,7 +1461,7 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
     const now = new Date().toISOString();
     const base = {
       userId: getAnonymousId(),
-      appVersion: 'kotsusaku-v107-update-popup-latest',
+      appVersion: 'kotsusaku-v108-kotsu-input-improvement',
       lastAccess: now,
       firstAccess: getFirstAccess(),
       os: device.os,
@@ -6556,21 +6554,21 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v107-update-popup-latest'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v108-kotsu-input-improvement'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
   var _latestVersionLabel = null;
   var UPDATE_PROMPT_SEEN_KEY = '_kotsusakuUpdatePromptSeenVersion';
   var UPDATE_PROMPT_APPLIED_KEY = '_kotsusakuUpdatePromptAppliedVersion';
   var UPDATE_COPY = {
-    title: '更新のお知らせを整理しました',
-    body: '最新の更新だけ分かるようにしました。',
-    notes: '✅ 更新ポップアップの連続表示を抑制<br>📋 コツ習慣まわりの表示を調整'
+    title: 'コツ習慣入力改善',
+    body: 'もっとライトに入力しやすくなったゴリ。',
+    notes: '✅ 保存済みコツを上に移動<br>✅ ①②③の入力フローを整理<br>🏃 走るキャラの背景アニメをランダム化'
   };
 
   function formatVersionBadge(ver) {
     var match = String(ver || CURRENT_VERSION).match(/v(\d+)/i);
-    return match ? 'v' + match[1] : 'v107';
+    return match ? 'v' + match[1] : 'v108';
   }
 
   // ver-badge と CURRENT_VERSION を version.json の値で初期化

@@ -250,7 +250,8 @@
     floatTimer: null,
     topStoryBounceTimer: null,
     topStoryWatchTimer: null,
-    topStoryComment: null
+    topStoryComment: null,
+    topStorySpeedLine: null
   };
 
   function $(id) {
@@ -494,6 +495,42 @@
     return !!((disp && disp.classList.contains('running')) || (stopBtn && !stopBtn.disabled));
   }
 
+  const RUNNER_SPEED_LINE_CLASSES = [
+    'ks-speed-calm',
+    'ks-speed-standard',
+    'ks-speed-fast',
+    'ks-speed-horizontal',
+    'ks-speed-horizontal-fast'
+  ];
+
+  function nextRunnerSpeedLine(previous) {
+    let next = RUNNER_SPEED_LINE_CLASSES[Math.floor(Math.random() * RUNNER_SPEED_LINE_CLASSES.length)];
+    if (next === previous) {
+      const currentIndex = RUNNER_SPEED_LINE_CLASSES.indexOf(next);
+      next = RUNNER_SPEED_LINE_CLASSES[(currentIndex + 1) % RUNNER_SPEED_LINE_CLASSES.length];
+    }
+    return next;
+  }
+
+  function updateRunnerSpeedLine(runner, running) {
+    if (!runner) return;
+    const now = Date.now();
+    if (!running) {
+      runner.classList.remove(...RUNNER_SPEED_LINE_CLASSES);
+      state.topStorySpeedLine = null;
+      return;
+    }
+    if (!state.topStorySpeedLine || now >= state.topStorySpeedLine.nextAt) {
+      const className = nextRunnerSpeedLine(state.topStorySpeedLine && state.topStorySpeedLine.className);
+      state.topStorySpeedLine = {
+        className,
+        nextAt: now + 1800 + Math.floor(Math.random() * 2400)
+      };
+    }
+    runner.classList.remove(...RUNNER_SPEED_LINE_CLASSES);
+    runner.classList.add(state.topStorySpeedLine.className);
+  }
+
   function updateTopStoryCharacters() {
     const conf = topStoryCharacterFor(getCurrentStory());
     const running = isStopwatchRunning();
@@ -514,6 +551,7 @@
     const bouncerChar = document.querySelector('[data-ks-bouncer-char]');
     const bouncerBubble = document.querySelector('[data-ks-bouncer-bubble]');
     if (runner) runner.classList.toggle('is-running', running);
+    updateRunnerSpeedLine(runner, running);
     if (runnerChar) runnerChar.dataset.ksKind = conf.kind;
     if (bouncerChar) bouncerChar.dataset.ksKind = conf.kind;
     if (runnerBubble) runnerBubble.textContent = state.topStoryComment.runner;
@@ -678,7 +716,7 @@
               <div class="ks-task-title">📋 コツ習慣</div>
               <button class="ks-task-save-close" type="button" data-ks-action="save-close">💾 保存して閉じる</button>
               <div class="ks-task-title-actions">
-                <span class="ks-task-version">v107</span>
+                <span class="ks-task-version">v108</span>
                 <button class="ks-task-close" type="button" data-ks-action="close">×</button>
               </div>
             </div>
