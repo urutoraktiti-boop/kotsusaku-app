@@ -73,7 +73,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="stylesheet" href="./kotsu-tasks.css?v=kotsusaku-v105-template-dedupe">
+<link rel="stylesheet" href="./kotsu-tasks.css?v=kotsusaku-v106-template-polish">
 </head>
 <body>
 <canvas id="fw-canvas"></canvas>
@@ -205,10 +205,10 @@
 </div>
 <div id="update-banner" style="display:none;position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,.72);align-items:center;justify-content:center;padding:20px;">
 <div style="background:#0f1117;border:2px solid #f472b6;border-radius:20px;padding:28px 24px;max-width:380px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(244,114,182,.35);">
-<div style="font-size:2.2rem;line-height:1;margin-bottom:10px;">🐣</div>
-<div style="font-size:1.05rem;font-weight:800;color:#fde8f7;margin-bottom:4px;">タマピヨ参戦!?</div>
-<div id="update-version-text" style="font-size:.82rem;font-weight:700;color:#fde8f7;margin-bottom:10px;">コツを習得すると変化が???<br>コツ（タスク）習得画面から確認できます。</div>
-<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">📋 全ストーリーで進化表示に対応<br>✅ 「習得」ボタンを見やすく改善</div>
+<div style="font-size:2.2rem;line-height:1;margin-bottom:10px;">📋</div>
+<div id="update-title-text" style="font-size:1.05rem;font-weight:800;color:#fde8f7;margin-bottom:4px;">コツ習慣のバグ修正が完了しました</div>
+<div id="update-version-text" style="font-size:.82rem;font-weight:700;color:#fde8f7;margin-bottom:10px;">テンプレートが重複しにくくなりました。</div>
+<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">⭐ 同じテンプレートの重複保存を防止<br>🗑️ 削除したテンプレートが戻りにくくなりました</div>
 <div id="update-data-note" style="font-size:.66rem;color:#fca5a5;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.22);border-radius:8px;padding:7px 10px;margin-bottom:12px;line-height:1.65;text-align:left;">※キャッシュ・サイトデータを削除すると、端末内の記録が消える場合があります。</div>
 <button id="update-reload-btn" style="display:block;width:100%;background:#f472b6;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:800;cursor:pointer;margin-bottom:12px;letter-spacing:.03em;">
 ✅ 今すぐ更新する
@@ -1183,7 +1183,7 @@
   setTimeout(window.__kotsusakuEnsureForecast,900);
   setTimeout(window.__kotsusakuEnsureForecast,2000);
 })();
-</script><script src="./kotsu-tasks.js?v=kotsusaku-v105-template-dedupe"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script><script>
+</script><script src="./kotsu-tasks.js?v=kotsusaku-v106-template-polish"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script><script>
 
 const $=id=>document.getElementById(id);
 
@@ -1231,7 +1231,7 @@ function trackEvent(name, params) {
   if (!analytics || !name) return;
   try {
     analytics.logEvent(name, Object.assign({
-      app_version: 'kotsusaku-v105-template-dedupe'
+      app_version: 'kotsusaku-v106-template-polish'
     }, params || {}));
   } catch(e) {
     console.warn('Analytics送信エラー:', e);
@@ -1455,7 +1455,7 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
     const now = new Date().toISOString();
     const base = {
       userId: getAnonymousId(),
-      appVersion: 'kotsusaku-v105-template-dedupe',
+      appVersion: 'kotsusaku-v106-template-polish',
       lastAccess: now,
       firstAccess: getFirstAccess(),
       os: device.os,
@@ -6548,7 +6548,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v105-template-dedupe'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v106-template-polish'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
 
@@ -6567,11 +6567,13 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 
     var banner = document.getElementById('update-banner');
     if (!banner) return;
+    var title = document.getElementById('update-title-text');
+    if (title) title.textContent = 'コツ習慣のバグ修正が完了しました';
     var vtxt = document.getElementById('update-version-text');
-    if (vtxt) vtxt.innerHTML = 'コツを習得すると変化が???<br>コツ（タスク）習得画面から確認できます。';
+    if (vtxt) vtxt.innerHTML = 'テンプレートが重複しにくくなりました。';
     // リリースノートを今回の更新内容に設定
     var rnotes = document.getElementById('update-release-notes');
-    if (rnotes) rnotes.innerHTML = '📋 全ストーリーで進化表示に対応<br>✅ 「習得」ボタンを見やすく改善';
+    if (rnotes) rnotes.innerHTML = '⭐ 同じテンプレートの重複保存を防止<br>🗑️ 削除したテンプレートが戻りにくくなりました';
     banner.style.display = 'flex';
 
     var btn = document.getElementById('update-reload-btn');

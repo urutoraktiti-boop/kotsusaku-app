@@ -671,13 +671,13 @@
     root.id = 'ks-task-root';
     root.innerHTML = `
       <div class="ks-task-sheet" id="ks-task-sheet" aria-hidden="true">
-        <div class="ks-task-panel" role="dialog" aria-modal="true" aria-label="コツ（タスク）習得">
+        <div class="ks-task-panel" role="dialog" aria-modal="true" aria-label="コツ習慣">
           <div class="ks-task-header">
             <div class="ks-task-title-row">
-              <div class="ks-task-title">📋 コツ（タスク）習得</div>
+              <div class="ks-task-title">📋 コツ習慣</div>
               <button class="ks-task-save-close" type="button" data-ks-action="save-close">💾 保存して閉じる</button>
               <div class="ks-task-title-actions">
-                <span class="ks-task-version" title="コツ習得 v102">v102</span>
+                <span class="ks-task-version">v106</span>
                 <button class="ks-task-close" type="button" data-ks-action="close">×</button>
               </div>
             </div>
