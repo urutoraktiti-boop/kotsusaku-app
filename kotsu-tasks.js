@@ -246,6 +246,7 @@
     pickerMode: null,
     renamingChoice: '',
     editingTaskId: null,
+    addConfirmOpen: false,
     floatTimer: null,
     topStoryBounceTimer: null,
     topStoryWatchTimer: null,
@@ -740,6 +741,18 @@
           </div>
         </div>
       </div>
+      <div class="ks-task-add-confirm-overlay" id="ks-task-add-confirm-overlay">
+        <div class="ks-task-modal ks-task-add-confirm-modal">
+          <div class="ks-task-modal-head">
+            <div>
+              <div class="ks-task-card-subj" id="ks-task-add-confirm-subj"></div>
+              <div class="ks-task-modal-title" id="ks-task-add-confirm-title"></div>
+            </div>
+            <button class="ks-task-close" type="button" data-ks-action="add-confirm-close">×</button>
+          </div>
+          <div class="ks-task-modal-body" id="ks-task-add-confirm-body"></div>
+        </div>
+      </div>
       <div class="ks-task-rename-overlay" id="ks-task-rename-overlay">
         <div class="ks-task-modal">
           <div class="ks-task-modal-head">
@@ -789,6 +802,7 @@
       if (event.target.id === 'ks-task-sheet') close();
       if (event.target.id === 'ks-task-picker-overlay') closePicker();
       if (event.target.id === 'ks-task-detail-overlay') closeDetail();
+      if (event.target.id === 'ks-task-add-confirm-overlay') closeAddConfirm();
       if (event.target.id === 'ks-task-rename-overlay') closeRename();
 
       if (tabEl) {
@@ -834,11 +848,14 @@
       if (action === 'picker-add') addChoice();
       if (action === 'detail-close') closeDetail();
       if (action === 'detail-save') saveDetail();
+      if (action === 'add-confirm-close') closeAddConfirm();
+      if (action === 'add-confirm-add') addTask();
+      if (action === 'add-confirm-save-add') saveTemplateAndAddTask();
       if (action === 'rename-close') closeRename();
       if (action === 'rename-save') saveRenameChoice();
       if (action === 'pick-subject') openPicker('subject');
       if (action === 'pick-type') openPicker('type');
-      if (action === 'add-task') addTask();
+      if (action === 'add-task') openAddConfirm();
       if (action === 'toggle-add-details') toggleAddDetails();
       if (action === 'save-template') saveTemplate();
       if (action === 'carry-all') carryAll();
@@ -851,7 +868,8 @@
 
     root.addEventListener('keydown', function (event) {
       if (event.key === 'Escape') {
-        if ($('ks-task-detail-overlay').classList.contains('is-open')) closeDetail();
+        if ($('ks-task-add-confirm-overlay').classList.contains('is-open')) closeAddConfirm();
+        else if ($('ks-task-detail-overlay').classList.contains('is-open')) closeDetail();
         else if ($('ks-task-picker-overlay').classList.contains('is-open')) closePicker();
         else close();
       }
@@ -876,6 +894,7 @@
     $('ks-task-sheet').setAttribute('aria-hidden', 'true');
     closePicker();
     closeDetail();
+    closeAddConfirm();
   }
 
   function openStorySettings() {
@@ -988,37 +1007,29 @@
         <div class="ks-task-summary-item"><div class="ks-task-summary-num" style="color:var(--accent)">${pct}%</div><div class="ks-task-summary-label">達成率</div></div>
       </div>
       <div class="ks-task-track" style="margin:-4px 0 10px"><div class="ks-task-fill" style="width:${pct}%"></div></div>
-	      <div class="ks-task-add cat-${escapeHtml(selectedCategory)}">
-	        <div class="ks-task-add-head">
-	          <div>
-	            <div class="ks-task-add-title">今日のコツを追加</div>
-	            <div class="ks-task-add-sub">科目・種類・量を決めて積み上げます</div>
-	          </div>
-	        </div>
-	        <div class="ks-task-add-row">
-          <button class="ks-task-picker ${state.selectedSubject ? 'has-value' : ''}" type="button" data-ks-action="pick-subject"><span class="ks-task-step-num">①</span>${escapeHtml(state.selectedSubject || '科目')}</button>
-          <button class="ks-task-picker ${state.selectedType ? 'has-value' : ''}" type="button" data-ks-action="pick-type"><span class="ks-task-step-num">②</span>${escapeHtml(state.selectedType || '種類')}</button>
-          <button class="ks-task-add-btn" type="button" data-ks-action="add-task"><span class="ks-task-step-num">③</span>＋コツ</button>
-        </div>
-        <button class="ks-task-detail-toggle" type="button" data-ks-action="toggle-add-details" aria-expanded="${state.addDetailsOpen ? 'true' : 'false'}">
-          <span>詳細設定</span>
-          <span class="ks-task-category-pill cat-${escapeHtml(selectedCategory)}">${escapeHtml(selectedLabel.icon)} ${escapeHtml(selectedLabel.name)}</span>
-          <span class="ks-task-detail-arrow">${state.addDetailsOpen ? '▲' : '▼'}</span>
-        </button>
-        <div class="ks-task-add-details ${state.addDetailsOpen ? 'is-open' : ''}" id="ks-task-add-details">
-          <div class="ks-task-detail-grid">
-            <div class="ks-task-field"><div class="ks-task-label">予定量</div><input class="ks-task-input" id="ks-task-plan-amt" type="number" min="0" placeholder="20"></div>
-            <div class="ks-task-field"><div class="ks-task-label">単位</div><input class="ks-task-input" id="ks-task-unit" maxlength="12" placeholder="${escapeHtml(unitFor(state.selectedType))}"></div>
-            <div class="ks-task-field"><div class="ks-task-label">予定分</div><input class="ks-task-input" id="ks-task-plan-mins" type="number" min="0" placeholder="30"></div>
-            <button class="ks-task-small-btn" type="button" data-ks-action="save-template" title="テンプレート保存">⭐保存</button>
-          </div>
-          <div class="ks-task-priority-row">
-            <span class="ks-task-priority-label">優先度</span>
-            ${[1, 2, 3, 4].map((n) => `<button class="ks-task-pri ${state.priority === n ? 'is-active' : ''}" type="button" data-ks-action="priority" data-priority="${n}">${priorityLabel(n)}</button>`).join('')}
+      <div class="ks-task-template-card">
+        <div class="ks-task-template-head">
+          <div>
+            <div class="ks-task-template-title">保存済みコツ</div>
+            <div class="ks-task-template-sub">よく使うコツはワンタップで追加できます</div>
           </div>
         </div>
         <div class="ks-task-template-strip">${renderTemplates()}</div>
       </div>
+		      <div class="ks-task-add cat-${escapeHtml(selectedCategory)}">
+		        <div class="ks-task-add-head">
+		          <div>
+		            <div class="ks-task-add-title">今日のコツを追加</div>
+		            <div class="ks-task-add-sub">科目と種類を選んで、最後に優先度を確認します</div>
+		          </div>
+		        </div>
+		        <div class="ks-task-add-row">
+	          <button class="ks-task-picker ${state.selectedSubject ? 'has-value' : ''}" type="button" data-ks-action="pick-subject"><span class="ks-task-step-num">①</span>${escapeHtml(state.selectedSubject || '科目')}</button>
+	          <button class="ks-task-picker ${state.selectedType ? 'has-value' : ''}" type="button" data-ks-action="pick-type"><span class="ks-task-step-num">②</span>${escapeHtml(state.selectedType || '種類')}</button>
+	          <button class="ks-task-add-btn" type="button" data-ks-action="add-task"><span class="ks-task-step-num">③</span>確認</button>
+	        </div>
+          <div class="ks-task-add-hint"><span class="ks-task-category-pill cat-${escapeHtml(selectedCategory)}">${escapeHtml(selectedLabel.icon)} ${escapeHtml(selectedLabel.name)}</span><span>③で優先度を確認して追加します</span></div>
+	      </div>
       <div class="ks-task-section-head"><span>未完了 <span style="color:var(--accent)">${todo.length}</span> 件</span><button class="ks-task-small-btn" type="button" data-ks-action="carry-all">全部→明日</button></div>
       <div class="ks-task-list">${todo.length ? todo.map(renderTaskCard).join('') : '<div class="ks-task-empty">今日のコツを積んでみましょう</div>'}</div>
       <button class="ks-task-small-btn" type="button" data-ks-action="toggle-done-list" style="width:100%;margin-top:10px">完了したコツ（${done.length}件）</button>
@@ -1219,6 +1230,10 @@
 
   function setPriority(n) {
     state.priority = n || 3;
+    if (state.addConfirmOpen) {
+      renderAddConfirm();
+      return;
+    }
     renderToday();
   }
 
@@ -1234,7 +1249,8 @@
     }
   }
 
-  function addTask(template) {
+  function addTask(template, options) {
+    const opts = options || {};
     const subject = template ? template.subject : (state.selectedSubject || '未分類');
     const type = template ? template.type : state.selectedType;
     if (!type) {
@@ -1273,11 +1289,12 @@
     mru('subject', subject);
     mru('type', type);
     state.selectedType = '';
+    closeAddConfirm();
     if ($('ks-task-plan-amt')) $('ks-task-plan-amt').value = '';
     if ($('ks-task-plan-mins')) $('ks-task-plan-mins').value = '';
     if ($('ks-task-unit')) $('ks-task-unit').value = '';
     render();
-    notify('コツを積みました');
+    if (!opts.silent) notify('コツを積みました');
   }
 
   function numberValue(id) {
@@ -1287,10 +1304,11 @@
     return Number.isFinite(num) ? num : null;
   }
 
-  function saveTemplate() {
+  function saveTemplate(options) {
+    const opts = options || {};
     if (!state.selectedType) {
       notify('種類を選んでください', true);
-      return;
+      return false;
     }
     const list = templates();
     const template = {
@@ -1305,14 +1323,21 @@
       priority: state.priority
     };
     if (list.some((tmpl) => templateSignature(tmpl) === templateSignature(template))) {
-      notify('同じテンプレートは保存済みです');
-      renderToday();
-      return;
+      if (!opts.silentDuplicate) notify('同じテンプレートは保存済みです');
+      if (!opts.skipRender) renderToday();
+      return false;
     }
     list.unshift(template);
     saveTemplates(list.slice(0, 20));
-    renderToday();
-    notify('テンプレートに保存しました');
+    if (!opts.skipRender) renderToday();
+    if (!opts.silent) notify('テンプレートに保存しました');
+    return true;
+  }
+
+  function saveTemplateAndAddTask() {
+    saveTemplate({ silent: true, silentDuplicate: true, skipRender: true });
+    addTask(null, { silent: true });
+    notify('保存してコツを追加しました');
   }
 
   function deleteTemplate(id) {
@@ -1451,6 +1476,54 @@
     notify('詳細を保存しました');
   }
 
+  function openAddConfirm() {
+    if (!state.selectedSubject) {
+      notify('科目を選んでください', true);
+      openPicker('subject');
+      return;
+    }
+    if (!state.selectedType) {
+      notify('種類を選んでください', true);
+      openPicker('type');
+      return;
+    }
+    state.addConfirmOpen = true;
+    renderAddConfirm();
+    $('ks-task-add-confirm-overlay').classList.add('is-open');
+  }
+
+  function closeAddConfirm() {
+    if ($('ks-task-add-confirm-overlay')) $('ks-task-add-confirm-overlay').classList.remove('is-open');
+    state.addConfirmOpen = false;
+  }
+
+  function renderAddConfirm() {
+    if (!$('ks-task-add-confirm-body')) return;
+    const category = categoryFor(state.selectedType);
+    const label = categoryLabel(category);
+    $('ks-task-add-confirm-subj').textContent = state.selectedSubject || '未分類';
+    $('ks-task-add-confirm-title').textContent = state.selectedType || 'コツを追加';
+    $('ks-task-add-confirm-body').innerHTML = `
+      <div class="ks-task-confirm-card cat-${escapeHtml(category)}">
+        <div class="ks-task-confirm-icon">${escapeHtml(label.icon)}</div>
+        <div class="ks-task-confirm-main">
+          <div class="ks-task-confirm-name">${escapeHtml(state.selectedSubject || '未分類')} / ${escapeHtml(state.selectedType || '')}</div>
+          <div class="ks-task-confirm-note">予定量や分数は、追加後にカードの✏️から編集できます</div>
+        </div>
+      </div>
+      <div class="ks-task-priority-box">
+        <div class="ks-task-priority-label">優先度</div>
+        <div class="ks-task-priority-grid">
+          ${[1, 2, 3, 4].map((n) => `<button class="ks-task-pri ${state.priority === n ? 'is-active' : ''}" type="button" data-ks-action="priority" data-priority="${n}">${priorityLabel(n)}</button>`).join('')}
+        </div>
+      </div>
+      <div class="ks-task-confirm-actions">
+        <button class="ks-task-small-btn" type="button" data-ks-action="add-confirm-save-add">⭐ 保存して追加</button>
+        <button class="ks-task-add-btn" type="button" data-ks-action="add-confirm-add">＋ コツ追加</button>
+      </div>
+    `;
+  }
+
   function openPicker(kind) {
     state.pickerMode = kind;
     $('ks-task-picker-title').textContent = kind === 'subject' ? '科目を選択' : '種類を選択';
@@ -1485,13 +1558,19 @@
     if (state.pickerMode === 'subject') {
       state.selectedSubject = value;
       mru('subject', value);
+      closePicker();
+      renderToday();
+      setTimeout(() => openPicker('type'), 80);
+      return;
     } else {
       state.selectedType = value;
       state.selectedCategory = categoryFor(value);
       mru('type', value);
+      closePicker();
+      renderToday();
+      setTimeout(openAddConfirm, 80);
+      return;
     }
-    closePicker();
-    renderToday();
   }
 
   function addChoice() {

@@ -930,6 +930,35 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
 }
 
+.ks-task-template-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.ks-task-template-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.ks-task-template-title {
+  font-size: .76rem;
+  font-weight: 900;
+  color: var(--text);
+}
+
+.ks-task-template-sub {
+  margin-top: 2px;
+  font-size: .56rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
 .ks-task-add-head {
   display: flex;
   align-items: flex-start;
@@ -961,6 +990,18 @@
   line-height: 1;
   padding: 6px 8px;
   white-space: nowrap;
+}
+
+.ks-task-add-hint {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 8px;
+  color: var(--text-muted);
+  font-size: .58rem;
+  font-weight: 800;
+  line-height: 1.5;
+  flex-wrap: wrap;
 }
 
 .ks-task-add-row {
@@ -1135,7 +1176,6 @@
   gap: 6px;
   overflow-x: auto;
   padding: 2px 0 0;
-  margin-top: 8px;
 }
 
 .ks-task-template {
@@ -1316,6 +1356,7 @@
 
 .ks-task-picker-overlay,
 .ks-task-detail-overlay,
+.ks-task-add-confirm-overlay,
 .ks-task-rename-overlay {
   position: fixed;
   inset: 0;
@@ -1328,6 +1369,7 @@
 
 .ks-task-picker-overlay.is-open,
 .ks-task-detail-overlay.is-open,
+.ks-task-add-confirm-overlay.is-open,
 .ks-task-rename-overlay.is-open {
   display: flex;
 }
@@ -1360,6 +1402,81 @@
 .ks-task-modal-body {
   overflow-y: auto;
   padding: 10px 14px;
+}
+
+.ks-task-add-confirm-modal {
+  max-width: 440px;
+}
+
+.ks-task-confirm-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--ks-cat-line);
+  background: var(--ks-cat-bg);
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 12px;
+}
+
+.ks-task-confirm-icon {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 11px;
+  border: 1px solid var(--ks-cat-line);
+  background: var(--surface);
+  font-size: 1.25rem;
+}
+
+.ks-task-confirm-main {
+  min-width: 0;
+}
+
+.ks-task-confirm-name {
+  color: var(--text);
+  font-size: .78rem;
+  font-weight: 900;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ks-task-confirm-note {
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: .58rem;
+  line-height: 1.5;
+}
+
+.ks-task-priority-box {
+  margin-bottom: 12px;
+}
+
+.ks-task-priority-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.ks-task-priority-grid .ks-task-pri {
+  width: auto;
+  height: 36px;
+}
+
+.ks-task-confirm-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 8px;
+}
+
+.ks-task-confirm-actions .ks-task-small-btn,
+.ks-task-confirm-actions .ks-task-add-btn {
+  min-height: 42px;
 }
 
 .ks-task-choice-list {
