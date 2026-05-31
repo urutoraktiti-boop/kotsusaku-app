@@ -6560,11 +6560,16 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
     notes: '✅ 更新ポップアップの連続表示を抑制<br>📋 コツ習慣まわりの表示を調整'
   };
 
+  function formatVersionBadge(ver) {
+    var match = String(ver || CURRENT_VERSION).match(/v(\d+)/i);
+    return match ? 'v' + match[1] : 'v107';
+  }
+
   // ver-badge と CURRENT_VERSION を version.json の値で初期化
   function _initVersion(ver) {
     CURRENT_VERSION = ver;
     var badge = document.getElementById('ver-badge');
-    if (badge) badge.textContent = '(' + ver.replace('kotsusaku-','') + ')';
+    if (badge) badge.textContent = formatVersionBadge(ver);
   }
 
   // バナーを1回だけ表示し、ボタンに単一のリスナーをセット
@@ -6630,7 +6635,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
       if (sessionStorage.getItem('_swJustUpdated') === '1') {
         sessionStorage.removeItem('_swJustUpdated');
         var badge = document.getElementById('ver-badge');
-        if (badge) badge.textContent = '(' + CURRENT_VERSION.replace('kotsusaku-','') + ')';
+        if (badge) badge.textContent = formatVersionBadge(CURRENT_VERSION);
         return;
       }
     } catch(e){}
@@ -6642,7 +6647,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
         _latestVersionLabel = latest;
         // ver-badgeはlatestで表示する
         var badge = document.getElementById('ver-badge');
-        if (badge) badge.textContent = '(' + latest.replace('kotsusaku-','') + ')';
+        if (badge) badge.textContent = formatVersionBadge(latest);
         if (latest === CURRENT_VERSION) {
           try {
             sessionStorage.removeItem(UPDATE_PROMPT_SEEN_KEY);
@@ -6657,7 +6662,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
       .catch(function(){
         // オフライン時はフォールバック値のまま ver-badge を表示
         var badge = document.getElementById('ver-badge');
-        if (badge) badge.textContent = '(' + CURRENT_VERSION.replace('kotsusaku-','') + ')';
+        if (badge) badge.textContent = formatVersionBadge(CURRENT_VERSION);
       });
   }
 
