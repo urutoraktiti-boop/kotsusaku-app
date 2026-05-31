@@ -1127,12 +1127,16 @@
   function renderTemplates() {
     const list = templates();
     if (!list.length) return '<span class="ks-task-template">テンプレなし</span>';
-    return list.map((tmpl) => `
-      <span class="ks-task-template">
-        <button type="button" data-ks-template="${escapeHtml(tmpl.id)}">${escapeHtml(tmpl.subject)} / ${escapeHtml(tmpl.type)}</button>
+    return list.map((tmpl) => {
+      const cat = tmpl.category || categoryFor(tmpl.type || '');
+      const label = categoryLabel(cat);
+      return `
+      <span class="ks-task-template cat-${escapeHtml(cat)}">
+        <button type="button" data-ks-template="${escapeHtml(tmpl.id)}"><span class="ks-task-template-icon">${escapeHtml(label.icon)}</span>${escapeHtml(tmpl.subject)} / ${escapeHtml(tmpl.type)}</button>
         <button type="button" data-ks-action="delete-template" data-id="${escapeHtml(tmpl.id)}">×</button>
       </span>
-    `).join('');
+    `;
+    }).join('');
   }
 
 	  function renderTaskCard(task) {

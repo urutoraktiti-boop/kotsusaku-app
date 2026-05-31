@@ -1297,12 +1297,16 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--ks-cat-line, var(--border));
   border-radius: 99px;
-  background: var(--surface2);
+  background: var(--ks-cat-bg, var(--surface2));
   color: var(--text);
   padding: 5px 8px;
   font-size: .58rem;
+}
+
+.ks-task-template-icon {
+  font-size: .7rem;
 }
 
 .ks-task-template button {
