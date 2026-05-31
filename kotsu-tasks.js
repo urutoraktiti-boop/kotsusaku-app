@@ -4,6 +4,7 @@
   const STORE = {
     tasks: 'kskotsu_tasks',
     templates: 'kskotsu_templates',
+    templateDeleted: 'kskotsu_template_deleted',
     deleted: 'kskotsu_deleted',
     kp: 'kskotsu_kp',
     storyProgress: 'task-story-progress',
@@ -304,8 +305,43 @@
     afterDataChange();
   }
 
+  function templateSignature(tmpl) {
+    if (!tmpl || typeof tmpl !== 'object') return '';
+    return [
+      tmpl.storyId || '',
+      tmpl.subject || '',
+      tmpl.type || '',
+      tmpl.category || categoryFor(tmpl.type || ''),
+      tmpl.plannedAmt ?? '',
+      tmpl.unit || '',
+      tmpl.plannedMins ?? '',
+      tmpl.priority ?? ''
+    ].map((value) => String(value).trim()).join('|');
+  }
+
+  function templateDeletedIds() {
+    const list = readJson(STORE.templateDeleted, []);
+    return Array.isArray(list) ? list.map(String) : [];
+  }
+
+  function saveTemplateDeletedIds(list) {
+    writeJson(STORE.templateDeleted, Array.from(new Set((Array.isArray(list) ? list : []).map(String))).slice(-500));
+  }
+
+  function normalizeTemplates(list) {
+    const deleted = new Set(templateDeletedIds());
+    const bySignature = new Map();
+    (Array.isArray(list) ? list : []).forEach((tmpl) => {
+      if (!tmpl || deleted.has(String(tmpl.id))) return;
+      const signature = templateSignature(tmpl);
+      if (!signature || bySignature.has(signature)) return;
+      bySignature.set(signature, tmpl);
+    });
+    return Array.from(bySignature.values());
+  }
+
   function templates() {
-    return readJson(STORE.templates, []);
+    return normalizeTemplates(readJson(STORE.templates, []));
   }
 
   function deletedIds() {
@@ -325,7 +361,7 @@
   }
 
   function saveTemplates(list) {
-    writeJson(STORE.templates, list);
+    writeJson(STORE.templates, normalizeTemplates(list));
     afterDataChange();
   }
 
@@ -1257,7 +1293,7 @@
       return;
     }
     const list = templates();
-    list.unshift({
+    const template = {
       id: Date.now() + '-' + Math.floor(Math.random() * 100000),
 	      subject: state.selectedSubject || '未分類',
 	      type: state.selectedType,
@@ -1267,14 +1303,27 @@
       unit: (($('ks-task-unit') && $('ks-task-unit').value.trim()) || unitFor(state.selectedType)),
       plannedMins: numberValue('ks-task-plan-mins'),
       priority: state.priority
-    });
+    };
+    if (list.some((tmpl) => templateSignature(tmpl) === templateSignature(template))) {
+      notify('同じテンプレートは保存済みです');
+      renderToday();
+      return;
+    }
+    list.unshift(template);
     saveTemplates(list.slice(0, 20));
     renderToday();
     notify('テンプレートに保存しました');
   }
 
   function deleteTemplate(id) {
-    saveTemplates(templates().filter((tmpl) => String(tmpl.id) !== String(id)));
+    const list = templates();
+    const target = list.find((tmpl) => String(tmpl.id) === String(id));
+    const signature = target ? templateSignature(target) : '';
+    const removeIds = list
+      .filter((tmpl) => String(tmpl.id) === String(id) || (signature && templateSignature(tmpl) === signature))
+      .map((tmpl) => String(tmpl.id));
+    saveTemplateDeletedIds(templateDeletedIds().concat(removeIds.length ? removeIds : [String(id)]));
+    saveTemplates(list.filter((tmpl) => !removeIds.includes(String(tmpl.id))));
     renderToday();
   }
 
@@ -1625,6 +1674,7 @@
       version: 1,
       tasks: tasksByDate(),
       templates: templates(),
+      templateDeleted: templateDeletedIds(),
       deleted: deletedIds(),
       kp: getKP(),
       storyProgress: readJson(STORE.storyProgress, {}),
@@ -1644,7 +1694,8 @@
     if (!payload || typeof payload !== 'object') return;
     writeJson(STORE.tasks, payload.tasks || {});
     writeJson(STORE.taskDataAlias, payload.tasks || {});
-    writeJson(STORE.templates, Array.isArray(payload.templates) ? payload.templates : []);
+    saveTemplateDeletedIds(Array.isArray(payload.templateDeleted) ? payload.templateDeleted : []);
+    writeJson(STORE.templates, normalizeTemplates(Array.isArray(payload.templates) ? payload.templates : []));
     saveDeletedIds(Array.isArray(payload.deleted) ? payload.deleted : []);
     setKP(Number(payload.kp) || 0);
     writeJson(STORE.storyProgress, payload.storyProgress || {});
@@ -1665,6 +1716,7 @@
   function mergeData(payload) {
     if (!payload || typeof payload !== 'object') return exportData();
     const deleted = new Set(deletedIds().concat(Array.isArray(payload.deleted) ? payload.deleted.map(String) : []));
+    const deletedTemplates = new Set(templateDeletedIds().concat(Array.isArray(payload.templateDeleted) ? payload.templateDeleted.map(String) : []));
     const mergedTasks = tasksByDate();
     const incomingTasks = payload.tasks && typeof payload.tasks === 'object' ? payload.tasks : {};
     Object.keys(incomingTasks).forEach((date) => {
@@ -1684,15 +1736,12 @@
       if (!mergedTasks[date].length) delete mergedTasks[date];
     });
 
-    const templateMap = new Map();
-    templates().forEach((tmpl) => templateMap.set(String(tmpl.id), tmpl));
-    (Array.isArray(payload.templates) ? payload.templates : []).forEach((tmpl) => {
-      if (tmpl && !templateMap.has(String(tmpl.id))) templateMap.set(String(tmpl.id), tmpl);
-    });
+    saveTemplateDeletedIds(Array.from(deletedTemplates));
+    const mergedTemplates = normalizeTemplates(templates().concat(Array.isArray(payload.templates) ? payload.templates : []));
 
     writeJson(STORE.tasks, mergedTasks);
     writeJson(STORE.taskDataAlias, mergedTasks);
-    writeJson(STORE.templates, Array.from(templateMap.values()).slice(0, 40));
+    writeJson(STORE.templates, mergedTemplates.slice(0, 40));
     saveDeletedIds(Array.from(deleted));
     writeJson(STORE.storyProgress, { ...(payload.storyProgress || {}), ...readJson(STORE.storyProgress, {}) });
     writeJson(STORE.equipmentUnlocked, { ...(payload.equipmentUnlocked || {}), ...readJson(STORE.equipmentUnlocked, {}) });
@@ -1723,7 +1772,7 @@
 
   function clearAll() {
     Object.keys(localStorage).forEach((key) => {
-      if (key === STORE.tasks || key === STORE.templates || key === STORE.deleted || key === STORE.kp || key === STORE.storyProgress || key === STORE.equipmentUnlocked || key === STORE.taskDataAlias || key === STORE.taskSettings || key.indexOf(STORE.subjectPrefix) === 0 || key.indexOf(STORE.typePrefix) === 0 || key.indexOf(STORE.typeCategoryPrefix) === 0) {
+      if (key === STORE.tasks || key === STORE.templates || key === STORE.templateDeleted || key === STORE.deleted || key === STORE.kp || key === STORE.storyProgress || key === STORE.equipmentUnlocked || key === STORE.taskDataAlias || key === STORE.taskSettings || key.indexOf(STORE.subjectPrefix) === 0 || key.indexOf(STORE.typePrefix) === 0 || key.indexOf(STORE.typeCategoryPrefix) === 0) {
         localStorage.removeItem(key);
       }
     });
