@@ -367,6 +367,14 @@
     afterDataChange();
   }
 
+  function moveTemplateToFront(id) {
+    const list = templates();
+    const index = list.findIndex((tmpl) => String(tmpl.id) === String(id));
+    if (index <= 0) return;
+    const [used] = list.splice(index, 1);
+    saveTemplates([used].concat(list));
+  }
+
   function getKP() {
     return parseInt(localStorage.getItem(STORE.kp) || '0', 10) || 0;
   }
@@ -865,7 +873,10 @@
 
       if (templateEl) {
         const template = templates().find((item) => String(item.id) === String(templateEl.dataset.ksTemplate));
-        if (template) addTask(template);
+        if (template) {
+          moveTemplateToFront(template.id);
+          addTask(template);
+        }
         return;
       }
 
