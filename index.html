@@ -1838,9 +1838,47 @@ async function recalibrateTaskAnalytics() {
 // === タスクアナリティクス補正 end ===
 
 // === タスクトレンドグラフ ===
+
+// 設定を開いたときに1時間に1回スナップショットをクライアントから保存する
+// Cloud Functions不要 — ユーザーのブラウザが書き込む
+async function maybeWriteTaskTrendSnapshot() {
+  try {
+    const INTERVAL_MS = 60 * 60 * 1000; // 1時間
+    const lastKey = 'kotsusaku-task-trend-last-snap';
+    const last = parseInt(localStorage.getItem(lastKey) || '0', 10);
+    if (Date.now() - last < INTERVAL_MS) return; // まだ1時間経っていない
+
+    const summarySnap = await db.collection('analytics_summary').doc('summary').get();
+    if (!summarySnap.exists) return;
+    const d = summarySnap.data();
+
+    await db.collection('analytics_task_trend').add({
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      totalTasks: d.totalTasks || 0,
+      completedTasks: d.completedTasks || 0,
+      taskUsers: d.taskUsers || 0,
+    });
+
+    localStorage.setItem(lastKey, String(Date.now()));
+
+    // 48時間より古いデータを削除
+    const cutoff48 = new Date(Date.now() - 48 * 60 * 60 * 1000);
+    const old = await db.collection('analytics_task_trend')
+      .where('timestamp', '<', cutoff48).get();
+    const batch = db.batch();
+    old.forEach(doc => batch.delete(doc.ref));
+    if (!old.empty) await batch.commit();
+  } catch(e) {
+    console.warn('maybeWriteTaskTrendSnapshot:', e);
+  }
+}
+
 async function loadTaskTrend() {
   const btn = document.getElementById('task-trend-refresh');
   if (btn) btn.textContent = '読込中…';
+
+  // スナップショットを必要なら書き込む（1時間に1回）
+  await maybeWriteTaskTrendSnapshot();
 
   try {
     // 現在のサマリー（利用者数・総タスク・完了率）
@@ -1874,7 +1912,7 @@ async function loadTaskTrend() {
       if (noData) noData.style.display = 'none';
       if (svg) {
         svg.style.display = 'block';
-        const points = trendSnap.docs.map(d => d.data().completedTasks || 0);
+        const points = trendSnap.docs.map(doc => doc.data().completedTasks || 0);
         renderTrendSparkline(svg, points);
       }
     }
