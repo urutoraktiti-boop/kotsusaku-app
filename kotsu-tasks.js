@@ -1423,12 +1423,14 @@
     addKP(task.earnedKP);
     data[today] = list;
     saveTasks(data);
-    render();
     playChime();
     showStampEffect(task.id);
-    const afterEvolution = syncStoryProgress(storyId);
-    const unlockedStage = afterEvolution && afterEvolution.stage.count > beforeEvolutionStage ? afterEvolution : null;
-    showFloat(task, unlockedStage);
+    setTimeout(() => {
+      render();
+      const afterEvolution = syncStoryProgress(storyId);
+      const unlockedStage = afterEvolution && afterEvolution.stage.count > beforeEvolutionStage ? afterEvolution : null;
+      showFloat(task, unlockedStage);
+    }, 650);
   }
 
   function deleteTask(id) {
@@ -1748,19 +1750,22 @@
   function playChime() {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      [[1046, 0, 0.12, 0.9], [1318, 0.15, 0.10, 0.8], [1568, 0.30, 0.08, 0.7]].forEach(([freq, delay, vol, dur]) => {
-        const osc = ctx.createOscillator();
-        const g = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.value = freq;
-        g.gain.setValueAtTime(0, ctx.currentTime + delay);
-        g.gain.linearRampToValueAtTime(vol, ctx.currentTime + delay + 0.01);
-        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
-        osc.connect(g);
-        g.connect(ctx.destination);
-        osc.start(ctx.currentTime + delay);
-        osc.stop(ctx.currentTime + delay + dur + 0.05);
-      });
+      const play = () => {
+        [[1046, 0, 0.12, 0.9], [1318, 0.15, 0.10, 0.8], [1568, 0.30, 0.08, 0.7]].forEach(([freq, delay, vol, dur]) => {
+          const osc = ctx.createOscillator();
+          const g = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          g.gain.setValueAtTime(0, ctx.currentTime + delay);
+          g.gain.linearRampToValueAtTime(vol, ctx.currentTime + delay + 0.01);
+          g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
+          osc.connect(g);
+          g.connect(ctx.destination);
+          osc.start(ctx.currentTime + delay);
+          osc.stop(ctx.currentTime + delay + dur + 0.05);
+        });
+      };
+      if (ctx.state === 'suspended') { ctx.resume().then(play); } else { play(); }
     } catch (e) {}
   }
 
