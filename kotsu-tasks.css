@@ -1338,6 +1338,57 @@
   border-radius: 10px;
   background: linear-gradient(135deg, var(--ks-cat-bg), var(--surface2));
   padding: 9px 9px;
+  position: relative;
+  overflow: hidden;
+}
+
+.ks-stamp-ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  animation: ks-stamp-ripple-anim .3s ease-out forwards;
+  pointer-events: none;
+  z-index: 5;
+}
+
+@keyframes ks-stamp-ripple-anim {
+  0%   { background: rgba(255, 255, 255, .22); }
+  100% { background: transparent; }
+}
+
+.ks-stamp-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.ks-stamp-text {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--ks-cat, #3adf8a);
+  border: 2.5px solid var(--ks-cat, #3adf8a);
+  border-radius: 6px;
+  padding: 2px 10px;
+  transform: rotate(-12deg);
+  text-shadow: 0 0 10px var(--ks-cat, #3adf8a);
+  box-shadow: 0 0 10px rgba(0,0,0,.3);
+  animation: ks-stamp-in .45s cubic-bezier(.2, 1.5, .4, 1) forwards, ks-stamp-out .3s ease-in 1.3s forwards;
+}
+
+@keyframes ks-stamp-in {
+  0%   { transform: rotate(-12deg) scale(2.2); opacity: 0; }
+  55%  { transform: rotate(-12deg) scale(.92); opacity: 1; }
+  75%  { transform: rotate(-12deg) scale(1.04); }
+  100% { transform: rotate(-12deg) scale(1); opacity: 1; }
+}
+
+@keyframes ks-stamp-out {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 .ks-task-card.is-done {
