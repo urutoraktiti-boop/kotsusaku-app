@@ -1791,10 +1791,23 @@ async function recalibrateTaskAnalytics() {
 // 管理者モード（URL に ?admin=1 がある場合のみ表示）
 (function() {
   if (!/[?&]admin=1/.test(location.search)) return;
-  window.addEventListener('DOMContentLoaded', function() {
+  function showAdminSection() {
     var el = document.getElementById('admin-recalibrate-section');
-    if (el) el.style.display = 'block';
-  });
+    if (el) { el.style.display = 'block'; return; }
+    // 要素がまだなければ DOMContentLoaded 後に再試行
+    document.addEventListener('DOMContentLoaded', function() {
+      var el2 = document.getElementById('admin-recalibrate-section');
+      if (el2) el2.style.display = 'block';
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      var el = document.getElementById('admin-recalibrate-section');
+      if (el) el.style.display = 'block';
+    });
+  } else {
+    showAdminSection();
+  }
 })();
 // === タスクアナリティクス補正 end ===
 
