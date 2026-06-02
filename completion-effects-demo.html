@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>完了演出アイデア集</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0f1117;
+    color: #e2e8f0;
+    font-family: 'Hiragino Kaku Gothic ProN', sans-serif;
+    padding: 20px;
+    min-height: 100vh;
+  }
+
+  h1 { text-align: center; font-size: 1.1rem; color: #94a3b8; margin-bottom: 6px; }
+  .subtitle { text-align: center; font-size: .75rem; color: #475569; margin-bottom: 24px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* ===== カード共通 ===== */
+  .demo-card {
+    border-radius: 16px;
+    border: 1.5px solid #1e293b;
+    background: #161b27;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-label {
+    font-size: .62rem;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .card-title {
+    font-size: .95rem;
+    font-weight: 900;
+    margin-bottom: 4px;
+  }
+
+  .card-desc {
+    font-size: .68rem;
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+
+  .sound-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #1e293b;
+    border-radius: 99px;
+    padding: 3px 10px;
+    font-size: .62rem;
+    color: #94a3b8;
+    margin-bottom: 14px;
+  }
+
+  /* ===== デモ共通 ===== */
+  .demo-area {
+    background: #0d1117;
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+    min-height: 60px;
+  }
+
+  .task-mock {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .check-btn {
+    border: none;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: .65rem;
+    font-weight: 900;
+    cursor: pointer;
+    transition: transform .1s;
+  }
+  .check-btn:active { transform: scale(.92); }
+
+  .task-text { font-size: .72rem; }
+
+  .try-btn {
+    border: none;
+    background: #1e293b;
+    color: #94a3b8;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: .65rem;
+    cursor: pointer;
+    font-weight: 900;
+    transition: background .2s;
+  }
+  .try-btn:hover { background: #273449; }
+
+  /* ===== A: コインポコン ===== */
+  #cardA { border-color: #f5c84240; }
+  #cardA .card-label { color: #f5c842; }
+  #cardA .check-btn { background: #f5c842; color: #1a1200; }
+
+  .coin-pop {
+    position: absolute;
+    pointer-events: none;
+    font-size: 1rem;
+    animation: coinUp 0.8s ease-out forwards;
+    z-index: 10;
+  }
+  @keyframes coinUp {
+    0%   { transform: translateY(0) scale(1); opacity: 1; }
+    60%  { transform: translateY(-50px) scale(1.3); opacity: 1; }
+    100% { transform: translateY(-80px) scale(.6); opacity: 0; }
+  }
+
+  .kp-badge {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #f5c842;
+    color: #1a1200;
+    border-radius: 99px;
+    padding: 4px 10px;
+    font-size: .7rem;
+    font-weight: 900;
+    pointer-events: none;
+    animation: badgePop 0.5s cubic-bezier(.34,1.56,.64,1) forwards;
+    z-index: 10;
+  }
+  @keyframes badgePop {
+    0%   { transform: translateY(-50%) scale(0); opacity: 0; }
+    100% { transform: translateY(-50%) scale(1); opacity: 1; }
+  }
+
+  /* ===== B: スタンプ ===== */
+  #cardB { border-color: #f4729040; }
+  #cardB .card-label { color: #f47290; }
+  #cardB .check-btn { background: #f47290; color: #fff; }
+
+  .stamp-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .stamp-text {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: #f47290;
+    border: 3px solid #f47290;
+    border-radius: 8px;
+    padding: 2px 12px;
+    transform: rotate(-12deg);
+    opacity: 0;
+    text-shadow: 0 0 12px #f47290;
+    box-shadow: 0 0 12px #f4729040;
+    animation: stampIn 0.5s cubic-bezier(.2,1.5,.4,1) forwards;
+  }
+  @keyframes stampIn {
+    0%   { transform: rotate(-12deg) scale(2.5); opacity: 0; }
+    50%  { transform: rotate(-12deg) scale(.9); opacity: 1; }
+    70%  { transform: rotate(-12deg) scale(1.05); }
+    100% { transform: rotate(-12deg) scale(1); opacity: 1; }
+  }
+  .stamp-ripple {
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    animation: rippleFlash 0.35s ease-out forwards;
+  }
+  @keyframes rippleFlash {
+    0%   { background: rgba(244,114,144,.25); }
+    100% { background: transparent; }
+  }
+
+  /* ===== C: 紙吹雪 ===== */
+  #cardC { border-color: #8b8bff40; }
+  #cardC .card-label { color: #8b8bff; }
+  #cardC .check-btn { background: #8b8bff; color: #fff; }
+
+  .confetti-piece {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 10;
+    animation: confettiFall 1s ease-out forwards;
+  }
+  @keyframes confettiFall {
+    0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(70px) rotate(360deg); opacity: 0; }
+  }
+
+  /* ===== D: 波紋光 ===== */
+  #cardD { border-color: #3adf8a40; }
+  #cardD .card-label { color: #3adf8a; }
+  #cardD .check-btn { background: #3adf8a; color: #092; }
+
+  .ripple-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 2px solid #3adf8a;
+    pointer-events: none;
+    z-index: 10;
+    animation: ringExpand 0.7s ease-out forwards;
+  }
+  @keyframes ringExpand {
+    0%   { width: 20px; height: 20px; opacity: .8; transform: translate(-50%,-50%); }
+    100% { width: 120px; height: 120px; opacity: 0; transform: translate(-50%,-50%); }
+  }
+
+  .card-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    animation: glowPulse 0.6s ease-out forwards;
+  }
+  @keyframes glowPulse {
+    0%   { box-shadow: inset 0 0 0 2px #3adf8a80; }
+    50%  { box-shadow: inset 0 0 20px 4px #3adf8a60; }
+    100% { box-shadow: inset 0 0 0 2px #3adf8a00; }
+  }
+
+  /* ===== E: 文字書き込み ===== */
+  #cardE { border-color: #60a5fa40; }
+  #cardE .card-label { color: #60a5fa; }
+  #cardE .check-btn { background: #60a5fa; color: #fff; }
+
+  .check-draw {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: 10;
+  }
+  .check-svg path {
+    stroke-dasharray: 60;
+    stroke-dashoffset: 60;
+    animation: drawCheck 0.45s ease-out 0.05s forwards;
+  }
+  @keyframes drawCheck {
+    to { stroke-dashoffset: 0; }
+  }
+  .check-circle {
+    animation: drawCircle 0.3s ease-out forwards;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+  }
+  @keyframes drawCircle {
+    to { stroke-dashoffset: 0; }
+  }
+
+  /* ===== F: キャラ喜び ===== */
+  #cardF { border-color: #ff7c3a40; }
+  #cardF .card-label { color: #ff7c3a; }
+  #cardF .check-btn { background: #ff7c3a; color: #fff; }
+
+  .chara-pop {
+    position: absolute;
+    right: 10px;
+    bottom: -40px;
+    font-size: 1.6rem;
+    pointer-events: none;
+    z-index: 10;
+    animation: charaBounceIn 0.5s cubic-bezier(.34,1.56,.64,1) forwards;
+  }
+  @keyframes charaBounceIn {
+    0%   { bottom: -40px; opacity: 0; }
+    100% { bottom: 6px; opacity: 1; }
+  }
+  .chara-speech {
+    position: absolute;
+    right: 46px;
+    bottom: 10px;
+    background: #ff7c3a;
+    color: #fff;
+    border-radius: 8px 8px 0 8px;
+    padding: 3px 8px;
+    font-size: .6rem;
+    font-weight: 900;
+    pointer-events: none;
+    z-index: 10;
+    opacity: 0;
+    animation: speechPop 0.4s ease-out 0.25s forwards;
+  }
+  @keyframes speechPop {
+    0%   { opacity: 0; transform: scale(0.7); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  /* ===== 完了後タスク共通 ===== */
+  .task-done-state {
+    text-decoration: line-through;
+    color: #475569;
+    transition: all .3s;
+  }
+
+  /* ===== フッター ===== */
+  .footer {
+    text-align: center;
+    margin-top: 28px;
+    font-size: .65rem;
+    color: #334155;
+  }
+</style>
+</head>
+<body>
+
+<h1>🎯 完了演出アイデア集</h1>
+<p class="subtitle">各カードの「試す」ボタンを押して演出を確認してください</p>
+
+<div class="grid">
+
+  <!-- A: コインポコン -->
+  <div class="demo-card" id="cardA">
+    <div class="card-label">案 A · ゲーム系</div>
+    <div class="card-title">💰 KPコイン ポコン！</div>
+    <div class="card-desc">
+      完了と同時にKPコインが飛び出してキラキラ消える。<br>
+      達成感＋「稼いだ！」感が強くゲームの癖になる快感。
+    </div>
+    <div class="sound-tag">🔊 ポコン！ ＋ キラン音（高め・短め）</div>
+    <div class="demo-area" id="demoA">
+      <div class="task-mock">
+        <button class="check-btn" id="checkA">習得</button>
+        <span class="task-text" id="textA">数学 / 問題演習</span>
+      </div>
+      <button class="try-btn" onclick="demoA()">試す</button>
+    </div>
+  </div>
+
+  <!-- B: スタンプ -->
+  <div class="demo-card" id="cardB">
+    <div class="card-label">案 B · 達成スタンプ</div>
+    <div class="card-title">✅ 習得済スタンプ ドン！</div>
+    <div class="card-desc">
+      カード全体に「習得済」スタンプが押される。<br>
+      重みある「決まった！」感。紙の手帳感覚で満足度大。
+    </div>
+    <div class="sound-tag">🔊 ズン！ ＋ 短い残響（低め・重め）</div>
+    <div class="demo-area" id="demoB">
+      <div class="task-mock">
+        <button class="check-btn" id="checkB">習得</button>
+        <span class="task-text" id="textB">英語 / 暗記</span>
+      </div>
+      <button class="try-btn" onclick="demoB()">試す</button>
+    </div>
+  </div>
+
+  <!-- C: 紙吹雪 -->
+  <div class="demo-card" id="cardC">
+    <div class="card-label">案 C · お祝い系</div>
+    <div class="card-title">🎊 紙吹雪 パラパラ</div>
+    <div class="card-desc">
+      カードから紙吹雪がパラパラと降る。<br>
+      小さなお祝い感で「よくやった自分！」気分になれる。
+    </div>
+    <div class="sound-tag">🔊 パパパン！（軽めのパーティー音）</div>
+    <div class="demo-area" id="demoC">
+      <div class="task-mock">
+        <button class="check-btn" id="checkC">習得</button>
+        <span class="task-text" id="textC">簿記 / 仕訳練習</span>
+      </div>
+      <button class="try-btn" onclick="demoC()">試す</button>
+    </div>
+  </div>
+
+  <!-- D: 波紋光 -->
+  <div class="demo-card" id="cardD">
+    <div class="card-label">案 D · 上品系</div>
+    <div class="card-title">✨ 光の波紋 スーッ</div>
+    <div class="card-desc">
+      カードから光の波紋が広がってスーッと消える。<br>
+      静かで上品。「積み上げた」禅的な達成感。
+    </div>
+    <div class="sound-tag">🔊 チーン（風鈴・クリスタル音）</div>
+    <div class="demo-area" id="demoD">
+      <div class="task-mock">
+        <button class="check-btn" id="checkD">習得</button>
+        <span class="task-text" id="textD">法律 / テキスト確認</span>
+      </div>
+      <button class="try-btn" onclick="demoD()">試す</button>
+    </div>
+  </div>
+
+  <!-- E: チェック書き込み -->
+  <div class="demo-card" id="cardE">
+    <div class="card-label">案 E · ASMR系</div>
+    <div class="card-title">✍️ チェック書き込み スラッ</div>
+    <div class="card-desc">
+      チェックマークが「書かれる」アニメーション。<br>
+      鉛筆・マーカー音と合わせると脳に刺さるASMR系。
+    </div>
+    <div class="sound-tag">🔊 スラッ（鉛筆/マーカーの書き音）</div>
+    <div class="demo-area" id="demoE">
+      <div class="task-mock">
+        <button class="check-btn" id="checkE">習得</button>
+        <span class="task-text" id="textE">会計 / 理論暗記</span>
+      </div>
+      <button class="try-btn" onclick="demoE()">試す</button>
+    </div>
+  </div>
+
+  <!-- F: キャラ喜び -->
+  <div class="demo-card" id="cardF">
+    <div class="card-label">案 F · キャラ演出</div>
+    <div class="card-title">🐣 キャラがジャンプ！</div>
+    <div class="card-desc">
+      ストーリーキャラ（ピヨ・ゴリラ等）が飛び出して喜ぶ。<br>
+      「見てもらえてる」感がモチベに直結。親しみ系。
+    </div>
+    <div class="sound-tag">🔊 ピョン！（キャラ固有の短い声）</div>
+    <div class="demo-area" id="demoF">
+      <div class="task-mock">
+        <button class="check-btn" id="checkF">習得</button>
+        <span class="task-text" id="textF">数的推理 / 問題演習</span>
+      </div>
+      <button class="try-btn" onclick="demoF()">試す</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">← 横スクロールでも見られます ·「試す」は何度でも押せます</div>
+
+<script>
+  /* ---- 共通ユーティリティ ---- */
+  function cleanup(demoId) {
+    const el = document.getElementById(demoId);
+    [...el.querySelectorAll('.coin-pop,.kp-badge,.stamp-overlay,.confetti-piece,.ripple-ring,.card-glow,.check-draw,.chara-pop,.chara-speech,.stamp-ripple')].forEach(e => e.remove());
+  }
+
+  /* ---- A: コインポコン ---- */
+  function demoA() {
+    cleanup('demoA');
+    const area = document.getElementById('demoA');
+    const btn  = document.getElementById('checkA');
+    const txt  = document.getElementById('textA');
+    btn.textContent = '習得済';
+    txt.classList.add('task-done-state');
+
+    const coins = ['🪙','⭐','💫','✨','🌟'];
+    coins.forEach((c, i) => {
+      const el = document.createElement('span');
+      el.className = 'coin-pop';
+      el.textContent = c;
+      el.style.left = (20 + i * 18) + 'px';
+      el.style.top = '28px';
+      el.style.animationDelay = (i * 80) + 'ms';
+      area.appendChild(el);
+    });
+
+    const badge = document.createElement('div');
+    badge.className = 'kp-badge';
+    badge.textContent = '+5 KP';
+    area.appendChild(badge);
+
+    playTone('coin');
+    setTimeout(() => { btn.textContent='習得'; txt.classList.remove('task-done-state'); cleanup('demoA'); }, 2200);
+  }
+
+  /* ---- B: スタンプ ---- */
+  function demoB() {
+    cleanup('demoB');
+    const area = document.getElementById('demoB');
+    const btn  = document.getElementById('checkB');
+    const txt  = document.getElementById('textB');
+    btn.textContent = '習得済';
+    txt.classList.add('task-done-state');
+
+    const ripple = document.createElement('div');
+    ripple.className = 'stamp-ripple';
+    area.appendChild(ripple);
+
+    const overlay = document.createElement('div');
+    overlay.className = 'stamp-overlay';
+    const stamp = document.createElement('div');
+    stamp.className = 'stamp-text';
+    stamp.textContent = '習得済✓';
+    overlay.appendChild(stamp);
+    area.appendChild(overlay);
+
+    playTone('stamp');
+    setTimeout(() => { btn.textContent='習得'; txt.classList.remove('task-done-state'); cleanup('demoB'); }, 2200);
+  }
+
+  /* ---- C: 紙吹雪 ---- */
+  function demoC() {
+    cleanup('demoC');
+    const area = document.getElementById('demoC');
+    const btn  = document.getElementById('checkC');
+    const txt  = document.getElementById('textC');
+    btn.textContent = '習得済';
+    txt.classList.add('task-done-state');
+
+    const colors = ['#8b8bff','#f5c842','#3adf8a','#f47290','#60a5fa','#ff7c3a'];
+    for (let i = 0; i < 18; i++) {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.left  = (Math.random() * 100) + '%';
+      el.style.top   = '0px';
+      el.style.background = colors[i % colors.length];
+      el.style.animationDelay = (Math.random() * 400) + 'ms';
+      el.style.animationDuration = (0.7 + Math.random() * 0.5) + 's';
+      el.style.transform = `rotate(${Math.random()*90}deg)`;
+      area.appendChild(el);
+    }
+    playTone('confetti');
+    setTimeout(() => { btn.textContent='習得'; txt.classList.remove('task-done-state'); cleanup('demoC'); }, 2200);
+  }
+
+  /* ---- D: 波紋光 ---- */
+  function demoD() {
+    cleanup('demoD');
+    const area = document.getElementById('demoD');
+    const btn  = document.getElementById('checkD');
+    const txt  = document.getElementById('textD');
+    btn.textContent = '習得済';
+    txt.classList.add('task-done-state');
+
+    const glow = document.createElement('div');
+    glow.className = 'card-glow';
+    area.appendChild(glow);
+
+    for (let i = 0; i < 3; i++) {
+      const ring = document.createElement('div');
+      ring.className = 'ripple-ring';
+      ring.style.left = '50%';
+      ring.style.top  = '50%';
+      ring.style.animationDelay = (i * 180) + 'ms';
+      ring.style.borderColor = i === 0 ? '#3adf8a' : i === 1 ? '#60a5fa' : '#8b8bff';
+      area.appendChild(ring);
+    }
+    playTone('chime');
+    setTimeout(() => { btn.textContent='習得'; txt.classList.remove('task-done-state'); cleanup('demoD'); }, 2200);
+  }
+
+  /* ---- E: チェック書き込み ---- */
+  function demoE() {
+    cleanup('demoE');
+    const area = document.getElementById('demoE');
+    const btn  = document.getElementById('checkE');
+    const txt  = document.getElementById('textE');
+    btn.textContent = '習得済';
+    txt.classList.add('task-done-state');
+
+    const wrap = document.createElement('div');
+    wrap.className = 'check-draw';
+    wrap.innerHTML = `
+      <svg class="check-svg" width="36" height="36" viewBox="0 0 36 36" fill="none">
+        <circle class="check-circle" cx="18" cy="18" r="14" stroke="#60a5fa" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M11 18 L16.5 23.5 L25 13" stroke="#60a5fa" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`;
+    area.appendChild(wrap);
+    playTone('pencil');
+    setTimeout(() => { btn.textContent='習得'; txt.classList.remove('task-done-state'); cleanup('demoE'); }, 2200);
+  }
+
+  /* ---- F: キャラ喜び ---- */
+  function demoF() {
+    cleanup('demoF');
+    const area = document.getElementById('demoF');
+    const btn  = document.getElementById('checkF');
+    const txt  = document.getElementById('textF');
+    btn.textContent = '習得済';
+    txt.classList.add('task-done-state');
+
+    const chara = document.createElement('div');
+    chara.className = 'chara-pop';
+    chara.textContent = '🐣';
+    area.appendChild(chara);
+
+    const speech = document.createElement('div');
+    speech.className = 'chara-speech';
+    speech.textContent = 'えらいピヨ！';
+    area.appendChild(speech);
+
+    playTone('chara');
+    setTimeout(() => { btn.textContent='習得'; txt.classList.remove('task-done-state'); cleanup('demoF'); }, 2200);
+  }
+
+  /* ---- Web Audio 簡易サウンド ---- */
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+  function playTone(type) {
+    try {
+      if (type === 'coin') {
+        playNote(880, 'sine', 0, 0.08, 0.18);
+        playNote(1100, 'sine', 0.06, 0.08, 0.22);
+        playNote(1320, 'sine', 0.14, 0.1, 0.26);
+      } else if (type === 'stamp') {
+        playNote(120, 'sawtooth', 0, 0.3, 0.25);
+        playNote(80, 'square', 0.04, 0.2, 0.4);
+      } else if (type === 'confetti') {
+        playNote(660, 'sine', 0, 0.06, 0.12);
+        playNote(880, 'sine', 0.08, 0.06, 0.14);
+        playNote(1100, 'sine', 0.16, 0.06, 0.14);
+        playNote(1320, 'sine', 0.22, 0.06, 0.14);
+      } else if (type === 'chime') {
+        playNote(1046, 'sine', 0, 0.12, 0.9);
+        playNote(1318, 'sine', 0.15, 0.10, 0.8);
+        playNote(1568, 'sine', 0.30, 0.08, 0.7);
+      } else if (type === 'pencil') {
+        const buf = ctx.createBuffer(1, ctx.sampleRate * 0.2, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length) * .25;
+        const src = ctx.createBufferSource(); src.buffer = buf;
+        const g = ctx.createGain(); g.gain.value = .5;
+        const f = ctx.createBiquadFilter(); f.type='bandpass'; f.frequency.value=4000; f.Q.value=0.5;
+        src.connect(f); f.connect(g); g.connect(ctx.destination);
+        src.start();
+      } else if (type === 'chara') {
+        playNote(523, 'sine', 0, 0.12, 0.12);
+        playNote(659, 'sine', 0.1, 0.1, 0.16);
+        playNote(784, 'sine', 0.2, 0.12, 0.22);
+      }
+    } catch(e) {}
+  }
+
+  function playNote(freq, type, delay, vol, dur) {
+    const osc = ctx.createOscillator();
+    const g   = ctx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    g.gain.setValueAtTime(0, ctx.currentTime + delay);
+    g.gain.linearRampToValueAtTime(vol, ctx.currentTime + delay + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
+    osc.connect(g); g.connect(ctx.destination);
+    osc.start(ctx.currentTime + delay);
+    osc.stop(ctx.currentTime + delay + dur + 0.05);
+  }
+</script>
+</body>
+</html>
