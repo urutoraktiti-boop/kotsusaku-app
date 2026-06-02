@@ -1683,6 +1683,63 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
 })();
 // === アナリティクス end ===
 
+// === タスクアナリティクス (フェーズ1) ===
+(function () {
+  'use strict';
+
+  const TASK_USER_KEY = 'kotsusaku-task-user-registered';
+
+  // analytics_summary/summary を差分 increment する
+  async function incrementSummary(fields) {
+    if (!db) return;
+    try {
+      const INC = firebase.firestore.FieldValue.increment;
+      const update = { updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+      for (const [key, val] of Object.entries(fields)) {
+        update[key] = INC(val);
+      }
+      await db.collection('analytics_summary').doc('summary').set(update, { merge: true });
+    } catch (e) {
+      console.warn('[taskAnalytics] Firestore write error:', e);
+    }
+  }
+
+  // 初回タスク操作時のみ taskUsers を +1（localStorage フラグで二重防止）
+  async function ensureTaskUser() {
+    if (localStorage.getItem(TASK_USER_KEY)) return;
+    localStorage.setItem(TASK_USER_KEY, '1'); // 先にフラグを立てて二重登録を防ぐ
+    await incrementSummary({ taskUsers: 1 });
+  }
+
+  window.taskAnalytics = {
+    // 通常のタスク追加（1件）
+    onTaskAdded: async function () {
+      await ensureTaskUser();
+      await incrementSummary({ totalTasks: 1 });
+    },
+    // 繰越でまとめて追加（N件）— Firestore 書き込みを1回に抑える
+    onTasksCarried: async function (count) {
+      await ensureTaskUser();
+      await incrementSummary({ totalTasks: count });
+    },
+    // タスクを完了にした
+    onTaskCompleted: async function () {
+      await incrementSummary({ completedTasks: 1 });
+    },
+    // タスクを未完了に戻した
+    onTaskUncompleted: async function () {
+      await incrementSummary({ completedTasks: -1 });
+    },
+    // タスクを削除した（wasCompleted: 削除前に完了状態だったか）
+    onTaskDeleted: async function (wasCompleted) {
+      const fields = { totalTasks: -1 };
+      if (wasCompleted) fields.completedTasks = -1;
+      await incrementSummary(fields);
+    },
+  };
+})();
+// === タスクアナリティクス end ===
+
 // === 同期コード ===
 function generateSyncCode() {
   const L = 'ABCDEFGHJKMNPQRSTUVWXYZ';
