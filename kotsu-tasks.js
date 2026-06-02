@@ -1424,6 +1424,8 @@
     data[today] = list;
     saveTasks(data);
     render();
+    playChime();
+    showStampEffect(task.id);
     const afterEvolution = syncStoryProgress(storyId);
     const unlockedStage = afterEvolution && afterEvolution.stage.count > beforeEvolutionStage ? afterEvolution : null;
     showFloat(task, unlockedStage);
@@ -1741,6 +1743,41 @@
   function toggleDoneList() {
     const el = $('ks-task-done-list');
     if (el) el.style.display = el.style.display === 'none' ? 'flex' : 'none';
+  }
+
+  function playChime() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [[1046, 0, 0.12, 0.9], [1318, 0.15, 0.10, 0.8], [1568, 0.30, 0.08, 0.7]].forEach(([freq, delay, vol, dur]) => {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        g.gain.setValueAtTime(0, ctx.currentTime + delay);
+        g.gain.linearRampToValueAtTime(vol, ctx.currentTime + delay + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
+        osc.connect(g);
+        g.connect(ctx.destination);
+        osc.start(ctx.currentTime + delay);
+        osc.stop(ctx.currentTime + delay + dur + 0.05);
+      });
+    } catch (e) {}
+  }
+
+  function showStampEffect(id) {
+    const cardEl = document.querySelector('[data-ks-task="' + id + '"]');
+    if (!cardEl) return;
+    const ripple = document.createElement('div');
+    ripple.className = 'ks-stamp-ripple';
+    cardEl.appendChild(ripple);
+    const overlay = document.createElement('div');
+    overlay.className = 'ks-stamp-overlay';
+    const stamp = document.createElement('div');
+    stamp.className = 'ks-stamp-text';
+    stamp.textContent = '習得済✓';
+    overlay.appendChild(stamp);
+    cardEl.appendChild(overlay);
+    setTimeout(() => { ripple.remove(); overlay.remove(); }, 1800);
   }
 
   function showFloat(task, unlockedEvolution) {
