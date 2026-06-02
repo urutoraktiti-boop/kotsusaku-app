@@ -1339,7 +1339,6 @@
   background: linear-gradient(135deg, var(--ks-cat-bg), var(--surface2));
   padding: 9px 9px;
   position: relative;
-  overflow: hidden;
 }
 
 .ks-stamp-ripple {
@@ -1367,16 +1366,17 @@
 }
 
 .ks-stamp-text {
-  font-size: 1.1rem;
+  font-size: 1.65rem;
   font-weight: 900;
   color: var(--ks-cat, #3adf8a);
-  border: 2.5px solid var(--ks-cat, #3adf8a);
-  border-radius: 6px;
-  padding: 2px 10px;
+  border: 3.5px solid var(--ks-cat, #3adf8a);
+  border-radius: 8px;
+  padding: 4px 16px;
   transform: rotate(-12deg);
-  text-shadow: 0 0 10px var(--ks-cat, #3adf8a);
-  box-shadow: 0 0 10px rgba(0,0,0,.3);
+  text-shadow: 0 0 14px var(--ks-cat, #3adf8a);
+  box-shadow: 0 0 16px rgba(0,0,0,.4);
   animation: ks-stamp-in .45s cubic-bezier(.2, 1.5, .4, 1) forwards, ks-stamp-out .3s ease-in 1.3s forwards;
+  white-space: nowrap;
 }
 
 @keyframes ks-stamp-in {
@@ -1870,15 +1870,15 @@
 .ks-task-float {
   position: fixed;
   left: 50%;
-  bottom: 92px;
-  transform: translateX(-50%) translateY(20px);
+  top: 50%;
+  transform: translate(-50%, calc(-50% + 20px));
   z-index: 10050;
   min-width: 220px;
   max-width: min(90vw, 420px);
   background: var(--surface);
   border: 1.5px solid var(--checked);
   border-radius: 14px;
-  box-shadow: 0 8px 30px rgba(0,0,0,.35);
+  box-shadow: 0 8px 40px rgba(0,0,0,.55);
   padding: 10px 14px;
   display: none;
   align-items: center;
@@ -1887,12 +1887,12 @@
 
 .ks-task-float.is-show {
   display: flex;
-  animation: ksTaskFloat .28s ease-out;
+  animation: ksTaskFloat .28s ease-out forwards;
 }
 
 @keyframes ksTaskFloat {
-  from { opacity: 0; transform: translateX(-50%) translateY(24px); }
-  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 20px)); }
+  to   { opacity: 1; transform: translate(-50%, -50%); }
 }
 
 .ks-task-float-char {
