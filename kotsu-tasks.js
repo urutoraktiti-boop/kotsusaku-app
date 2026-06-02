@@ -1333,6 +1333,7 @@
     list.push(task);
     data[today] = list;
     saveTasks(data);
+    if (window.taskAnalytics) window.taskAnalytics.onTaskAdded();
     mru('subject', subject);
     mru('type', type);
     state.selectedType = '';
@@ -1412,6 +1413,7 @@
       task.earnedKP = 0;
       touchTask(task);
       saveTasks(data);
+      if (window.taskAnalytics) window.taskAnalytics.onTaskUncompleted();
       render();
       notify('未完了に戻しました');
       return;
@@ -1423,6 +1425,7 @@
     addKP(task.earnedKP);
     data[today] = list;
     saveTasks(data);
+    if (window.taskAnalytics) window.taskAnalytics.onTaskCompleted();
     playChime();
     showStampEffect(task.id);
     setTimeout(() => {
@@ -1441,6 +1444,7 @@
     rememberDeleted(task.id);
     data[today] = list.filter((item) => String(item.id) !== String(id));
     saveTasks(data);
+    if (window.taskAnalytics) window.taskAnalytics.onTaskDeleted(task.status === 'done');
     render();
     notify('削除しました');
   }
@@ -1712,6 +1716,7 @@
       touchTask(task).status = 'carried';
     });
     saveTasks(data);
+    if (window.taskAnalytics && carry.length > 0) window.taskAnalytics.onTasksCarried(carry.length);
     render();
     notify(carry.length + '件を今日に追加しました');
   }
