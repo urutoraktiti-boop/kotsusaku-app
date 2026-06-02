@@ -379,8 +379,15 @@
     return parseInt(localStorage.getItem(STORE.kp) || '0', 10) || 0;
   }
 
+  function queueAnalyticsUpdate() {
+    if (typeof window.queueKotsuAnalyticsUpdate === 'function') {
+      window.queueKotsuAnalyticsUpdate();
+    }
+  }
+
   function setKP(value) {
     localStorage.setItem(STORE.kp, String(Math.max(0, value)));
+    queueAnalyticsUpdate();
   }
 
   function addKP(amount) {
@@ -702,6 +709,7 @@
     syncStoryProgress();
     updateButtonSummary();
     if (typeof window.saveToCloud === 'function') window.saveToCloud();
+    queueAnalyticsUpdate();
   }
 
   function notify(message, isError) {

@@ -73,7 +73,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="stylesheet" href="./kotsu-tasks.css?v=kotsusaku-v108-kotsu-input-improvement">
+<link rel="stylesheet" href="./kotsu-tasks.css?v=kotsusaku-v109-summary-kotsu-analytics">
 </head>
 <body>
 <canvas id="fw-canvas"></canvas>
@@ -1221,7 +1221,7 @@
   setTimeout(window.__kotsusakuEnsureForecast,900);
   setTimeout(window.__kotsusakuEnsureForecast,2000);
 })();
-</script><script src="./kotsu-tasks.js?v=kotsusaku-v108-kotsu-input-improvement"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script><script>
+</script><script src="./kotsu-tasks.js?v=kotsusaku-v109-summary-kotsu-analytics"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script><script>
 
 const $=id=>document.getElementById(id);
 
@@ -1269,7 +1269,7 @@ function trackEvent(name, params) {
   if (!analytics || !name) return;
   try {
     analytics.logEvent(name, Object.assign({
-      app_version: 'kotsusaku-v108-kotsu-input-improvement'
+      app_version: 'kotsusaku-v109-summary-kotsu-analytics'
     }, params || {}));
   } catch(e) {
     console.warn('Analytics送信エラー:', e);
@@ -1289,7 +1289,7 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
 // 送信タイミング:
 //   1. 起動時 → 前回セッション分の未送信データを送信 + 今回の起動データを送信
 //   2. 毎日4:00 → その場で開いていた場合に日次データを送信
-// analytics送信成功時に analytics_summary/summary を差分更新する（フェーズ2）
+// analytics送信成功時も、全体集計は端末側から更新しない
 // ============================================================
 (function() {
   const ANALYTICS_KEY = 'kotsusaku-analytics-pending'; // 未送信データ保存キー
@@ -1473,6 +1473,91 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
     return fa;
   }
 
+  // --- コツ習慣の個別集計 ---
+  function getKotsuTaskStats() {
+    const empty = {
+      hasKotsuHabit: false,
+      kotsuTaskCount: 0,
+      kotsuDoneCount: 0,
+      kotsuTodoCount: 0,
+      kotsuCarriedCount: 0,
+      kotsuTodayTaskCount: 0,
+      kotsuTodayDoneCount: 0,
+      kotsuWeekTaskCount: 0,
+      kotsuWeekDoneCount: 0,
+      kotsuMonthTaskCount: 0,
+      kotsuMonthDoneCount: 0,
+      kotsuTotalActualMin: 0,
+      kotsuWeekActualMin: 0,
+      kotsuMonthActualMin: 0,
+      kotsuKP: 0,
+      kotsuTemplateCount: 0,
+      kotsuCategoryCounts: {},
+      kotsuLastTaskAt: null,
+      kotsuStatsDate: getAppDate(),
+      kotsuStatsWeekStart: null,
+      kotsuStatsMonth: getAppDate().slice(0, 7),
+    };
+    try {
+      const tasksByDate = JSON.parse(localStorage.getItem('kskotsu_tasks') || '{}');
+      const templates = JSON.parse(localStorage.getItem('kskotsu_templates') || '[]');
+      const today = getAppDate();
+      const todayDate = new Date(today + 'T00:00:00');
+      const weekStartDate = new Date(todayDate);
+      weekStartDate.setDate(todayDate.getDate() - ((todayDate.getDay() + 6) % 7));
+      const weekStart = weekStartDate.toISOString().slice(0, 10);
+      const month = today.slice(0, 7);
+      const categoryCounts = {};
+      let lastTaskAt = null;
+
+      Object.entries(tasksByDate || {}).forEach(([date, list]) => {
+        if (!Array.isArray(list)) return;
+        list.forEach((task) => {
+          if (!task || task.status === 'carried') {
+            if (task && task.status === 'carried') empty.kotsuCarriedCount += 1;
+            return;
+          }
+          empty.kotsuTaskCount += 1;
+          if (task.status === 'done') empty.kotsuDoneCount += 1;
+          else empty.kotsuTodoCount += 1;
+
+          if (date === today) {
+            empty.kotsuTodayTaskCount += 1;
+            if (task.status === 'done') empty.kotsuTodayDoneCount += 1;
+          }
+          if (date >= weekStart) {
+            empty.kotsuWeekTaskCount += 1;
+            if (task.status === 'done') empty.kotsuWeekDoneCount += 1;
+          }
+          if (date.slice(0, 7) === month) {
+            empty.kotsuMonthTaskCount += 1;
+            if (task.status === 'done') empty.kotsuMonthDoneCount += 1;
+          }
+
+          const actualMin = Math.max(0, Number(task.actualMins) || 0);
+          empty.kotsuTotalActualMin += actualMin;
+          if (date >= weekStart) empty.kotsuWeekActualMin += actualMin;
+          if (date.slice(0, 7) === month) empty.kotsuMonthActualMin += actualMin;
+
+          const category = task.category || 'other';
+          categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+          const touchedAt = task.updatedAt || task.completedAt || task.createdAt || null;
+          if (touchedAt && (!lastTaskAt || touchedAt > lastTaskAt)) lastTaskAt = touchedAt;
+        });
+      });
+
+      empty.hasKotsuHabit = empty.kotsuTaskCount > 0 || (Array.isArray(templates) && templates.length > 0);
+      empty.kotsuKP = parseInt(localStorage.getItem('kskotsu_kp') || '0', 10) || 0;
+      empty.kotsuTemplateCount = Array.isArray(templates) ? templates.length : 0;
+      empty.kotsuCategoryCounts = categoryCounts;
+      empty.kotsuLastTaskAt = lastTaskAt;
+      empty.kotsuStatsWeekStart = weekStart;
+      return empty;
+    } catch(e) {
+      return empty;
+    }
+  }
+
   // --- Firestoreにデータを送信 ---
   async function sendAnalytics(payload) {
     if (!db) return false;
@@ -1490,10 +1575,11 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
   function buildPayload(type) {
     const device = getDeviceInfo();
     const badge = getBadgeInfo();
+    const kotsuTaskStats = getKotsuTaskStats();
     const now = new Date().toISOString();
     const base = {
       userId: getAnonymousId(),
-      appVersion: 'kotsusaku-v108-kotsu-input-improvement',
+      appVersion: 'kotsusaku-v109-summary-kotsu-analytics',
       lastAccess: now,
       firstAccess: getFirstAccess(),
       os: device.os,
@@ -1512,6 +1598,7 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
       usesStopwatch: getStopwatchUsed(),
       hasMyCrazy10: getMyCrazy10Set(),
       joinsCrazy10: getCrazy10Joined(),
+      ...kotsuTaskStats,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     };
     if (type === 'daily') {
@@ -1556,11 +1643,19 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
     if (ok) {
       localStorage.setItem(ANALYTICS_SENT_KEY, today);
       localStorage.removeItem(ANALYTICS_KEY); // 未送信キューをクリア
-      // payloadのtotalStudyMin（Firestore送信値）を使って差分送信
-      if (payload.totalStudyMin) {
-        await pushSummaryDiff(payload.totalStudyMin);
-      }
     }
+  }
+
+  let _kotsuAnalyticsTimer = null;
+
+  function queueKotsuAnalyticsUpdate() {
+    if (_kotsuAnalyticsTimer) clearTimeout(_kotsuAnalyticsTimer);
+    _kotsuAnalyticsTimer = setTimeout(async () => {
+      _kotsuAnalyticsTimer = null;
+      const payload = buildPayload('session');
+      const ok = await sendAnalytics(payload);
+      if (!ok) savePending();
+    }, 12000);
   }
 
   // ══════════════════════════════════════
@@ -1606,58 +1701,9 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
   }
 
   async function pushSummaryDiff(currentTotalStudyMin, opts) {
-    if (!db) return;
-    if (typeof currentTotalStudyMin !== 'number') currentTotalStudyMin = getTotalStudyMin();
-    if (typeof currentTotalStudyMin !== 'number') return;
-    try {
-      // 前回送信値との差分を計算
-      let prev = null;
-      try {
-        const raw = localStorage.getItem(SUMMARY_PREV_KEY);
-        if (raw) prev = JSON.parse(raw);
-      } catch(e) {}
-
-      const prevMins = prev ? (prev.totalStudyMin || 0) : null;
-
-      // 初回（prevがない）の場合はスキップ（二重カウント防止）
-      if (prevMins === null) {
-        localStorage.setItem(SUMMARY_PREV_KEY, JSON.stringify({
-          totalStudyMin: currentTotalStudyMin,
-        }));
-        return;
-      }
-
-      const diff = currentTotalStudyMin - prevMins;
-
-      // 差分がゼロまたはマイナスならスキップ
-      if (diff <= 0) return;
-
-      if (!opts || !opts.force) {
-        const elapsed = Date.now() - getSummaryLastFlush();
-        if (elapsed < SUMMARY_FLUSH_INTERVAL_MS) {
-          scheduleSummaryDiff(currentTotalStudyMin);
-          return;
-        }
-      }
-
-      // summaryにdiffだけincrementする（読み取りゼロ・書き込み1件）
-      const INC = firebase.firestore.FieldValue.increment;
-      await db.collection('analytics_summary').doc('summary').set({
-        totalStudyMin: INC(diff),
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      }, { merge: true });
-
-      // 送信成功後に現在値を記録
-      localStorage.setItem(SUMMARY_PREV_KEY, JSON.stringify({
-        totalStudyMin: currentTotalStudyMin,
-      }));
-      localStorage.setItem(SUMMARY_LAST_FLUSH_KEY, String(Date.now()));
-
-      console.log('pushSummaryDiff:', diff + '分 increment');
-
-    } catch(e) {
-      console.warn('pushSummaryDiff error:', e);
-    }
+    // analytics_summary はサーバー側の集計だけが更新する。
+    // ユーザー端末から差分加算すると、再集計と重なった時に総時間が二重計上される。
+    return;
   }
 
   // ══════════════════════════════════════
@@ -1711,6 +1757,7 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
 
   // グローバルに公開（toggle・autoCheckから呼べるように）
   window.pushSummaryDiff = pushSummaryDiff;
+  window.queueKotsuAnalyticsUpdate = queueKotsuAnalyticsUpdate;
 
 })();
 // === アナリティクス end ===
@@ -1721,18 +1768,11 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
 
   const TASK_USER_KEY = 'kotsusaku-task-user-registered';
 
-  // analytics_summary/summary を差分 increment する
+  // analytics_summary/summary はサーバー側の集計だけが更新する。
+  // 端末側では自分の analytics/{userId} を最新化するだけにする。
   async function incrementSummary(fields) {
-    if (!db) return;
-    try {
-      const INC = firebase.firestore.FieldValue.increment;
-      const update = { updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
-      for (const [key, val] of Object.entries(fields)) {
-        update[key] = INC(val);
-      }
-      await db.collection('analytics_summary').doc('summary').set(update, { merge: true });
-    } catch (e) {
-      console.warn('[taskAnalytics] Firestore write error:', e);
+    if (typeof window.queueKotsuAnalyticsUpdate === 'function') {
+      window.queueKotsuAnalyticsUpdate();
     }
   }
 
@@ -1774,44 +1814,7 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
 
 // === タスクアナリティクス補正（管理者用） ===
 async function recalibrateTaskAnalytics() {
-  if (!db) {
-    alert('Firebase が初期化されていません。少し待ってから再試行してください。');
-    return;
-  }
-  if (!confirm('Firestore の totalTasks・completedTasks・taskUsers を\nこの端末のデータで上書きします。よろしいですか？')) return;
-
-  try {
-    const raw = localStorage.getItem('kskotsu_tasks');
-    const taskData = raw ? JSON.parse(raw) : {};
-
-    let totalTasks = 0;
-    let completedTasks = 0;
-
-    Object.values(taskData).forEach(function(dayTasks) {
-      if (!Array.isArray(dayTasks)) return;
-      dayTasks.forEach(function(task) {
-        if (task.status === 'carried') return; // 繰越元はカウントしない
-        totalTasks++;
-        if (task.status === 'done') completedTasks++;
-      });
-    });
-
-    const taskUsers = totalTasks > 0 ? 1 : 0;
-    if (taskUsers > 0) localStorage.setItem('kotsusaku-task-user-registered', '1');
-
-    // increment ではなく set で上書き
-    await db.collection('analytics_summary').doc('summary').set({
-      totalTasks: totalTasks,
-      completedTasks: completedTasks,
-      taskUsers: taskUsers,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-    }, { merge: true });
-
-    alert('補正完了！\nタスク利用者: ' + taskUsers + '人\n総タスク作成数: ' + totalTasks + '件\n完了タスク数: ' + completedTasks + '件');
-  } catch(e) {
-    console.error('recalibrateTaskAnalytics error:', e);
-    alert('エラーが発生しました: ' + e.message);
-  }
+  alert('この補正は停止しました。\n全体の数字は、各ユーザーの analytics データからサーバー側で集計します。');
 }
 
 // 管理者モード（URL に ?admin=1 がある場合のみ表示）
@@ -1839,38 +1842,11 @@ async function recalibrateTaskAnalytics() {
 
 // === タスクトレンドグラフ ===
 
-// 設定を開いたときに1時間に1回スナップショットをクライアントから保存する
-// Cloud Functions不要 — ユーザーのブラウザが書き込む
+// トレンド保存はサーバー側の集計だけが行う
 async function maybeWriteTaskTrendSnapshot() {
-  try {
-    const INTERVAL_MS = 60 * 60 * 1000; // 1時間
-    const lastKey = 'kotsusaku-task-trend-last-snap';
-    const last = parseInt(localStorage.getItem(lastKey) || '0', 10);
-    if (Date.now() - last < INTERVAL_MS) return; // まだ1時間経っていない
-
-    const summarySnap = await db.collection('analytics_summary').doc('summary').get();
-    if (!summarySnap.exists) return;
-    const d = summarySnap.data();
-
-    await db.collection('analytics_task_trend').add({
-      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-      totalTasks: d.totalTasks || 0,
-      completedTasks: d.completedTasks || 0,
-      taskUsers: d.taskUsers || 0,
-    });
-
-    localStorage.setItem(lastKey, String(Date.now()));
-
-    // 48時間より古いデータを削除
-    const cutoff48 = new Date(Date.now() - 48 * 60 * 60 * 1000);
-    const old = await db.collection('analytics_task_trend')
-      .where('timestamp', '<', cutoff48).get();
-    const batch = db.batch();
-    old.forEach(doc => batch.delete(doc.ref));
-    if (!old.empty) await batch.commit();
-  } catch(e) {
-    console.warn('maybeWriteTaskTrendSnapshot:', e);
-  }
+  // analytics_task_trend もサーバー側の集計だけが保存する。
+  // ユーザー端末から保存すると、同じ時間帯の点が重複しやすくなる。
+  return;
 }
 
 async function loadTaskTrend() {
@@ -6838,21 +6814,21 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v108-kotsu-input-improvement'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v109-summary-kotsu-analytics'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
   var _latestVersionLabel = null;
   var UPDATE_PROMPT_SEEN_KEY = '_kotsusakuUpdatePromptSeenVersion';
   var UPDATE_PROMPT_APPLIED_KEY = '_kotsusakuUpdatePromptAppliedVersion';
   var UPDATE_COPY = {
-    title: 'コツ習慣入力改善',
-    body: 'もっとライトに入力しやすくなったゴリ。',
-    notes: '✅ 保存済みコツを上に移動<br>✅ ①②③の入力フローを整理<br>🏃 走るキャラの背景アニメをランダム化'
+    title: 'コツ習慣集計の安定化',
+    body: 'みんなの数字を安全に集計できるよう整えたゴリ。',
+    notes: '✅ 全体集計の二重加算を防止<br>✅ コツ習慣の個別データを送信<br>✅ ダッシュボード集計の土台を整理'
   };
 
   function formatVersionBadge(ver) {
     var match = String(ver || CURRENT_VERSION).match(/v(\d+)/i);
-    return match ? 'v' + match[1] : 'v108';
+    return match ? 'v' + match[1] : 'v109';
   }
 
   // ver-badge と CURRENT_VERSION を version.json の値で初期化
