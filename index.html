@@ -607,6 +607,12 @@
 🔒 コツ習慣の記録は端末内に保存されます。データ同期を利用している場合は、同期コードに紐づけてFirebaseにも保存され、端末変更時も同期コードで引き継げます。同期コードは他人に共有しないでください。
 </div>
 </div>
+<div id="admin-recalibrate-section" style="display:none;margin:10px 0 0;padding:12px 10px;background:rgba(245,200,66,.08);border:1px solid rgba(245,200,66,.3);border-radius:10px;">
+<div style="font-size:.68rem;font-weight:900;color:#f5c842;margin-bottom:6px;">🔧 管理者用：アナリティクス補正</div>
+<div style="font-size:.6rem;color:var(--text-muted);margin-bottom:10px;line-height:1.7;">この端末のタスクデータを読み取り、Firestore の集計値（totalTasks・completedTasks・taskUsers）を正しい数字で上書きします。完了率がおかしいときに使用してください。</div>
+<button onclick="recalibrateTaskAnalytics()" style="width:100%;background:#f5c842;color:#1a1200;border:none;border-radius:8px;padding:9px 0;font-size:.72rem;font-weight:900;cursor:pointer;">⚡ アナリティクスを補正する</button>
+</div>
+
 <div class="cust-sec" style="margin:10px 0 0;border-top:1px solid var(--border);padding-top:12px;">
 <div style="display:flex;align-items:center;justify-content:space-between;">
 <div style="display:flex;align-items:center;gap:6px;">
@@ -1739,6 +1745,71 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
   };
 })();
 // === タスクアナリティクス end ===
+
+// === タスクアナリティクス補正（管理者用） ===
+async function recalibrateTaskAnalytics() {
+  if (!db) {
+    alert('Firebase が初期化されていません。少し待ってから再試行してください。');
+    return;
+  }
+  if (!confirm('Firestore の totalTasks・completedTasks・taskUsers を\nこの端末のデータで上書きします。よろしいですか？')) return;
+
+  try {
+    const raw = localStorage.getItem('kskotsu_tasks');
+    const taskData = raw ? JSON.parse(raw) : {};
+
+    let totalTasks = 0;
+    let completedTasks = 0;
+
+    Object.values(taskData).forEach(function(dayTasks) {
+      if (!Array.isArray(dayTasks)) return;
+      dayTasks.forEach(function(task) {
+        if (task.status === 'carried') return; // 繰越元はカウントしない
+        totalTasks++;
+        if (task.status === 'done') completedTasks++;
+      });
+    });
+
+    const taskUsers = totalTasks > 0 ? 1 : 0;
+    if (taskUsers > 0) localStorage.setItem('kotsusaku-task-user-registered', '1');
+
+    // increment ではなく set で上書き
+    await db.collection('analytics_summary').doc('summary').set({
+      totalTasks: totalTasks,
+      completedTasks: completedTasks,
+      taskUsers: taskUsers,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+
+    alert('補正完了！\nタスク利用者: ' + taskUsers + '人\n総タスク作成数: ' + totalTasks + '件\n完了タスク数: ' + completedTasks + '件');
+  } catch(e) {
+    console.error('recalibrateTaskAnalytics error:', e);
+    alert('エラーが発生しました: ' + e.message);
+  }
+}
+
+// 管理者モード（URL に ?admin=1 がある場合のみ表示）
+(function() {
+  if (!/[?&]admin=1/.test(location.search)) return;
+  function showAdminSection() {
+    var el = document.getElementById('admin-recalibrate-section');
+    if (el) { el.style.display = 'block'; return; }
+    // 要素がまだなければ DOMContentLoaded 後に再試行
+    document.addEventListener('DOMContentLoaded', function() {
+      var el2 = document.getElementById('admin-recalibrate-section');
+      if (el2) el2.style.display = 'block';
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      var el = document.getElementById('admin-recalibrate-section');
+      if (el) el.style.display = 'block';
+    });
+  } else {
+    showAdminSection();
+  }
+})();
+// === タスクアナリティクス補正 end ===
 
 // === 同期コード ===
 function generateSyncCode() {
