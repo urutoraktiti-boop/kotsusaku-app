@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>モックアップ：みんなの軌跡</title>
+<style>
+:root {
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;
+  --accent:#4f8ef7;--checked:#3ecf8e;
+  --text:#e8eaf6;--text-muted:#6b7280;--border:#2d3148;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family:'Segoe UI',Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:16px;
+}
+h2 {
+  font-size:.75rem;
+  color:var(--text-muted);
+  text-align:center;
+  padding:6px 14px;
+  border:1px dashed var(--border);
+  border-radius:6px;
+}
+
+.cust-panel-wrap {
+  width:100%;
+  max-width:400px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.section-box {
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px 12px;
+  background:var(--surface2);
+}
+.section-box-title {
+  font-size:.72rem;
+  font-weight:800;
+  color:var(--text);
+  margin-bottom:6px;
+  padding-bottom:6px;
+  border-bottom:1px solid var(--border);
+}
+.section-placeholder {
+  font-size:.6rem;
+  color:var(--text-muted);
+  text-align:center;
+  padding:8px 0;
+  line-height:1.8;
+}
+
+/* ━━━ みんなの軌跡 セクション ━━━ */
+.kiseki-section {
+  border-radius:14px;
+  padding:14px 12px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+}
+.kiseki-title {
+  font-size:.75rem;
+  font-weight:900;
+  color:var(--text);
+  margin-bottom:12px;
+  text-align:center;
+  letter-spacing:.05em;
+}
+.kiseki-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+/* ━━━ カード本体 ━━━ */
+.kiseki-card {
+  border-radius:12px;
+  padding:12px 8px 8px;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:0;
+}
+.kiseki-card.time {
+  background:linear-gradient(145deg, rgba(79,142,247,.18), rgba(79,142,247,.06));
+  border:1px solid rgba(79,142,247,.3);
+}
+.kiseki-card.count {
+  background:linear-gradient(145deg, rgba(62,207,142,.18), rgba(62,207,142,.06));
+  border:1px solid rgba(62,207,142,.3);
+}
+.kiseki-card .icon {
+  font-size:1.3rem;
+  line-height:1;
+  margin-bottom:5px;
+}
+.kiseki-card .key-name {
+  font-size:.65rem;
+  font-weight:900;
+  letter-spacing:.04em;
+  margin-bottom:4px;
+}
+.kiseki-card.time .key-name { color:var(--accent); }
+.kiseki-card.count .key-name { color:var(--checked); }
+.kiseki-card .value {
+  font-size:1.5rem;
+  font-weight:900;
+  line-height:1;
+  margin-bottom:1px;
+}
+.kiseki-card.time .value { color:var(--accent); }
+.kiseki-card.count .value { color:var(--checked); }
+.kiseki-card .unit {
+  font-size:.58rem;
+  font-weight:700;
+  opacity:.75;
+  margin-left:2px;
+}
+.kiseki-card .sublabel {
+  font-size:.5rem;
+  color:var(--text-muted);
+  margin-bottom:8px;
+}
+
+/* ━━━ スパークライン部分 ━━━ */
+.sparkline-wrap {
+  width:100%;
+  margin-top:2px;
+  border-top:1px solid rgba(255,255,255,.07);
+  padding-top:6px;
+}
+.sparkline-label {
+  font-size:.48rem;
+  color:var(--text-muted);
+  text-align:left;
+  margin-bottom:3px;
+  opacity:.8;
+}
+.sparkline-wrap svg {
+  display:block;
+  width:100%;
+  height:28px;
+}
+
+/* ━━━ バリエーション見出し ━━━ */
+.var-label {
+  font-size:.68rem;
+  font-weight:900;
+  color:var(--text-muted);
+  text-align:center;
+  letter-spacing:.04em;
+}
+</style>
+</head>
+<body>
+
+<h2>設定画面モックアップ — みんなの軌跡（案C 更新版）</h2>
+
+<div class="cust-panel-wrap">
+
+  <!-- 既存：カスタマイズ -->
+  <div class="section-box">
+    <div class="section-box-title">🎛 カスタマイズ</div>
+    <div class="section-placeholder">（既存の設定項目 — 変更なし）</div>
+  </div>
+
+  <!-- ━━━━━━━━━━━━━━━━━━━━ -->
+  <div class="var-label">▼ スパークライン あり（推奨）</div>
+  <!-- ━━━━━━━━━━━━━━━━━━━━ -->
+
+  <div class="kiseki-section">
+    <div class="kiseki-title">🌸 みんなの軌跡 🌸</div>
+    <div class="kiseki-grid">
+
+      <!-- 左：コツ時間 -->
+      <div class="kiseki-card time">
+        <span class="icon">⏱</span>
+        <div class="key-name">コツ時間</div>
+        <div class="value">12,480<span class="unit">h</span></div>
+        <div class="sublabel">総学習時間</div>
+        <div class="sparkline-wrap">
+          <div class="sparkline-label">24h推移</div>
+          <svg viewBox="0 0 100 28" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="gTime" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#4f8ef7" stop-opacity=".35"/>
+                <stop offset="100%" stop-color="#4f8ef7" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <polygon fill="url(#gTime)"
+              points="0,28 0,18 8,16 17,20 25,14 33,10 42,15 50,8 58,12 67,6 75,10 83,4 92,7 100,3 100,28"/>
+            <polyline fill="none" stroke="#4f8ef7" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"
+              points="0,18 8,16 17,20 25,14 33,10 42,15 50,8 58,12 67,6 75,10 83,4 92,7 100,3"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- 右：コツ習得 -->
+      <div class="kiseki-card count">
+        <span class="icon">✅</span>
+        <div class="key-name">コツ習得</div>
+        <div class="value">348,200<span class="unit">件</span></div>
+        <div class="sublabel">総習得件数</div>
+        <div class="sparkline-wrap">
+          <div class="sparkline-label">24h推移</div>
+          <svg viewBox="0 0 100 28" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="gCount" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#3ecf8e" stop-opacity=".35"/>
+                <stop offset="100%" stop-color="#3ecf8e" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <polygon fill="url(#gCount)"
+              points="0,28 0,22 8,20 17,18 25,21 33,15 42,18 50,12 58,16 67,9 75,13 83,7 92,10 100,5 100,28"/>
+            <polyline fill="none" stroke="#3ecf8e" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"
+              points="0,22 8,20 17,18 25,21 33,15 42,18 50,12 58,16 67,9 75,13 83,7 92,10 100,5"/>
+          </svg>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ━━━━━━━━━━━━━━━━━━━━ -->
+  <div class="var-label">▼ スパークライン なし（シンプル版）</div>
+  <!-- ━━━━━━━━━━━━━━━━━━━━ -->
+
+  <div class="kiseki-section">
+    <div class="kiseki-title">🌸 みんなの軌跡 🌸</div>
+    <div class="kiseki-grid">
+      <div class="kiseki-card time">
+        <span class="icon">⏱</span>
+        <div class="key-name">コツ時間</div>
+        <div class="value">12,480<span class="unit">h</span></div>
+        <div class="sublabel">総学習時間</div>
+      </div>
+      <div class="kiseki-card count">
+        <span class="icon">✅</span>
+        <div class="key-name">コツ習得</div>
+        <div class="value">348,200<span class="unit">件</span></div>
+        <div class="sublabel">総習得件数</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 既存：その他（変更後） -->
+  <div class="section-box">
+    <div class="section-box-title">🗄 その他</div>
+    <div class="section-placeholder">💾 データ管理<br>☁️ データ同期</div>
+  </div>
+
+</div>
+
+</body>
+</html>
