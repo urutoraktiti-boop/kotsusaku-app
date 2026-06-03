@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>モックアップ：みんなの軌跡カテゴリー</title>
+<style>
+:root {
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;
+  --accent:#4f8ef7;--checked:#3ecf8e;
+  --text:#e8eaf6;--text-muted:#6b7280;--border:#2d3148;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family:'Segoe UI',Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:20px;
+}
+h2 {
+  font-size:.8rem;
+  color:var(--text-muted);
+  text-align:center;
+  padding:6px 14px;
+  border:1px dashed var(--border);
+  border-radius:6px;
+}
+
+/* 設定パネル風のラッパー */
+.cust-panel-wrap {
+  width:100%;
+  max-width:400px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+/* 既存セクション（カスタマイズ・その他）の雰囲気を再現 */
+.section-box {
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px 12px;
+  background:var(--surface2);
+}
+.section-box-title {
+  font-size:.72rem;
+  font-weight:800;
+  color:var(--text);
+  margin-bottom:10px;
+  padding-bottom:6px;
+  border-bottom:1px solid var(--border);
+}
+.section-placeholder {
+  font-size:.62rem;
+  color:var(--text-muted);
+  text-align:center;
+  padding:10px 0;
+}
+
+/* ───────────────────────────────────────
+   みんなの軌跡カテゴリー（新デザイン案）
+─────────────────────────────────────── */
+
+/* === 案A：グラデーション＋大きな数字 === */
+.kiseki-section-a {
+  border-radius:14px;
+  padding:14px 12px;
+  background: linear-gradient(135deg, rgba(79,142,247,.15) 0%, rgba(62,207,142,.10) 100%);
+  border:1px solid rgba(79,142,247,.35);
+  position:relative;
+  overflow:hidden;
+}
+.kiseki-section-a::before {
+  content:'';
+  position:absolute;
+  top:-30px; right:-30px;
+  width:120px; height:120px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(79,142,247,.12) 0%, transparent 70%);
+  pointer-events:none;
+}
+.kiseki-title-a {
+  font-size:.68rem;
+  font-weight:900;
+  color:var(--accent);
+  letter-spacing:.06em;
+  margin-bottom:12px;
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+.kiseki-grid-a {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.kiseki-card-a {
+  background:rgba(26,29,39,.75);
+  border:1px solid rgba(79,142,247,.2);
+  border-radius:12px;
+  padding:12px 10px;
+  text-align:center;
+}
+.kiseki-card-a .label {
+  font-size:.56rem;
+  color:var(--text-muted);
+  font-weight:700;
+  letter-spacing:.04em;
+  margin-bottom:4px;
+}
+.kiseki-card-a .unit-label {
+  font-size:.72rem;
+  font-weight:900;
+  margin-bottom:2px;
+}
+.kiseki-card-a.time .unit-label { color:var(--accent); }
+.kiseki-card-a.count .unit-label { color:var(--checked); }
+.kiseki-card-a .value {
+  font-size:1.6rem;
+  font-weight:900;
+  line-height:1.1;
+  letter-spacing:-.02em;
+}
+.kiseki-card-a.time .value { color:var(--accent); }
+.kiseki-card-a.count .value { color:var(--checked); }
+.kiseki-card-a .unit {
+  font-size:.62rem;
+  font-weight:700;
+  margin-left:1px;
+  opacity:.8;
+}
+
+/* === 案B：シンプル横並び === */
+.kiseki-section-b {
+  border-radius:12px;
+  padding:12px;
+  background:var(--surface);
+  border:1px solid var(--border);
+}
+.kiseki-title-b {
+  font-size:.68rem;
+  font-weight:900;
+  color:var(--text);
+  margin-bottom:10px;
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+.kiseki-grid-b {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+.kiseki-card-b {
+  background:var(--surface2);
+  border-radius:10px;
+  padding:10px 8px;
+  text-align:center;
+  border-left:3px solid transparent;
+}
+.kiseki-card-b.time { border-left-color:var(--accent); }
+.kiseki-card-b.count { border-left-color:var(--checked); }
+.kiseki-card-b .label {
+  font-size:.56rem;
+  color:var(--text-muted);
+  margin-bottom:3px;
+}
+.kiseki-card-b .key-name {
+  font-size:.68rem;
+  font-weight:900;
+  margin-bottom:4px;
+}
+.kiseki-card-b.time .key-name { color:var(--accent); }
+.kiseki-card-b.count .key-name { color:var(--checked); }
+.kiseki-card-b .value {
+  font-size:1.45rem;
+  font-weight:900;
+  line-height:1.1;
+}
+.kiseki-card-b.time .value { color:var(--accent); }
+.kiseki-card-b.count .value { color:var(--checked); }
+.kiseki-card-b .unit {
+  font-size:.6rem;
+  font-weight:700;
+  opacity:.75;
+  margin-left:1px;
+}
+
+/* === 案C：アイコン付きバッジ風 === */
+.kiseki-section-c {
+  border-radius:14px;
+  padding:14px 12px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+}
+.kiseki-title-c {
+  font-size:.7rem;
+  font-weight:900;
+  color:var(--text);
+  margin-bottom:12px;
+  text-align:center;
+  letter-spacing:.05em;
+}
+.kiseki-grid-c {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.kiseki-card-c {
+  border-radius:12px;
+  padding:14px 8px 10px;
+  text-align:center;
+  position:relative;
+}
+.kiseki-card-c.time {
+  background:linear-gradient(145deg, rgba(79,142,247,.18), rgba(79,142,247,.06));
+  border:1px solid rgba(79,142,247,.3);
+}
+.kiseki-card-c.count {
+  background:linear-gradient(145deg, rgba(62,207,142,.18), rgba(62,207,142,.06));
+  border:1px solid rgba(62,207,142,.3);
+}
+.kiseki-card-c .icon {
+  font-size:1.4rem;
+  line-height:1;
+  margin-bottom:6px;
+  display:block;
+}
+.kiseki-card-c .key-name {
+  font-size:.65rem;
+  font-weight:900;
+  letter-spacing:.04em;
+  margin-bottom:5px;
+}
+.kiseki-card-c.time .key-name { color:var(--accent); }
+.kiseki-card-c.count .key-name { color:var(--checked); }
+.kiseki-card-c .value {
+  font-size:1.55rem;
+  font-weight:900;
+  line-height:1;
+}
+.kiseki-card-c.time .value { color:var(--accent); }
+.kiseki-card-c.count .value { color:var(--checked); }
+.kiseki-card-c .unit {
+  font-size:.62rem;
+  font-weight:700;
+  opacity:.8;
+  margin-left:2px;
+}
+.kiseki-card-c .sublabel {
+  font-size:.52rem;
+  color:var(--text-muted);
+  margin-top:4px;
+}
+
+/* 案ラベル */
+.plan-label {
+  font-size:.72rem;
+  font-weight:900;
+  color:var(--text-muted);
+  text-align:center;
+  margin-bottom:4px;
+  letter-spacing:.05em;
+}
+</style>
+</head>
+<body>
+
+<h2>設定画面モックアップ — みんなの軌跡</h2>
+
+<div class="cust-panel-wrap">
+
+  <!-- 既存：カスタマイズ -->
+  <div class="section-box">
+    <div class="section-box-title">🎛 カスタマイズ</div>
+    <div class="section-placeholder">（既存の設定項目 — 変更なし）</div>
+  </div>
+
+  <!-- ↓↓↓ 新カテゴリー：みんなの軌跡 ↓↓↓ -->
+
+  <!-- ===== 案A ===== -->
+  <div class="plan-label">▼ 案 A：グラデーション＋大きな数字</div>
+  <div class="kiseki-section-a">
+    <div class="kiseki-title-a">🌟 みんなの軌跡</div>
+    <div class="kiseki-grid-a">
+      <div class="kiseki-card-a time">
+        <div class="label">総学習時間</div>
+        <div class="unit-label">コツ時間</div>
+        <div class="value">12,480<span class="unit">時間</span></div>
+      </div>
+      <div class="kiseki-card-a count">
+        <div class="label">総習得件数</div>
+        <div class="unit-label">コツ習得</div>
+        <div class="value">348,200<span class="unit">件</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 案B ===== -->
+  <div class="plan-label">▼ 案 B：シンプル・すっきり</div>
+  <div class="kiseki-section-b">
+    <div class="kiseki-title-b">🌟 みんなの軌跡</div>
+    <div class="kiseki-grid-b">
+      <div class="kiseki-card-b time">
+        <div class="label">総学習時間</div>
+        <div class="key-name">コツ時間</div>
+        <div class="value">12,480<span class="unit">時間</span></div>
+      </div>
+      <div class="kiseki-card-b count">
+        <div class="label">総習得件数</div>
+        <div class="key-name">コツ習得</div>
+        <div class="value">348,200<span class="unit">件</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 案C ===== -->
+  <div class="plan-label">▼ 案 C：アイコン付きバッジ風</div>
+  <div class="kiseki-section-c">
+    <div class="kiseki-title-c">🌟 みんなの軌跡</div>
+    <div class="kiseki-grid-c">
+      <div class="kiseki-card-c time">
+        <span class="icon">⏱</span>
+        <div class="key-name">コツ時間</div>
+        <div class="value">12,480<span class="unit">h</span></div>
+        <div class="sublabel">総学習時間</div>
+      </div>
+      <div class="kiseki-card-c count">
+        <span class="icon">✅</span>
+        <div class="key-name">コツ習得</div>
+        <div class="value">348,200<span class="unit">件</span></div>
+        <div class="sublabel">総習得件数</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ↑↑↑ 新カテゴリーここまで ↑↑↑ -->
+
+  <!-- 既存：その他（内容変更後） -->
+  <div class="section-box">
+    <div class="section-box-title">🗄 その他</div>
+    <div class="section-placeholder">💾 データ管理<br>☁️ データ同期<br>（使用状況は上の「みんなの軌跡」に集約）</div>
+  </div>
+
+</div>
+
+</body>
+</html>
