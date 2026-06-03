@@ -1295,6 +1295,9 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
 (function() {
   const ANALYTICS_KEY = 'kotsusaku-analytics-pending'; // 未送信データ保存キー
   const ANALYTICS_SENT_KEY = 'kotsusaku-analytics-last-sent'; // 最終送信日
+  const ANALYTICS_UPLOAD_INTERVAL_MS = 60 * 60 * 1000;
+  const ANALYTICS_LAST_UPLOAD_KEY = 'kotsusaku-analytics-last-upload-at';
+  const ANALYTICS_DIRTY_KEY = 'kotsusaku-analytics-dirty';
 
   // --- デバイス情報を取得 ---
   function getDeviceInfo() {
@@ -1610,14 +1613,29 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
   }
 
   // --- 未送信データをlocalStorageに保存 ---
-  function savePending() {
+  function savePending(type) {
     try {
-      const payload = buildPayload('daily');
+      const payload = buildPayload(type || 'session');
       localStorage.setItem(ANALYTICS_KEY, JSON.stringify({
         payload,
         savedAt: new Date().toISOString()
       }));
     } catch(e) {}
+  }
+
+  function getLastAnalyticsUploadAt() {
+    return parseInt(localStorage.getItem(ANALYTICS_LAST_UPLOAD_KEY) || '0', 10) || 0;
+  }
+
+  function markAnalyticsUploaded() {
+    localStorage.setItem(ANALYTICS_LAST_UPLOAD_KEY, String(Date.now()));
+    localStorage.removeItem(ANALYTICS_DIRTY_KEY);
+    localStorage.removeItem(ANALYTICS_KEY);
+  }
+
+  function markAnalyticsDirty(type) {
+    localStorage.setItem(ANALYTICS_DIRTY_KEY, '1');
+    savePending(type || 'session');
   }
 
   // --- 前回の未送信データを送信 ---
@@ -1629,7 +1647,7 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
       if (!payload) return;
       const ok = await sendAnalytics(payload);
       if (ok) {
-        localStorage.removeItem(ANALYTICS_KEY);
+        markAnalyticsUploaded();
       }
     } catch(e) {}
   }
@@ -1643,20 +1661,26 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
     const ok = await sendAnalytics(payload);
     if (ok) {
       localStorage.setItem(ANALYTICS_SENT_KEY, today);
-      localStorage.removeItem(ANALYTICS_KEY); // 未送信キューをクリア
+      markAnalyticsUploaded();
     }
   }
 
   let _kotsuAnalyticsTimer = null;
 
   function queueKotsuAnalyticsUpdate() {
+    markAnalyticsDirty('session');
     if (_kotsuAnalyticsTimer) clearTimeout(_kotsuAnalyticsTimer);
+    const elapsed = Date.now() - getLastAnalyticsUploadAt();
+    const wait = elapsed >= ANALYTICS_UPLOAD_INTERVAL_MS
+      ? 12000
+      : Math.max(12000, ANALYTICS_UPLOAD_INTERVAL_MS - elapsed + 1000);
     _kotsuAnalyticsTimer = setTimeout(async () => {
       _kotsuAnalyticsTimer = null;
       const payload = buildPayload('session');
       const ok = await sendAnalytics(payload);
-      if (!ok) savePending();
-    }, 12000);
+      if (ok) markAnalyticsUploaded();
+      else savePending('session');
+    }, wait);
   }
 
   // ══════════════════════════════════════
@@ -1724,7 +1748,7 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
     // 2. 今回の起動データを送信（起動時は日次データも兼ねる）
     await sendDaily();
     // 3. 今回のセッションデータをlocalStorageに保存（次回起動時のフォールバック用）
-    savePending();
+    savePending('daily');
   }
 
   // --- 4:00 日次送信チェック ---
@@ -1736,11 +1760,11 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
     const msUntil4am = next4am - now;
     setTimeout(async () => {
       await sendDaily();
-      savePending();
+      savePending('daily');
       // 次の4:00もスケジュール
       setInterval(async () => {
         await sendDaily();
-        savePending();
+        savePending('daily');
       }, 24 * 60 * 60 * 1000);
     }, msUntil4am);
   }
@@ -1850,16 +1874,59 @@ async function maybeWriteTaskTrendSnapshot() {
   return;
 }
 
+const KISEKI_CACHE_KEY = 'kotsusaku-kiseki-cache';
+const KISEKI_CACHE_VERSION = 2;
+const KISEKI_CACHE_TTL_MS = 60 * 60 * 1000;
+
+function applyKisekiStats(summary, trend) {
+  const totalStudyMin = Math.max(0, Number(summary && summary.totalStudyMin) || 0);
+  const completed = Math.max(0, Number(summary && summary.completedTasks) || 0);
+  const timeEl = document.getElementById('kiseki-time-value');
+  const countEl = document.getElementById('kiseki-count-value');
+  if (timeEl) timeEl.textContent = Math.round(totalStudyMin / 60).toLocaleString();
+  if (countEl) countEl.textContent = completed.toLocaleString();
+
+  const timeSvg = document.getElementById('kiseki-time-svg');
+  const countSvg = document.getElementById('kiseki-count-svg');
+  const timePoints = Array.isArray(trend?.totalStudyMin)
+    ? trend.totalStudyMin.map(v => Math.round((Number(v) || 0) / 60))
+    : [];
+  const countPoints = Array.isArray(trend?.completedTasks)
+    ? trend.completedTasks.map(v => Number(v) || 0)
+    : [];
+  if (timeSvg) renderKisekiSparkline(timeSvg, timePoints, 'var(--accent)');
+  if (countSvg) renderKisekiSparkline(countSvg, countPoints, 'var(--checked)');
+}
+
+function readKisekiCache() {
+  try {
+    const cache = JSON.parse(localStorage.getItem(KISEKI_CACHE_KEY) || 'null');
+    if (!cache || !cache.fetchedAt) return null;
+    if (cache.version !== KISEKI_CACHE_VERSION) return null;
+    return cache;
+  } catch(e) {
+    return null;
+  }
+}
+
 async function loadTaskTrend() {
   await maybeWriteTaskTrendSnapshot();
 
+  const cache = readKisekiCache();
+  if (cache && Date.now() - cache.fetchedAt < KISEKI_CACHE_TTL_MS) {
+    applyKisekiStats(cache.summary, cache.trend);
+    return;
+  }
+
   try {
     const summarySnap = await db.collection('analytics_summary').doc('summary').get();
+    let summary = {};
     if (summarySnap.exists) {
       const d = summarySnap.data();
-      const completed = d.completedTasks || 0;
-      const el = document.getElementById('kiseki-count-value');
-      if (el) el.textContent = completed.toLocaleString();
+      summary = {
+        totalStudyMin: Number(d.totalStudyMin || d.totalStudyMinutes || d.totalMinutes || 0),
+        completedTasks: Number(d.completedTasks || 0),
+      };
     }
 
     const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -1868,12 +1935,23 @@ async function loadTaskTrend() {
       .orderBy('timestamp', 'asc')
       .get();
 
-    const svg = document.getElementById('kiseki-count-svg');
-    if (svg && !trendSnap.empty) {
-      const points = trendSnap.docs.map(doc => doc.data().completedTasks || 0);
-      renderKisekiSparkline(svg, points, 'var(--checked)');
+    const trend = {
+      totalStudyMin: trendSnap.docs.map(doc => Number(doc.data().totalStudyMin || 0)),
+      completedTasks: trendSnap.docs.map(doc => Number(doc.data().completedTasks || 0)),
+    };
+    if (summary.totalStudyMin > 0 || summary.completedTasks === 0) {
+      localStorage.setItem(KISEKI_CACHE_KEY, JSON.stringify({
+        version: KISEKI_CACHE_VERSION,
+        fetchedAt: Date.now(),
+        summary,
+        trend,
+      }));
+    } else {
+      localStorage.removeItem(KISEKI_CACHE_KEY);
     }
+    applyKisekiStats(summary, trend);
   } catch(e) {
+    if (cache) applyKisekiStats(cache.summary, cache.trend);
     console.error('loadTaskTrend error:', e);
   }
 }
@@ -2440,7 +2518,12 @@ function saveDeletes(){LS.set('study-deletes',JSON.stringify(studyDeletes));}
 
 function load(){try{data=JSON.parse(LS.get('study-data','{}'));}catch{data={};}}
 
-function save(){LS.set('study-data',JSON.stringify(data));saveDeletes();saveToCloud();}
+function save(){
+  LS.set('study-data',JSON.stringify(data));
+  saveDeletes();
+  saveToCloud();
+  if(typeof window.queueKotsuAnalyticsUpdate==='function')window.queueKotsuAnalyticsUpdate();
+}
 
 let notes={};
 function loadNotes(){try{notes=JSON.parse(LS.get('study-notes','{}'));}catch{notes={};}}
@@ -6811,7 +6894,7 @@ setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v109-summary-kotsu-analytics'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v110-kiseki-hourly'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
   var _latestVersionLabel = null;
