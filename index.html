@@ -572,6 +572,33 @@
 </div>
 </div><!-- カスタマイズアコーディオン終わり -->
 
+
+<div style="height:10px;"></div>
+<div id="kiseki-section" style="border-radius:14px;padding:14px 12px;background:var(--surface2);border:1px solid var(--border);">
+<div style="font-size:.75rem;font-weight:900;color:var(--text);margin-bottom:12px;text-align:center;letter-spacing:.05em;">🌸 みんなの軌跡 🌸</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+<div style="border-radius:12px;padding:12px 8px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;background:linear-gradient(145deg,rgba(79,142,247,.18),rgba(79,142,247,.06));border:1px solid rgba(79,142,247,.3);">
+<span style="font-size:1.3rem;line-height:1;margin-bottom:5px;">⏱</span>
+<div style="font-size:.65rem;font-weight:900;letter-spacing:.04em;color:var(--accent);margin-bottom:4px;">コツ時間</div>
+<div style="font-size:1.5rem;font-weight:900;line-height:1;color:var(--accent);margin-bottom:1px;"><span id="kiseki-time-value">…</span><span style="font-size:.58rem;font-weight:700;opacity:.75;margin-left:2px;">h</span></div>
+<div style="font-size:.5rem;color:var(--text-muted);margin-bottom:8px;">総学習時間</div>
+<div style="width:100%;border-top:1px solid rgba(255,255,255,.07);padding-top:6px;">
+<div style="font-size:.48rem;color:var(--text-muted);text-align:left;margin-bottom:3px;opacity:.8;">24h推移</div>
+<svg id="kiseki-time-svg" width="100%" height="28" style="display:block;"></svg>
+</div>
+</div>
+<div style="border-radius:12px;padding:12px 8px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;background:linear-gradient(145deg,rgba(62,207,142,.18),rgba(62,207,142,.06));border:1px solid rgba(62,207,142,.3);">
+<span style="font-size:1.3rem;line-height:1;margin-bottom:5px;">✅</span>
+<div style="font-size:.65rem;font-weight:900;letter-spacing:.04em;color:var(--checked);margin-bottom:4px;">コツ習得</div>
+<div style="font-size:1.5rem;font-weight:900;line-height:1;color:var(--checked);margin-bottom:1px;"><span id="kiseki-count-value">…</span><span style="font-size:.58rem;font-weight:700;opacity:.75;margin-left:2px;">件</span></div>
+<div style="font-size:.5rem;color:var(--text-muted);margin-bottom:8px;">総習得件数</div>
+<div style="width:100%;border-top:1px solid rgba(255,255,255,.07);padding-top:6px;">
+<div style="font-size:.48rem;color:var(--text-muted);text-align:left;margin-bottom:3px;opacity:.8;">24h推移</div>
+<svg id="kiseki-count-svg" width="100%" height="28" style="display:block;"></svg>
+</div>
+</div>
+</div>
+</div>
 <div style="height:10px;"></div>
 <div style="border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:var(--surface2);">
 <div style="font-size:.72rem;font-weight:800;color:var(--text);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">🗄 その他</div>
@@ -607,32 +634,6 @@
 🔒 コツ習慣の記録は端末内に保存されます。データ同期を利用している場合は、同期コードに紐づけてFirebaseにも保存され、端末変更時も同期コードで引き継げます。同期コードは他人に共有しないでください。
 </div>
 </div>
-<div id="task-trend-section" style="margin:10px 0 0;padding:12px 10px;background:var(--surface);border:1px solid var(--border);border-radius:10px;">
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-<div style="font-size:.68rem;font-weight:900;color:var(--accent);">📊 コツ習慣 使用状況</div>
-<button id="task-trend-refresh" onclick="loadTaskTrend()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-size:.58rem;padding:2px 8px;border-radius:6px;cursor:pointer;">更新</button>
-</div>
-<div id="task-trend-stats" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;">
-<div style="background:var(--surface2);border-radius:8px;padding:6px;text-align:center;">
-<div style="font-size:.56rem;color:var(--text-muted);margin-bottom:2px;">利用者数</div>
-<div id="tt-users" style="font-size:1rem;font-weight:900;color:var(--accent);">…</div>
-</div>
-<div style="background:var(--surface2);border-radius:8px;padding:6px;text-align:center;">
-<div style="font-size:.56rem;color:var(--text-muted);margin-bottom:2px;">総タスク</div>
-<div id="tt-total" style="font-size:1rem;font-weight:900;color:var(--accent);">…</div>
-</div>
-<div style="background:var(--surface2);border-radius:8px;padding:6px;text-align:center;">
-<div style="font-size:.56rem;color:var(--text-muted);margin-bottom:2px;">完了率</div>
-<div id="tt-rate" style="font-size:1rem;font-weight:900;color:var(--checked);">…</div>
-</div>
-</div>
-<div style="font-size:.58rem;color:var(--text-muted);margin-bottom:4px;">過去24時間のタスク完了数推移</div>
-<div id="task-trend-chart-wrap" style="width:100%;height:52px;position:relative;">
-<svg id="task-trend-svg" width="100%" height="52" style="display:block;"></svg>
-<div id="task-trend-no-data" style="display:none;text-align:center;font-size:.58rem;color:var(--text-muted);padding:14px 0;">データ蓄積中… (毎時更新)</div>
-</div>
-</div>
-
 <div id="admin-recalibrate-section" style="display:none;margin:10px 0 0;padding:12px 10px;background:rgba(245,200,66,.08);border:1px solid rgba(245,200,66,.3);border-radius:10px;">
 <div style="font-size:.68rem;font-weight:900;color:#f5c842;margin-bottom:6px;">🔧 管理者用：アナリティクス補正</div>
 <div style="font-size:.6rem;color:var(--text-muted);margin-bottom:10px;line-height:1.7;">この端末のタスクデータを読み取り、Firestore の集計値（totalTasks・completedTasks・taskUsers）を正しい数字で上書きします。完了率がおかしいときに使用してください。</div>
@@ -1850,53 +1851,31 @@ async function maybeWriteTaskTrendSnapshot() {
 }
 
 async function loadTaskTrend() {
-  const btn = document.getElementById('task-trend-refresh');
-  if (btn) btn.textContent = '読込中…';
-
-  // スナップショットを必要なら書き込む（1時間に1回）
   await maybeWriteTaskTrendSnapshot();
 
   try {
-    // 現在のサマリー（利用者数・総タスク・完了率）
     const summarySnap = await db.collection('analytics_summary').doc('summary').get();
     if (summarySnap.exists) {
       const d = summarySnap.data();
-      const users = d.taskUsers || 0;
-      const total = d.totalTasks || 0;
       const completed = d.completedTasks || 0;
-      const rate = total > 0 ? Math.round(completed / total * 100) : 0;
-      const el = (id) => document.getElementById(id);
-      if (el('tt-users')) el('tt-users').textContent = users + '人';
-      if (el('tt-total')) el('tt-total').textContent = total + '件';
-      if (el('tt-rate')) el('tt-rate').textContent = rate + '%';
+      const el = document.getElementById('kiseki-count-value');
+      if (el) el.textContent = completed.toLocaleString();
     }
 
-    // 過去24時間のトレンドスナップショット
     const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const trendSnap = await db.collection('analytics_task_trend')
       .where('timestamp', '>', cutoff)
       .orderBy('timestamp', 'asc')
       .get();
 
-    const noData = document.getElementById('task-trend-no-data');
-    const svg = document.getElementById('task-trend-svg');
-
-    if (trendSnap.empty) {
-      if (noData) noData.style.display = 'block';
-      if (svg) svg.style.display = 'none';
-    } else {
-      if (noData) noData.style.display = 'none';
-      if (svg) {
-        svg.style.display = 'block';
-        const points = trendSnap.docs.map(doc => doc.data().completedTasks || 0);
-        renderTrendSparkline(svg, points);
-      }
+    const svg = document.getElementById('kiseki-count-svg');
+    if (svg && !trendSnap.empty) {
+      const points = trendSnap.docs.map(doc => doc.data().completedTasks || 0);
+      renderKisekiSparkline(svg, points, 'var(--checked)');
     }
   } catch(e) {
     console.error('loadTaskTrend error:', e);
   }
-
-  if (btn) btn.textContent = '更新';
 }
 
 function renderTrendSparkline(svgEl, values) {
@@ -1939,6 +1918,24 @@ function renderTrendSparkline(svgEl, values) {
   `;
 }
 
+function renderKisekiSparkline(svgEl, values, color) {
+  const W = svgEl.clientWidth || 120;
+  const H = 28;
+  const pad = 3;
+  if (values.length < 2) { svgEl.innerHTML = ''; return; }
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+  const toX = (i) => pad + (i / (values.length - 1)) * (W - pad * 2);
+  const toY = (v) => H - pad - ((v - min) / range) * (H - pad * 2);
+  const pts = values.map((v, i) => toX(i) + ',' + toY(v)).join(' ');
+  const areaPath = 'M ' + toX(0) + ',' + toY(values[0]) + ' '
+    + values.map((v, i) => 'L ' + toX(i) + ',' + toY(v)).join(' ')
+    + ' L ' + toX(values.length - 1) + ',' + (H - pad)
+    + ' L ' + toX(0) + ',' + (H - pad) + ' Z';
+  const gradId = 'kg' + Math.random().toString(36).slice(2, 7);
+  svgEl.innerHTML = `<defs><linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity="0.35"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient></defs><path d="${areaPath}" fill="url(#${gradId})"/><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+}
 // === タスクトレンドグラフ end ===
 
 // === 同期コード ===
