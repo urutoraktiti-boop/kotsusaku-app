@@ -297,6 +297,7 @@ exports.snapshotTaskTrend = onSchedule({ schedule: 'every 1 hours', region: 'asi
   const trendRef = db.collection('analytics_task_trend');
   await trendRef.add({
     timestamp: FieldValue.serverTimestamp(),
+    totalStudyMin: data.totalStudyMin || 0,
     totalTasks: data.totalTasks || 0,
     completedTasks: data.completedTasks || 0,
     taskUsers: data.taskUsers || 0,
