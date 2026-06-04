@@ -1875,8 +1875,14 @@ async function maybeWriteTaskTrendSnapshot() {
 }
 
 const KISEKI_CACHE_KEY = 'kotsusaku-kiseki-cache';
-const KISEKI_CACHE_VERSION = 2;
+const KISEKI_CACHE_VERSION = 3;
 const KISEKI_CACHE_TTL_MS = 60 * 60 * 1000;
+
+function normalizeKisekiSparklineValues(values) {
+  if (!Array.isArray(values)) return [];
+  const nums = values.map(v => Number(v)).filter(v => Number.isFinite(v));
+  return nums.length === 1 ? [nums[0], nums[0]] : nums;
+}
 
 function applyKisekiStats(summary, trend) {
   const totalStudyMin = Math.max(0, Number(summary && summary.totalStudyMin) || 0);
@@ -1888,12 +1894,16 @@ function applyKisekiStats(summary, trend) {
 
   const timeSvg = document.getElementById('kiseki-time-svg');
   const countSvg = document.getElementById('kiseki-count-svg');
-  const timePoints = Array.isArray(trend?.totalStudyMin)
-    ? trend.totalStudyMin.map(v => Math.round((Number(v) || 0) / 60))
-    : [];
-  const countPoints = Array.isArray(trend?.completedTasks)
-    ? trend.completedTasks.map(v => Number(v) || 0)
-    : [];
+  const timePoints = normalizeKisekiSparklineValues(
+    Array.isArray(trend?.totalStudyMin)
+      ? trend.totalStudyMin.map(v => Math.round((Number(v) || 0) / 60))
+      : []
+  );
+  const countPoints = normalizeKisekiSparklineValues(
+    Array.isArray(trend?.completedTasks)
+      ? trend.completedTasks.map(v => Number(v) || 0)
+      : []
+  );
   if (timeSvg) renderKisekiSparkline(timeSvg, timePoints, 'var(--accent)');
   if (countSvg) renderKisekiSparkline(countSvg, countPoints, 'var(--checked)');
 }
@@ -1935,9 +1945,14 @@ async function loadTaskTrend() {
       .orderBy('timestamp', 'asc')
       .get();
 
+    const trendDocs = trendSnap.docs.map(doc => doc.data() || {});
+    const timeTrendDocs = trendDocs.filter(d =>
+      Object.prototype.hasOwnProperty.call(d, 'totalStudyMin') &&
+      Number.isFinite(Number(d.totalStudyMin))
+    );
     const trend = {
-      totalStudyMin: trendSnap.docs.map(doc => Number(doc.data().totalStudyMin || 0)),
-      completedTasks: trendSnap.docs.map(doc => Number(doc.data().completedTasks || 0)),
+      totalStudyMin: timeTrendDocs.map(d => Number(d.totalStudyMin || 0)),
+      completedTasks: trendDocs.map(d => Number(d.completedTasks || 0)),
     };
     if (summary.totalStudyMin > 0 || summary.completedTasks === 0) {
       localStorage.setItem(KISEKI_CACHE_KEY, JSON.stringify({
