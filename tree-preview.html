@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ツリーデザイン プレビュー</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #1a1a2e; color: #eee; font-family: sans-serif; padding: 20px; }
+h1 { text-align: center; font-size: 1.2rem; margin-bottom: 8px; color: #fff; }
+.subtitle { text-align: center; font-size: 0.85rem; color: #aaa; margin-bottom: 20px; }
+.controls { text-align: center; margin-bottom: 24px; }
+.controls label { font-size: 0.9rem; margin-right: 10px; }
+#bloom-slider { width: 260px; vertical-align: middle; }
+#bloom-val { display: inline-block; width: 40px; text-align: left; font-weight: bold; color: #ffd6e4; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+.card { background: #16213e; border-radius: 12px; padding: 12px; border: 1px solid #2a2a4a; }
+.card-title { text-align: center; font-size: 0.95rem; margin-bottom: 6px; font-weight: bold; }
+.card-sub { text-align: center; font-size: 0.72rem; color: #aaa; margin-bottom: 8px; }
+.card svg { width: 100%; height: auto; display: block; }
+.blossom-group { opacity: 0; transform-origin: center; transform: scale(0.6); transition: opacity 1.4s ease, transform 1.2s ease; }
+.blossom-group.bloomed { opacity: 1; transform: scale(1); }
+.full-bloom .blossom-group { filter: drop-shadow(0 0 8px var(--glow, rgba(255,150,180,0.55))); }
+</style>
+</head>
+<body>
+<h1>🌸 ツリーデザイン プレビュー</h1>
+<p class="subtitle">スライダーを動かして開花の進み方を確認できます</p>
+<div class="controls">
+  <label>達成率：</label>
+  <input type="range" id="bloom-slider" min="0" max="100" value="0" step="10">
+  <span id="bloom-val">0%</span>
+</div>
+<div class="grid" id="grid"></div>
+
+<script>
+const stories = [
+  {
+    id: 'sakura-default',
+    name: '🌸 デフォルト桜',
+    sub: '（現在のデザイン）',
+    bg: '#16213e',
+    trunk: ['#7B4A2A','#9A6038','#B07845'],
+    blossoms: ['#ffd6e4','#ffcad8','#ffbdce','#ffadc2','#ff9fba','#ff90b5','#ff80aa','#ff6fa3','#ff5c9e','#ff69b4'],
+    glow: 'rgba(255,150,180,0.55)',
+    shape: 'tree'
+  },
+  {
+    id: 'samurai',
+    name: '⚔️ 受験剣士',
+    sub: '墨絵風・白×薄紫',
+    bg: '#0d1117',
+    trunk: ['#3a3a3a','#4a4a4a','#5a5a5a'],
+    blossoms: ['#f0e8f8','#e8d8f5','#ddc8f0','#d0b8eb','#c4a8e6','#b898e0','#ac88db','#a078d6','#9468d0','#a855c8'],
+    glow: 'rgba(180,130,220,0.6)',
+    shape: 'tree'
+  },
+  {
+    id: 'space',
+    name: '🚀 宇宙探検家',
+    sub: '結晶・宇宙植物風',
+    bg: '#050a18',
+    trunk: ['#1a3a6a','#1e4a80','#225a96'],
+    blossoms: ['#c0e8ff','#a8d8ff','#90c8ff','#78b8ff','#60a8ff','#4898ff','#3088ff','#1878ff','#0068ff','#00c8ff'],
+    glow: 'rgba(0,180,255,0.65)',
+    shape: 'crystal'
+  },
+  {
+    id: 'gorilla',
+    name: '🦍 ゴリラ成長記',
+    sub: 'バナナの木・ジャングル',
+    bg: '#0a1a0a',
+    trunk: ['#4a3010','#5a3c14','#6a4818'],
+    blossoms: ['#a8e840','#98d838','#88c830','#78b828','#c8e820','#d8f028','#e8f830','#f0e840','#f8d840','#ffe030'],
+    glow: 'rgba(180,230,30,0.6)',
+    shape: 'banana'
+  },
+  {
+    id: 'itachacha',
+    name: '🥦 itachacha',
+    sub: 'ブロッコリーの木',
+    bg: '#071a07',
+    trunk: ['#5a3810','#6a4414','#7a5018'],
+    blossoms: ['#a0d870','#88c858','#70b840','#58a828','#409810','#508820','#607830','#386818','#285810','#20a030'],
+    glow: 'rgba(80,200,60,0.65)',
+    shape: 'broccoli'
+  },
+  {
+    id: 'spartan',
+    name: '🐉 鬼教官スパルタ',
+    sub: '枯れ木→炎が宿る',
+    bg: '#100808',
+    trunk: ['#1a1a1a','#222','#2a2a2a'],
+    blossoms: ['#ff6020','#ff5018','#ff4010','#ff3010','#ff2000','#ff4400','#ff6800','#ff8c00','#ffb000','#ffd400'],
+    glow: 'rgba(255,100,0,0.7)',
+    shape: 'flame'
+  },
+  {
+    id: 'boki',
+    name: '📗 簿記',
+    sub: 'マネーツリー・金×緑',
+    bg: '#081408',
+    trunk: ['#2a4a1a','#3a5a24','#4a6a2e'],
+    blossoms: ['#d4e870','#c8dc60','#bcd050','#b0c440','#a4b830','#c8a820','#d4b418','#e0c010','#eccc08','#f8d800'],
+    glow: 'rgba(220,200,0,0.6)',
+    shape: 'tree'
+  },
+  {
+    id: 'takken',
+    name: '🏠 宅建',
+    sub: '紅葉風・橙×赤',
+    bg: '#120a04',
+    trunk: ['#5a2a10','#6a3414','#7a3e18'],
+    blossoms: ['#ffe0a0','#ffd080','#ffc060','#ffb040','#ffa020','#ff9010','#ff7808','#ff6000','#f04800','#e03000'],
+    glow: 'rgba(255,100,0,0.6)',
+    shape: 'tree'
+  },
+  {
+    id: 'koumuin',
+    name: '🏛️ 公務員',
+    sub: '白桜・清廉な白×淡ピンク',
+    bg: '#101820',
+    trunk: ['#607080','#708090','#8090a0'],
+    blossoms: ['#f8f8ff','#f0f0ff','#e8e8ff','#e0e0ff','#d8e8ff','#d0e0ff','#c8d8ff','#c0d0ff','#b8c8ff','#e0f0ff'],
+    glow: 'rgba(180,200,255,0.6)',
+    shape: 'tree'
+  },
+  {
+    id: 'sharoshi',
+    name: '⚖️ 社労士',
+    sub: 'しだれ桜・濃いピンク×紫',
+    bg: '#0e0818',
+    trunk: ['#4a2860','#5a3070','#6a3880'],
+    blossoms: ['#ffc0f0','#ffb0e8','#ffa0e0','#ff90d8','#ff80d0','#ff70c8','#e060b8','#d050a8','#c04098','#b03090'],
+    glow: 'rgba(220,80,180,0.65)',
+    shape: 'weeping'
+  },
+  {
+    id: 'zeirishi',
+    name: '🧮 税理士',
+    sub: '水晶ツリー・青×シルバー',
+    bg: '#080e18',
+    trunk: ['#304060','#405070','#506080'],
+    blossoms: ['#e0f0ff','#c8e0ff','#b0d0ff','#98c0ff','#80b0ff','#68a0f8','#5090f0','#3880e8','#2070e0','#40a8ff'],
+    glow: 'rgba(80,160,255,0.6)',
+    shape: 'tree'
+  },
+  {
+    id: 'fp2',
+    name: '💰 FP2級',
+    sub: '成長ツリー・金×エメラルド',
+    bg: '#081210',
+    trunk: ['#285040','#386050','#487060'],
+    blossoms: ['#80ffcc','#70f0bc','#60e0ac','#50d09c','#40c08c','#60c840','#78d050','#90d860','#a8e070','#c0e880'],
+    glow: 'rgba(80,220,160,0.6)',
+    shape: 'tree'
+  },
+  {
+    id: 'kaikeishi',
+    name: '🔍 公認会計士',
+    sub: '宝石ツリー・深紫×金',
+    bg: '#080510',
+    trunk: ['#2a1848','#381e58','#462468'],
+    blossoms: ['#e8d0ff','#d8b8ff','#c8a0ff','#b888ff','#a870ff','#9858f8','#8840f0','#7828e8','#9840c0','#d0a000'],
+    glow: 'rgba(160,80,255,0.65)',
+    shape: 'tree'
+  },
+  {
+    id: 'shindanshi',
+    name: '💼 中小企業診断士',
+    sub: 'ビジネスツリー・紺×緑',
+    bg: '#060c14',
+    trunk: ['#1a3050','#203860','#264070'],
+    blossoms: ['#90c8a0','#80b890','#70a880','#609870','#508860','#607890','#506880','#405870','#304860','#40a860'],
+    glow: 'rgba(80,180,120,0.6)',
+    shape: 'tree'
+  },
+];
+
+function makeBranches(trunkColors, shape) {
+  const [c1, c2, c3] = trunkColors;
+  if (shape === 'banana') {
+    return `
+      <path d="M350,560 C352,510 347,465 350,415" stroke="${c1}" stroke-width="18"/>
+      <path d="M350,460 C325,440 280,415 240,395" stroke="${c1}" stroke-width="11"/>
+      <path d="M350,460 C375,440 420,415 460,395" stroke="${c1}" stroke-width="11"/>
+      <path d="M350,420 C347,390 344,360 347,330" stroke="${c1}" stroke-width="9"/>
+      <path d="M240,395 C210,375 175,350 148,328" stroke="${c2}" stroke-width="6"/>
+      <path d="M460,395 C490,375 525,350 552,328" stroke="${c2}" stroke-width="6"/>
+      <ellipse cx="148" cy="310" rx="55" ry="22" fill="${c2}" transform="rotate(-20,148,310)"/>
+      <ellipse cx="552" cy="310" rx="55" ry="22" fill="${c2}" transform="rotate(20,552,310)"/>
+      <ellipse cx="200" cy="290" rx="50" ry="20" fill="${c3}" transform="rotate(-35,200,290)"/>
+      <ellipse cx="500" cy="290" rx="50" ry="20" fill="${c3}" transform="rotate(35,500,290)"/>
+      <ellipse cx="350" cy="310" rx="55" ry="22" fill="${c2}" transform="rotate(0,350,310)"/>
+    `;
+  }
+  if (shape === 'crystal') {
+    return `
+      <path d="M350,560 C352,510 347,465 350,415" stroke="${c1}" stroke-width="14"/>
+      <path d="M350,460 C325,445 285,425 248,405" stroke="${c1}" stroke-width="9"/>
+      <path d="M350,460 C375,445 415,425 452,405" stroke="${c1}" stroke-width="9"/>
+      <path d="M350,430 C347,400 344,370 347,340" stroke="${c1}" stroke-width="7"/>
+      <path d="M248,405 C222,388 190,370 160,352" stroke="${c2}" stroke-width="5"/>
+      <path d="M452,405 C478,388 510,370 540,352" stroke="${c2}" stroke-width="5"/>
+      <polygon points="155,320 165,350 175,320" fill="${c2}" opacity="0.7"/>
+      <polygon points="535,320 545,350 555,320" fill="${c2}" opacity="0.7"/>
+      <polygon points="345,300 355,330 365,300" fill="${c2}" opacity="0.7"/>
+    `;
+  }
+  if (shape === 'weeping') {
+    return `
+      <path d="M350,560 C352,510 347,465 350,415" stroke="${c1}" stroke-width="16"/>
+      <path d="M350,440 C325,425 285,405 248,385" stroke="${c1}" stroke-width="10"/>
+      <path d="M350,440 C375,425 415,405 452,385" stroke="${c1}" stroke-width="10"/>
+      <path d="M350,410 C347,380 344,350 347,320" stroke="${c1}" stroke-width="8"/>
+      <path d="M248,385 C235,410 225,440 218,475" stroke="${c2}" stroke-width="3"/>
+      <path d="M452,385 C465,410 475,440 482,475" stroke="${c2}" stroke-width="3"/>
+      <path d="M160,340 C148,368 138,400 130,435" stroke="${c2}" stroke-width="3"/>
+      <path d="M540,340 C552,368 562,400 570,435" stroke="${c2}" stroke-width="3"/>
+      <path d="M300,295 C290,325 282,358 278,392" stroke="${c3}" stroke-width="2"/>
+      <path d="M400,295 C410,325 418,358 422,392" stroke="${c3}" stroke-width="2"/>
+      <path d="M160,340 C148,365 138,395 128,425" stroke="${c3}" stroke-width="2"/>
+      <path d="M540,340 C552,365 562,395 572,425" stroke="${c3}" stroke-width="2"/>
+    `;
+  }
+  if (shape === 'flame') {
+    return `
+      <path d="M350,560 C352,510 347,465 350,415" stroke="${c1}" stroke-width="16"/>
+      <path d="M350,460 C325,445 285,425 248,405" stroke="${c1}" stroke-width="9"/>
+      <path d="M350,460 C375,445 415,425 452,405" stroke="${c1}" stroke-width="9"/>
+      <path d="M350,430 C347,400 344,370 347,340" stroke="${c1}" stroke-width="7"/>
+      <path d="M248,405 C222,388 190,370 160,352" stroke="${c2}" stroke-width="5"/>
+      <path d="M452,405 C478,388 510,370 540,352" stroke="${c2}" stroke-width="5"/>
+      <path d="M160,352 C142,337 122,324 104,312" stroke="${c3}" stroke-width="3"/>
+      <path d="M540,352 C558,337 578,324 596,312" stroke="${c3}" stroke-width="3"/>
+    `;
+  }
+  if (shape === 'broccoli') {
+    return `
+      <path d="M350,560 C352,510 347,465 350,415" stroke="${c1}" stroke-width="16"/>
+      <path d="M350,460 C330,448 305,435 278,425" stroke="${c1}" stroke-width="9"/>
+      <path d="M350,460 C370,448 395,435 422,425" stroke="${c1}" stroke-width="9"/>
+      <path d="M350,430 C347,405 344,378 347,348" stroke="${c1}" stroke-width="7"/>
+      <path d="M278,425 C258,415 235,408 210,402" stroke="${c2}" stroke-width="5"/>
+      <path d="M422,425 C442,415 465,408 490,402" stroke="${c2}" stroke-width="5"/>
+      <path d="M210,402 C192,395 175,390 158,386" stroke="${c3}" stroke-width="3"/>
+      <path d="M490,402 C508,395 525,390 542,386" stroke="${c3}" stroke-width="3"/>
+    `;
+  }
+  // default tree
+  return `
+    <path d="M350,560 C352,510 347,465 350,415" stroke="${c1}" stroke-width="16"/>
+    <path d="M350,460 C325,445 285,425 248,405" stroke="${c1}" stroke-width="10"/>
+    <path d="M350,460 C375,445 415,425 452,405" stroke="${c1}" stroke-width="10"/>
+    <path d="M350,430 C347,400 344,370 347,340" stroke="${c1}" stroke-width="8"/>
+    <path d="M248,405 C222,388 190,370 160,352" stroke="${c2}" stroke-width="6"/>
+    <path d="M248,405 C236,378 222,356 212,332" stroke="${c2}" stroke-width="5"/>
+    <path d="M452,405 C478,388 510,370 540,352" stroke="${c2}" stroke-width="6"/>
+    <path d="M452,405 C464,378 478,356 488,332" stroke="${c2}" stroke-width="5"/>
+    <path d="M347,370 C330,350 316,332 300,315" stroke="${c2}" stroke-width="4"/>
+    <path d="M350,370 C367,350 382,332 400,315" stroke="${c2}" stroke-width="4"/>
+    <path d="M160,352 C142,337 122,324 104,312" stroke="${c3}" stroke-width="3"/>
+    <path d="M160,352 C152,330 146,312 142,295" stroke="${c3}" stroke-width="3"/>
+    <path d="M540,352 C558,337 578,324 596,312" stroke="${c3}" stroke-width="3"/>
+    <path d="M540,352 C548,330 554,312 558,295" stroke="${c3}" stroke-width="3"/>
+    <path d="M212,332 C198,314 188,298 182,282" stroke="${c3}" stroke-width="3"/>
+    <path d="M212,332 C220,312 228,296 232,280" stroke="${c3}" stroke-width="3"/>
+    <path d="M488,332 C502,314 512,298 518,282" stroke="${c3}" stroke-width="3"/>
+    <path d="M488,332 C480,312 472,296 468,280" stroke="${c3}" stroke-width="3"/>
+    <path d="M300,315 C288,296 280,280 275,264" stroke="${c3}" stroke-width="3"/>
+    <path d="M400,315 C412,296 420,280 425,264" stroke="${c3}" stroke-width="3"/>
+  `;
+}
+
+function makeBlossoms(colors, shape) {
+  const [b1,b2,b3,b4,b5,b6,b7,b8,b9,b10] = colors;
+
+  if (shape === 'crystal') {
+    return `
+      <g class="blossom-group" id="bg1"><polygon points="100,330 116,360 84,360" fill="${b1}" opacity="0.7"/><polygon points="600,330 616,360 584,360" fill="${b1}" opacity="0.7"/></g>
+      <g class="blossom-group" id="bg2"><polygon points="130,305 148,340 112,340" fill="${b2}" opacity="0.75"/><polygon points="570,305 588,340 552,340" fill="${b2}" opacity="0.75"/></g>
+      <g class="blossom-group" id="bg3"><polygon points="162,268 180,303 144,303" fill="${b3}" opacity="0.8"/><polygon points="538,268 556,303 520,303" fill="${b3}" opacity="0.8"/></g>
+      <g class="blossom-group" id="bg4"><polygon points="198,272 216,307 180,307" fill="${b4}" opacity="0.8"/><polygon points="502,272 520,307 484,307" fill="${b4}" opacity="0.8"/></g>
+      <g class="blossom-group" id="bg5"><polygon points="248,295 266,330 230,330" fill="${b5}" opacity="0.85"/><polygon points="452,295 470,330 434,330" fill="${b5}" opacity="0.85"/></g>
+      <g class="blossom-group" id="bg6"><polygon points="278,250 296,285 260,285" fill="${b6}" opacity="0.85"/><polygon points="422,250 440,285 404,285" fill="${b6}" opacity="0.85"/></g>
+      <g class="blossom-group" id="bg7"><polygon points="300,265 318,300 282,300" fill="${b7}" opacity="0.9"/><polygon points="400,265 418,300 382,300" fill="${b7}" opacity="0.9"/></g>
+      <g class="blossom-group" id="bg8"><polygon points="322,280 340,315 304,315" fill="${b8}" opacity="0.9"/><polygon points="378,280 396,315 360,315" fill="${b8}" opacity="0.9"/></g>
+      <g class="blossom-group" id="bg9"><polygon points="335,255 350,285 320,285" fill="${b9}"/><polygon points="365,255 380,285 350,285" fill="${b9}"/></g>
+      <g class="blossom-group" id="bg10"><polygon points="350,215 375,260 325,260" fill="${b10}"/><polygon points="350,235 368,265 332,265" fill="${b8}"/></g>
+    `;
+  }
+
+  if (shape === 'broccoli') {
+    return `
+      <g class="blossom-group" id="bg1"><circle cx="158" cy="368" r="28" fill="${b1}" filter="url(#bf)"/><circle cx="542" cy="368" r="28" fill="${b1}" filter="url(#bf)"/></g>
+      <g class="blossom-group" id="bg2"><circle cx="185" cy="348" r="26" fill="${b2}" filter="url(#bf)"/><circle cx="515" cy="348" r="26" fill="${b2}" filter="url(#bf)"/></g>
+      <g class="blossom-group" id="bg3"><circle cx="210" cy="392" r="30" fill="${b3}" filter="url(#bf)"/><circle cx="490" cy="392" r="30" fill="${b3}" filter="url(#bf)"/></g>
+      <g class="blossom-group" id="bg4"><circle cx="235" cy="372" r="26" fill="${b4}" filter="url(#bf)"/><circle cx="465" cy="372" r="26" fill="${b4}" filter="url(#bf)"/></g>
+      <g class="blossom-group" id="bg5"><circle cx="278" cy="398" r="32" fill="${b5}" filter="url(#bf)"/><circle cx="422" cy="398" r="32" fill="${b5}" filter="url(#bf)"/></g>
+      <g class="blossom-group" id="bg6"><circle cx="278" cy="352" r="28" fill="${b6}" filter="url(#bf)"/><circle cx="422" cy="352" r="28" fill="${b6}" filter="url(#bf)"/></g>
+      <g class="blossom-group" id="bg7"><circle cx="310" cy="325" r="30" fill="${b7}" filter="url(#bf)"/><circle cx="390" cy="325" r="30" fill="${b7}" filter="url(#bf)"/></g>
+      <g class="blossom-group" id="bg8"><circle cx="330" cy="305" r="28" fill="${b8}" filter="url(#bf)"/><circle cx="370" cy="305" r="28" fill="${b8}" filter="url(#bf)"/></g>
+      <g class="blossom-group" id="bg9"><circle cx="340" cy="280" r="26" fill="${b9}" filter="url(#bf)"/><circle cx="360" cy="280" r="26" fill="${b9}" filter="url(#bf)"/></g>
+      <g class="blossom-group" id="bg10"><circle cx="350" cy="258" r="38" fill="${b10}" filter="url(#bf)"/><circle cx="325" cy="268" r="22" fill="${b8}" filter="url(#bf2)"/><circle cx="375" cy="268" r="22" fill="${b8}" filter="url(#bf2)"/></g>
+    `;
+  }
+
+  if (shape === 'flame') {
+    return `
+      <g class="blossom-group" id="bg1">
+        <ellipse cx="104" cy="310" rx="22" ry="34" fill="${b1}" filter="url(#bf)" opacity="0.7"/>
+        <ellipse cx="596" cy="310" rx="22" ry="34" fill="${b1}" filter="url(#bf)" opacity="0.7"/>
+      </g>
+      <g class="blossom-group" id="bg2">
+        <ellipse cx="142" cy="285" rx="20" ry="30" fill="${b2}" filter="url(#bf)" opacity="0.75"/>
+        <ellipse cx="558" cy="285" rx="20" ry="30" fill="${b2}" filter="url(#bf)" opacity="0.75"/>
+      </g>
+      <g class="blossom-group" id="bg3">
+        <ellipse cx="182" cy="268" rx="20" ry="32" fill="${b3}" filter="url(#bf)" opacity="0.8"/>
+        <ellipse cx="518" cy="268" rx="20" ry="32" fill="${b3}" filter="url(#bf)" opacity="0.8"/>
+      </g>
+      <g class="blossom-group" id="bg4">
+        <ellipse cx="210" cy="316" rx="18" ry="28" fill="${b4}" filter="url(#bf)" opacity="0.8"/>
+        <ellipse cx="490" cy="316" rx="18" ry="28" fill="${b4}" filter="url(#bf)" opacity="0.8"/>
+      </g>
+      <g class="blossom-group" id="bg5">
+        <ellipse cx="248" cy="292" rx="20" ry="32" fill="${b5}" filter="url(#bf)" opacity="0.85"/>
+        <ellipse cx="452" cy="292" rx="20" ry="32" fill="${b5}" filter="url(#bf)" opacity="0.85"/>
+      </g>
+      <g class="blossom-group" id="bg6">
+        <ellipse cx="278" cy="268" rx="20" ry="32" fill="${b6}" filter="url(#bf)" opacity="0.85"/>
+        <ellipse cx="422" cy="268" rx="20" ry="32" fill="${b6}" filter="url(#bf)" opacity="0.85"/>
+      </g>
+      <g class="blossom-group" id="bg7">
+        <ellipse cx="305" cy="252" rx="18" ry="28" fill="${b7}" filter="url(#bf)" opacity="0.9"/>
+        <ellipse cx="395" cy="252" rx="18" ry="28" fill="${b7}" filter="url(#bf)" opacity="0.9"/>
+      </g>
+      <g class="blossom-group" id="bg8">
+        <ellipse cx="326" cy="278" rx="18" ry="28" fill="${b8}" filter="url(#bf)" opacity="0.9"/>
+        <ellipse cx="374" cy="278" rx="18" ry="28" fill="${b8}" filter="url(#bf)" opacity="0.9"/>
+      </g>
+      <g class="blossom-group" id="bg9">
+        <ellipse cx="340" cy="255" rx="16" ry="26" fill="${b9}" filter="url(#bf)"/>
+        <ellipse cx="360" cy="255" rx="16" ry="26" fill="${b9}" filter="url(#bf)"/>
+      </g>
+      <g class="blossom-group" id="bg10">
+        <ellipse cx="350" cy="225" rx="24" ry="40" fill="${b10}" filter="url(#bf)"/>
+        <ellipse cx="330" cy="238" rx="16" ry="26" fill="${b8}" filter="url(#bf2)"/>
+        <ellipse cx="370" cy="238" rx="16" ry="26" fill="${b8}" filter="url(#bf2)"/>
+      </g>
+    `;
+  }
+
+  if (shape === 'banana') {
+    return `
+      <g class="blossom-group" id="bg1"><ellipse cx="148" cy="295" rx="40" ry="18" fill="${b1}" filter="url(#bf)" transform="rotate(-20,148,295)"/><ellipse cx="552" cy="295" rx="40" ry="18" fill="${b1}" filter="url(#bf)" transform="rotate(20,552,295)"/></g>
+      <g class="blossom-group" id="bg2"><ellipse cx="195" cy="275" rx="38" ry="16" fill="${b2}" filter="url(#bf)" transform="rotate(-35,195,275)"/><ellipse cx="505" cy="275" rx="38" ry="16" fill="${b2}" filter="url(#bf)" transform="rotate(35,505,275)"/></g>
+      <g class="blossom-group" id="bg3"><ellipse cx="168" cy="335" rx="36" ry="15" fill="${b3}" filter="url(#bf)" transform="rotate(-15,168,335)"/><ellipse cx="532" cy="335" rx="36" ry="15" fill="${b3}" filter="url(#bf)" transform="rotate(15,532,335)"/></g>
+      <g class="blossom-group" id="bg4"><ellipse cx="240" cy="378" rx="34" ry="14" fill="${b4}" filter="url(#bf)" transform="rotate(-25,240,378)"/><ellipse cx="460" cy="378" rx="34" ry="14" fill="${b4}" filter="url(#bf)" transform="rotate(25,460,378)"/></g>
+      <g class="blossom-group" id="bg5"><ellipse cx="268" cy="355" rx="32" ry="14" fill="${b5}" filter="url(#bf)" transform="rotate(-30,268,355)"/><ellipse cx="432" cy="355" rx="32" ry="14" fill="${b5}" filter="url(#bf)" transform="rotate(30,432,355)"/></g>
+      <g class="blossom-group" id="bg6"><ellipse cx="290" cy="308" rx="30" ry="13" fill="${b6}" filter="url(#bf)" transform="rotate(-20,290,308)"/><ellipse cx="410" cy="308" rx="30" ry="13" fill="${b6}" filter="url(#bf)" transform="rotate(20,410,308)"/></g>
+      <g class="blossom-group" id="bg7"><ellipse cx="310" cy="285" rx="28" ry="12" fill="${b7}" filter="url(#bf)" transform="rotate(-15,310,285)"/><ellipse cx="390" cy="285" rx="28" ry="12" fill="${b7}" filter="url(#bf)" transform="rotate(15,390,285)"/></g>
+      <g class="blossom-group" id="bg8"><ellipse cx="328" cy="340" rx="26" ry="11" fill="${b8}" filter="url(#bf)" transform="rotate(-10,328,340)"/><ellipse cx="372" cy="340" rx="26" ry="11" fill="${b8}" filter="url(#bf)" transform="rotate(10,372,340)"/></g>
+      <g class="blossom-group" id="bg9"><ellipse cx="335" cy="310" rx="25" ry="11" fill="${b9}" filter="url(#bf)"/><ellipse cx="365" cy="310" rx="25" ry="11" fill="${b9}" filter="url(#bf)"/></g>
+      <g class="blossom-group" id="bg10"><ellipse cx="350" cy="295" rx="38" ry="16" fill="${b10}" filter="url(#bf)"/><ellipse cx="325" cy="308" rx="22" ry="10" fill="${b8}" filter="url(#bf2)"/><ellipse cx="375" cy="308" rx="22" ry="10" fill="${b8}" filter="url(#bf2)"/></g>
+    `;
+  }
+
+  if (shape === 'weeping') {
+    return `
+      <g class="blossom-group" id="bg1"><circle cx="218" cy="468" r="20" fill="${b1}" filter="url(#bf)" opacity="0.8"/><circle cx="482" cy="468" r="20" fill="${b1}" filter="url(#bf)" opacity="0.8"/></g>
+      <g class="blossom-group" id="bg2"><circle cx="130" cy="428" r="22" fill="${b2}" filter="url(#bf)" opacity="0.8"/><circle cx="570" cy="428" r="22" fill="${b2}" filter="url(#bf)" opacity="0.8"/></g>
+      <g class="blossom-group" id="bg3"><circle cx="230" cy="440" r="22" fill="${b3}" filter="url(#bf)"/><circle cx="470" cy="440" r="22" fill="${b3}" filter="url(#bf)"/></g>
+      <g class="blossom-group" id="bg4"><circle cx="170" cy="395" r="24" fill="${b4}" filter="url(#bf)"/><circle cx="530" cy="395" r="24" fill="${b4}" filter="url(#bf)"/></g>
+      <g class="blossom-group" id="bg5"><circle cx="248" cy="370" r="26" fill="${b5}" filter="url(#bf)"/><circle cx="452" cy="370" r="26" fill="${b5}" filter="url(#bf)"/></g>
+      <g class="blossom-group" id="bg6"><circle cx="282" cy="385" r="26" fill="${b6}" filter="url(#bf)"/><circle cx="418" cy="385" r="26" fill="${b6}" filter="url(#bf)"/></g>
+      <g class="blossom-group" id="bg7"><circle cx="278" cy="360" r="24" fill="${b7}" filter="url(#bf)"/><circle cx="422" cy="360" r="24" fill="${b7}" filter="url(#bf)"/></g>
+      <g class="blossom-group" id="bg8"><circle cx="305" cy="340" r="26" fill="${b8}" filter="url(#bf)"/><circle cx="395" cy="340" r="26" fill="${b8}" filter="url(#bf)"/></g>
+      <g class="blossom-group" id="bg9"><circle cx="320" cy="312" r="26" fill="${b9}" filter="url(#bf)"/><circle cx="380" cy="312" r="26" fill="${b9}" filter="url(#bf)"/></g>
+      <g class="blossom-group" id="bg10"><circle cx="350" cy="240" r="40" fill="${b10}" filter="url(#bf)"/><circle cx="328" cy="258" r="26" fill="${b8}" filter="url(#bf2)"/><circle cx="372" cy="258" r="26" fill="${b8}" filter="url(#bf2)"/></g>
+    `;
+  }
+
+  // default tree blossoms
+  return `
+    <g class="blossom-group" id="bg1">
+      <circle cx="100" cy="328" r="38" fill="${b1}" filter="url(#bf)"/>
+      <circle cx="600" cy="328" r="38" fill="${b1}" filter="url(#bf)"/>
+      <circle cx="240" cy="408" r="30" fill="${b2}" filter="url(#bf2)"/>
+      <circle cx="460" cy="408" r="30" fill="${b2}" filter="url(#bf2)"/>
+    </g>
+    <g class="blossom-group" id="bg2">
+      <circle cx="128" cy="305" r="36" fill="${b3}" filter="url(#bf)"/>
+      <circle cx="572" cy="305" r="36" fill="${b3}" filter="url(#bf)"/>
+      <circle cx="152" cy="278" r="28" fill="${b1}" filter="url(#bf2)"/>
+      <circle cx="548" cy="278" r="28" fill="${b1}" filter="url(#bf2)"/>
+    </g>
+    <g class="blossom-group" id="bg3">
+      <circle cx="168" cy="258" r="34" fill="${b4}" filter="url(#bf)"/>
+      <circle cx="532" cy="258" r="34" fill="${b4}" filter="url(#bf)"/>
+      <circle cx="192" cy="312" r="30" fill="${b3}" filter="url(#bf2)"/>
+      <circle cx="508" cy="312" r="30" fill="${b3}" filter="url(#bf2)"/>
+    </g>
+    <g class="blossom-group" id="bg4">
+      <circle cx="205" cy="272" r="34" fill="${b5}" filter="url(#bf)"/>
+      <circle cx="495" cy="272" r="34" fill="${b5}" filter="url(#bf)"/>
+      <circle cx="228" cy="248" r="26" fill="${b4}" filter="url(#bf2)"/>
+      <circle cx="472" cy="248" r="26" fill="${b4}" filter="url(#bf2)"/>
+    </g>
+    <g class="blossom-group" id="bg5">
+      <circle cx="248" cy="298" r="32" fill="${b6}" filter="url(#bf)"/>
+      <circle cx="452" cy="298" r="32" fill="${b6}" filter="url(#bf)"/>
+      <circle cx="262" cy="268" r="28" fill="${b5}" filter="url(#bf2)"/>
+      <circle cx="438" cy="268" r="28" fill="${b5}" filter="url(#bf2)"/>
+    </g>
+    <g class="blossom-group" id="bg6">
+      <circle cx="278" cy="252" r="32" fill="${b7}" filter="url(#bf)"/>
+      <circle cx="422" cy="252" r="32" fill="${b7}" filter="url(#bf)"/>
+      <circle cx="300" cy="315" r="28" fill="${b5}" filter="url(#bf2)"/>
+      <circle cx="400" cy="315" r="28" fill="${b5}" filter="url(#bf2)"/>
+    </g>
+    <g class="blossom-group" id="bg7">
+      <circle cx="298" cy="268" r="30" fill="${b8}" filter="url(#bf)"/>
+      <circle cx="402" cy="268" r="30" fill="${b8}" filter="url(#bf)"/>
+      <circle cx="318" cy="248" r="26" fill="${b6}" filter="url(#bf2)"/>
+      <circle cx="382" cy="248" r="26" fill="${b6}" filter="url(#bf2)"/>
+    </g>
+    <g class="blossom-group" id="bg8">
+      <circle cx="322" cy="285" r="30" fill="${b9}" filter="url(#bf)"/>
+      <circle cx="378" cy="285" r="30" fill="${b9}" filter="url(#bf)"/>
+      <circle cx="348" cy="338" r="28" fill="${b7}" filter="url(#bf2)"/>
+      <circle cx="348" cy="302" r="24" fill="${b3}" filter="url(#bf2)"/>
+    </g>
+    <g class="blossom-group" id="bg9">
+      <circle cx="332" cy="255" r="28" fill="${b10}" filter="url(#bf)"/>
+      <circle cx="368" cy="255" r="28" fill="${b10}" filter="url(#bf)"/>
+      <circle cx="350" cy="272" r="26" fill="${b8}" filter="url(#bf2)"/>
+      <circle cx="310" cy="248" r="22" fill="${b5}" filter="url(#bf2)"/>
+      <circle cx="390" cy="248" r="22" fill="${b5}" filter="url(#bf2)"/>
+    </g>
+    <g class="blossom-group" id="bg10">
+      <circle cx="350" cy="222" r="42" fill="${b10}" filter="url(#bf)"/>
+      <circle cx="328" cy="242" r="30" fill="${b9}" filter="url(#bf2)"/>
+      <circle cx="372" cy="242" r="30" fill="${b9}" filter="url(#bf2)"/>
+      <circle cx="350" cy="258" r="26" fill="${b3}" filter="url(#bf2)"/>
+      <circle cx="304" cy="244" r="24" fill="${b2}" filter="url(#bf2)"/>
+      <circle cx="396" cy="244" r="24" fill="${b2}" filter="url(#bf2)"/>
+      <circle cx="350" cy="208" r="18" fill="${b1}" filter="url(#bf2)"/>
+    </g>
+  `;
+}
+
+const grid = document.getElementById('grid');
+
+stories.forEach(s => {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <div class="card-title">${s.name}</div>
+    <div class="card-sub">${s.sub}</div>
+    <svg viewBox="0 0 700 560" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax meet"
+         id="svg-${s.id}" style="background:${s.bg}; border-radius:8px;">
+      <defs>
+        <filter id="bf-${s.id}" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="9"/></filter>
+        <filter id="bf2-${s.id}" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="6"/></filter>
+      </defs>
+      <g class="tree-branches" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        ${makeBranches(s.trunk, s.shape)}
+      </g>
+      ${makeBlossoms(s.blossoms, s.shape).replace(/url\(#bf\)/g, `url(#bf-${s.id})`).replace(/url\(#bf2\)/g, `url(#bf2-${s.id})`)}
+    </svg>
+  `;
+  card.dataset.glow = s.glow;
+  card.dataset.id = s.id;
+  grid.appendChild(card);
+});
+
+function updateBloom(pct) {
+  document.querySelectorAll('.card').forEach(card => {
+    const id = card.dataset.id;
+    const glow = card.dataset.glow;
+    const svg = card.querySelector('svg');
+    const stages = Math.floor(pct / 10);
+    let isFullBloom = pct >= 100;
+    svg.style.setProperty('--glow', glow);
+
+    for (let i = 1; i <= 10; i++) {
+      const g = svg.querySelector(`#bg${i}`);
+      if (!g) continue;
+      if (i <= stages) {
+        g.classList.add('bloomed');
+      } else {
+        g.classList.remove('bloomed');
+      }
+    }
+
+    if (isFullBloom) svg.classList.add('full-bloom');
+    else svg.classList.remove('full-bloom');
+  });
+}
+
+const slider = document.getElementById('bloom-slider');
+const val = document.getElementById('bloom-val');
+slider.addEventListener('input', () => {
+  val.textContent = slider.value + '%';
+  updateBloom(parseInt(slider.value));
+});
+
+updateBloom(0);
+</script>
+</body>
+</html>
