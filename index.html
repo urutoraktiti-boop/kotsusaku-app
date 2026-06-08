@@ -1284,6 +1284,26 @@ function isKotsusakuInstalled() {
 }
 window.isKotsusakuInstalled = isKotsusakuInstalled;
 
+// === 統計のキャッシュ（同じ計算の繰り返しを防ぐ）===
+// study-data は画面描画のたびに何度も読み込まれるため、解析結果と集計結果を
+// 覚えておき、データが変わるまで使い回す。
+// 重要: ここ（最も外側のスコープ）で定義することで、アナリティクス用の即時関数
+// (IIFE) の中の統計関数からも、外側の save()/LS.set()/allTimeTotal() からも
+// 同じ関数を参照できる。IIFE実行より前に初期化しておく必要がある。
+var _studyDataCache = null;   // localStorage の study-data を解析した結果
+var _statMemo = {};           // 合計・連続日数などの集計結果
+function _invalidateStudyStats() { _studyDataCache = null; _statMemo = {}; }
+function _readStudyData() {
+  if (_studyDataCache !== null) return _studyDataCache;
+  try { _studyDataCache = JSON.parse(localStorage.getItem('study-data') || '{}'); }
+  catch(e) { _studyDataCache = {}; }
+  return _studyDataCache;
+}
+function _memoStat(key, fn) {
+  if (Object.prototype.hasOwnProperty.call(_statMemo, key)) return _statMemo[key];
+  return (_statMemo[key] = fn());
+}
+
 // ============================================================
 // === コツコツサクサク アナリティクス (v91) ===
 // Firestore /analytics/{userId} にユーザー行動データを送信する
@@ -1328,23 +1348,6 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
     const now = new Date();
     if (now.getHours() < 4) now.setDate(now.getDate() - 1);
     return now.toISOString().slice(0, 10);
-  }
-
-  // --- 統計のキャッシュ（同じ計算の繰り返しを防ぐ）---
-  // study-data は画面描画のたびに何度も読み込まれるため、
-  // 解析結果と集計結果を覚えておき、データが変わるまで使い回す。
-  var _studyDataCache = null;   // localStorage の study-data を解析した結果
-  var _statMemo = {};           // 合計・連続日数などの集計結果
-  function _invalidateStudyStats() { _studyDataCache = null; _statMemo = {}; }
-  function _readStudyData() {
-    if (_studyDataCache !== null) return _studyDataCache;
-    try { _studyDataCache = JSON.parse(localStorage.getItem('study-data') || '{}'); }
-    catch(e) { _studyDataCache = {}; }
-    return _studyDataCache;
-  }
-  function _memoStat(key, fn) {
-    if (Object.prototype.hasOwnProperty.call(_statMemo, key)) return _statMemo[key];
-    return (_statMemo[key] = fn());
   }
 
   // --- 今日の学習時間（分）---
