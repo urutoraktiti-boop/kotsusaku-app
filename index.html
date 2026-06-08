@@ -1684,6 +1684,10 @@ function _memoStat(key, fn) {
     const today = getAppDate();
     const lastSent = localStorage.getItem(ANALYTICS_SENT_KEY);
     if (lastSent === today) return; // 今日すでに送信済み
+    // 4:00の定時送信は、日付変更を検知する30秒ポーリングより先に走る場合がある。
+    // streakDays(連続日数)など「今日」に依存する統計が古いキャッシュにならないよう、
+    // 日次ペイロード作成の直前に統計キャッシュを無効化して必ず再計算させる。
+    _invalidateStudyStats();
     const payload = buildPayload('daily');
     const ok = await sendAnalytics(payload);
     if (ok) {
