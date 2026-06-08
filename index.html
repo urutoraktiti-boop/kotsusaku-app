@@ -3508,6 +3508,8 @@ function renderAnnualHeatmap(){
   const grid=$('heatmap-grid');
   if(!grid)return;
   grid.innerHTML='';
+  // まとめ描画用（365マスを1回で反映し、再配置の繰り返しを防ぐ）
+  const frag=document.createDocumentFragment();
   const today=new Date();today.setHours(0,0,0,0);
   const start=new Date(today);start.setDate(start.getDate()-364);
   // 週の始まりを月曜に揃える
@@ -3558,8 +3560,9 @@ function renderAnnualHeatmap(){
       weekDiv.appendChild(cell);
     });
     col.appendChild(weekDiv);
-    grid.appendChild(col);
+    frag.appendChild(col);
   });
+  grid.appendChild(frag);
   // 最新（右端）へ自動スクロール
   const scrollWrap=grid.closest('.heatmap-scroll');
   if(scrollWrap)requestAnimationFrame(()=>{scrollWrap.scrollLeft=scrollWrap.scrollWidth;});
@@ -4037,6 +4040,9 @@ function launchPetals(){
 
 function buildGrid(){
   const tb=$('grid-body');tb.innerHTML='';
+  // まとめ描画用の一時入れ物。全行をここに作ってから最後に1回だけ画面へ反映し、
+  // 1行ずつ画面に追加することで起きる再配置(reflow)の繰り返しを防ぐ。
+  const frag=document.createDocumentFragment();
 
   const seps=new Set([12,18,0]),minGuideAfter=new Set([11,17]);
   HOURS.forEach(h=>{
@@ -4108,15 +4114,16 @@ function buildGrid(){
       td.appendChild(div);tr.appendChild(td);
 
     });
-    tb.appendChild(tr);
+    frag.appendChild(tr);
     if(minGuideAfter.has(h)){
       const guide=document.createElement('tr');guide.className='min-guide';
       const lbl=document.createElement('td');lbl.textContent='';guide.appendChild(lbl);
       const empty=document.createElement('td');guide.appendChild(empty);
       MINS.forEach(m=>{const td=document.createElement('td');td.textContent=m+'分';guide.appendChild(td);});
-      tb.appendChild(guide);
+      frag.appendChild(guide);
     }
   });
+  tb.appendChild(frag);
 }
 
 // itachacha：ライブ配信時間帯判定ヘルパー
@@ -4383,6 +4390,7 @@ function renderWeekly(){
   }
   function buildChart(containerId,dates,isCurr){
     const chart=$(containerId);chart.innerHTML='';
+    const frag=document.createDocumentFragment();
     dates.forEach(d=>{
       const min=dayTotal(d);const pct=maxMin>0?min/maxMin*100:0;
       const parts=dayPartMinutes(d);const dt=parseDate(d);const isToday=d===todayStr;
@@ -4405,8 +4413,9 @@ function renderWeekly(){
       const dl=document.createElement('div');dl.className='bar-day'+(isToday?' today':hol||dow===0?' sun':dow===6?' sat':'');dl.textContent=WD[dow];
       const datel=document.createElement('div');datel.className='bar-date';datel.textContent=(dt.getMonth()+1)+'/'+dt.getDate();
       wrap.appendChild(stack);col.appendChild(te);col.appendChild(wrap);col.appendChild(dl);col.appendChild(datel);
-      chart.appendChild(col);
+      frag.appendChild(col);
     });
+    chart.appendChild(frag);
   }
   const prevTotal=prevDates.reduce((s,d)=>s+dayTotal(d),0);
   const currTotal=currDates.reduce((s,d)=>s+dayTotal(d),0);
@@ -4438,9 +4447,11 @@ function renderMonthly(){
   let monthMaxPart=120;
   monthDates(year,month).forEach(ds=>{const p=dayPartMinutes(ds);monthMaxPart=Math.max(monthMaxPart,p.morning,p.afternoon,p.evening);});
   const cal=$('cal-grid');cal.innerHTML='';
-  ['月','火','水','木','金','土','日'].forEach((h,i)=>{const th=document.createElement('div');th.className='cal-header'+(i===5?' sat':i===6?' sun':'');th.textContent=h;cal.appendChild(th);});
+  // まとめ描画用（カレンダー全体を1回で反映）
+  const frag=document.createDocumentFragment();
+  ['月','火','水','木','金','土','日'].forEach((h,i)=>{const th=document.createElement('div');th.className='cal-header'+(i===5?' sat':i===6?' sun':'');th.textContent=h;frag.appendChild(th);});
   const firstDay=new Date(year,month-1,1).getDay();const startOff=firstDay===0?6:firstDay-1;
-  for(let i=0;i<startOff;i++){const e=document.createElement('div');e.className='cal-day empty';cal.appendChild(e);}
+  for(let i=0;i<startOff;i++){const e=document.createElement('div');e.className='cal-day empty';frag.appendChild(e);}
   const days=new Date(year,month,0).getDate();
   for(let d=1;d<=days;d++){
     const ds=year+'-'+String(month).padStart(2,'0')+'-'+String(d).padStart(2,'0');
@@ -4460,8 +4471,9 @@ function renderMonthly(){
     if(min>0){const h=Math.floor(min/60),m=min%60;te.innerHTML=h>0?`<span class="cdt-h">${h}<small>h</small></span>${m>0?`<span class="cdt-m">${m}<small>m</small></span>`:''}`:`<span class="cdt-m">${m}<small>m</small></span>`;}
     let partsDiv=null;
     if(min>0){const parts=dayPartMinutes(ds);partsDiv=document.createElement('div');partsDiv.className='cal-parts';['morning','afternoon','evening'].forEach(period=>{const bar=document.createElement('div');bar.className='cal-part '+period;const pct=Math.min(Math.round(parts[period]/monthMaxPart*100),100);bar.style.width=pct+'%';partsDiv.appendChild(bar);});}
-    cell.appendChild(bg);cell.appendChild(num);cell.appendChild(te);if(partsDiv)cell.appendChild(partsDiv);cal.appendChild(cell);
+    cell.appendChild(bg);cell.appendChild(num);cell.appendChild(te);if(partsDiv)cell.appendChild(partsDiv);frag.appendChild(cell);
   }
+  cal.appendChild(frag);
   renderAnnualHeatmap();
   safeRenderForecast();
 }
