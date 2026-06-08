@@ -3411,6 +3411,9 @@ function _setScrollText(containerEl, text){
 function _reloadWithCheck(){
   window.location.reload(true);
 }
+// 前回「現在マス」だったブロックを覚えておき、毎回全マスを走査せず
+// 前回マスと今回マスの2つだけを更新する（ストップウォッチ作動中の負荷軽減）。
+var _prevNowBlock=null;
 function updateNowBlock(){
   const now=new Date();
   const todayStr=toStudyDateStr(now);
@@ -3419,18 +3422,29 @@ function updateNowBlock(){
   const nowMm=now.getMinutes();
   const nowM=(nowMm===0)?10:Math.ceil(nowMm/10)*10;
   const pct=((nowMm%10)*60+now.getSeconds())/600*100;
-  document.querySelectorAll('.block').forEach(div=>{
-    const h=+div.dataset.h,m=+div.dataset.m;
-    const isNow=isToday&&h===nowH&&m===nowM&&!div.classList.contains('checked');
-    div.classList.toggle('now-time',isNow);
-    if(isNow&&_swIsRunning){
-      div.style.animation='none';
-      div.style.background=`linear-gradient(to right,rgba(255,133,161,.60) 0%,rgba(255,133,161,.60) ${pct}%,var(--block-bg) ${pct}%)`;
+  // 今「現在マス」になるべきブロックを直接1つだけ取得
+  let target=null;
+  if(isToday){
+    const el=document.querySelector('.block[data-h="'+nowH+'"][data-m="'+nowM+'"]');
+    if(el&&!el.classList.contains('checked'))target=el;
+  }
+  // 前回の現在マスが今回と違えば、前回分をリセット
+  if(_prevNowBlock&&_prevNowBlock!==target){
+    _prevNowBlock.classList.remove('now-time');
+    _prevNowBlock.style.animation='';
+    _prevNowBlock.style.background='';
+  }
+  if(target){
+    target.classList.add('now-time');
+    if(_swIsRunning){
+      target.style.animation='none';
+      target.style.background=`linear-gradient(to right,rgba(255,133,161,.60) 0%,rgba(255,133,161,.60) ${pct}%,var(--block-bg) ${pct}%)`;
     }else{
-      div.style.animation='';
-      div.style.background='';
+      target.style.animation='';
+      target.style.background='';
     }
-  });
+  }
+  _prevNowBlock=target;
 }
 function onLuckyCheck(h,m){
   const lb=getLuckyBlockKey();
