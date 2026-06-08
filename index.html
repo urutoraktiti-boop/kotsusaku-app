@@ -50,7 +50,7 @@
 @media(max-width:560px){.date-header-table{border-spacing:0 7px;padding:3px 0 6px}.date-row-btn{--date-shift:-46px;min-height:48px;border-radius:14px!important;padding:6px 8px!important}.date-center-wrap{grid-template-columns:20px 112px 20px;column-gap:3px}.date-mark{font-size:18px}.date-center-wrap .date-display-text{font-size:21px!important}.date-side{left:calc(50% + 36px)}.date-side .today-date-pill{min-width:58px;font-size:14px;padding:6px 8px}.date-side .exam-days-pill{min-width:108px;font-size:11px;padding:6px 8px}.date-side .exam-days-pill .count-num{font-size:21px;margin:0 2px}}
 </style><style>
 /* ── Crazy10参加日の発光スタイル ── */
-@keyframes crazy10BarGlow{0%,100%{filter:drop-shadow(0 0 3px rgba(74,222,128,.5))}50%{filter:drop-shadow(0 0 8px rgba(74,222,128,.9)) brightness(1.15)}}
+@keyframes crazy10BarGlow{0%,100%{box-shadow:0 0 3px rgba(74,222,128,.5)}50%{box-shadow:0 0 9px 1px rgba(74,222,128,.9)}}
 .bar-col.crazy10-day .bar-stack{background:rgba(74,222,128,.15);animation:crazy10BarGlow 2s ease-in-out infinite;}
 .bar-col.crazy10-day .bar-seg{filter:hue-rotate(60deg) saturate(1.5);}
 @keyframes crazy10CellGlow{0%,100%{box-shadow:0 0 4px 1px rgba(74,222,128,.4);border-color:rgba(74,222,128,.6)!important}50%{box-shadow:0 0 10px 3px rgba(74,222,128,.75);border-color:rgba(74,222,128,1)!important}}
@@ -6825,7 +6825,9 @@ setTimeout(_syncHeaderHeight, 100);
 })();
 
 // 現在時刻マスを1分ごとに更新（時刻が進んでも点滅が追従するよう）
-setInterval(()=>{if(currentView==='daily')updateNowBlock();},60000);
+// 現在時刻マスを1分ごとに更新。タブが非表示（バックグラウンド）のときは
+// 無駄に動かさない（電池・CPU節約）。変数に保持して停止できるようにしておく。
+var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')updateNowBlock();},60000);
 
 </script><script>
 // ── インストール促進バナー ──────────────────────────────
