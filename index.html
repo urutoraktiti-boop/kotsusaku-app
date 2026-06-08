@@ -2534,7 +2534,7 @@ let studyDeletes={};
 function loadDeletes(){try{studyDeletes=JSON.parse(LS.get('study-deletes','{}'));}catch{studyDeletes={};}}
 function saveDeletes(){LS.set('study-deletes',JSON.stringify(studyDeletes));}
 
-function load(){try{data=JSON.parse(LS.get('study-data','{}'));}catch{data={};}}
+function load(){try{data=JSON.parse(LS.get('study-data','{}'));}catch{data={};}_invalidateStudyStats();}
 
 function save(){
   _invalidateStudyStats();
@@ -2563,7 +2563,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   input.addEventListener('input',()=>{saveNote(currentDate,input.value.trim());input.classList.toggle('has-note',input.value.length>0);});
 });
 
-const LS={get:(k,d=null)=>localStorage.getItem(k)??d,set:(k,v)=>{if(k==='study-data')_invalidateStudyStats();return localStorage.setItem(k,v);},del:(k)=>localStorage.removeItem(k)};
+const LS={get:(k,d=null)=>localStorage.getItem(k)??d,set:(k,v)=>{if(k==='study-data')_invalidateStudyStats();return localStorage.setItem(k,v);},del:(k)=>{if(k==='study-data')_invalidateStudyStats();return localStorage.removeItem(k);}};
 function loadGoal(){
   const s=parseInt(LS.get('study-goal'));if(s>0)GOAL=s;
   const sw=parseInt(LS.get('study-week-goal'));if(sw>0)WEEK_GOAL=sw;
@@ -2571,7 +2571,7 @@ function loadGoal(){
   ['daily','weekly','monthly'].forEach(t=>{const g=t==='daily'?GOAL:t==='weekly'?WEEK_GOAL:MONTH_GOAL;document.querySelectorAll(`.goal-btn[data-type="${t}"]:not([data-custom])`).forEach(b=>b.classList.toggle('active',+b.dataset.h*60===g));});
   if(window.refreshCustomGoalBtns)window.refreshCustomGoalBtns();
 }
-function saveGoal(){LS.set('study-goal',GOAL);LS.set('study-week-goal',WEEK_GOAL);LS.set('study-month-goal',MONTH_GOAL);}
+function saveGoal(){_invalidateStudyStats();LS.set('study-goal',GOAL);LS.set('study-week-goal',WEEK_GOAL);LS.set('study-month-goal',MONTH_GOAL);}
 
 function _nthWeekday(y,m,dow,n){const first=new Date(y,m-1,1).getDay();return 1+(dow-first+7)%7+(n-1)*7;}
 function _springEquinox(y){return Math.floor(20.8431+0.242194*(y-1980)-Math.floor((y-1980)/4));}
@@ -4367,7 +4367,7 @@ $('clear-all-btn').addEventListener('click',async ()=>{
   if(window.KotsuTasks)window.KotsuTasks.clearAll();
   clearMilestoneToastFlags();
   clearChachaToastFlag();
-  data={};notes={};studyDeletes={};earnedBadges={};achievedMs={};GOAL=120;WEEK_GOAL=600;MONTH_GOAL=1800;CUST={...CUST_DEFAULTS};
+  data={};notes={};studyDeletes={};earnedBadges={};achievedMs={};GOAL=120;WEEK_GOAL=600;MONTH_GOAL=1800;CUST={...CUST_DEFAULTS};_invalidateStudyStats();
   lastBloomPct=-1;lastWeeklyPct=-1;lastMonthlyPct=-1;lastLv=0;
   currentDate=toStudyDateStr(new Date());
   loadGoal();loadCountdown();applyTheme('dark');applyAllCust();
@@ -6769,7 +6769,7 @@ function _renderQuotesList(){
     if(window.KotsuTasks)window.KotsuTasks.clearAll();
     clearMilestoneToastFlags();
     clearChachaToastFlag();
-    data={};notes={};studyDeletes={};earnedBadges={};achievedMs={};GOAL=120;WEEK_GOAL=600;MONTH_GOAL=1800;CUST={...CUST_DEFAULTS};
+    data={};notes={};studyDeletes={};earnedBadges={};achievedMs={};GOAL=120;WEEK_GOAL=600;MONTH_GOAL=1800;CUST={...CUST_DEFAULTS};_invalidateStudyStats();
     lastBloomPct=-1;lastWeeklyPct=-1;lastMonthlyPct=-1;lastLv=0;
     currentDate=toStudyDateStr(new Date());
     loadGoal();loadCountdown();applyTheme('dark');applyAllCust();
@@ -7132,6 +7132,9 @@ function checkStudyDateChanged() {
   if (newStudyDate !== _lastKnownStudyDate) {
     const wasOnToday = (currentDate === _lastKnownStudyDate);
     _lastKnownStudyDate = newStudyDate;
+    // 日付が変わると連続日数(currentStreak/getStreak)など「今日」に依存する
+    // 統計が変化するため、覚えておいた集計キャッシュを捨てる
+    _invalidateStudyStats();
     if (wasOnToday) {
       currentDate = newStudyDate;
       if (currentView === 'daily') {
