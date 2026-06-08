@@ -7,9 +7,17 @@
     "public": ".",
     "ignore": [
       "firebase.json",
-      ".firebaserc",
+      "**/.*",
+      ".git/**",
       "functions/**",
-      "node_modules/**"
+      "node_modules/**",
+      "tools/**",
+      "**/*.md",
+      "**/*.zip",
+      "**/*.command",
+      "README.txt",
+      "completion-effects-demo.html",
+      "mockup-minna-no-kiseki.html"
     ]
   }
 }
