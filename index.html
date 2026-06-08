@@ -1330,10 +1330,27 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
     return now.toISOString().slice(0, 10);
   }
 
+  // --- 統計のキャッシュ（同じ計算の繰り返しを防ぐ）---
+  // study-data は画面描画のたびに何度も読み込まれるため、
+  // 解析結果と集計結果を覚えておき、データが変わるまで使い回す。
+  var _studyDataCache = null;   // localStorage の study-data を解析した結果
+  var _statMemo = {};           // 合計・連続日数などの集計結果
+  function _invalidateStudyStats() { _studyDataCache = null; _statMemo = {}; }
+  function _readStudyData() {
+    if (_studyDataCache !== null) return _studyDataCache;
+    try { _studyDataCache = JSON.parse(localStorage.getItem('study-data') || '{}'); }
+    catch(e) { _studyDataCache = {}; }
+    return _studyDataCache;
+  }
+  function _memoStat(key, fn) {
+    if (Object.prototype.hasOwnProperty.call(_statMemo, key)) return _statMemo[key];
+    return (_statMemo[key] = fn());
+  }
+
   // --- 今日の学習時間（分）---
   function getTodayStudyMin() {
     try {
-      const d = JSON.parse(localStorage.getItem('study-data') || '{}');
+      const d = _readStudyData();
       const ds = getAppDate();
       if (!d[ds]) return 0;
       return Object.values(d[ds]).filter(Boolean).length * 10;
@@ -1342,28 +1359,35 @@ window.isKotsusakuInstalled = isKotsusakuInstalled;
 
   // --- 累計学習時間（分）---
   function getTotalStudyMin() {
-    try {
-      const d = JSON.parse(localStorage.getItem('study-data') || '{}');
-      return Object.values(d).reduce((sum, day) =>
-        sum + Object.values(day).filter(Boolean).length * 10, 0);
-    } catch(e) { return 0; }
+    return _memoStat('getTotalStudyMin', () => {
+      try {
+        const d = _readStudyData();
+        return Object.values(d).reduce((sum, day) =>
+          sum + Object.values(day).filter(Boolean).length * 10, 0);
+      } catch(e) { return 0; }
+    });
   }
 
   // --- 学習日数 ---
   function getStudyDays() {
-    try {
-      const d = JSON.parse(localStorage.getItem('study-data') || '{}');
-      return Object.keys(d).filter(ds => {
-        const day = d[ds];
-        return Object.values(day).filter(Boolean).length > 0;
-      }).length;
-    } catch(e) { return 0; }
+    return _memoStat('getStudyDays', () => {
+      try {
+        const d = _readStudyData();
+        return Object.keys(d).filter(ds => {
+          const day = d[ds];
+          return Object.values(day).filter(Boolean).length > 0;
+        }).length;
+      } catch(e) { return 0; }
+    });
   }
 
   // --- 連続学習日数 ---
   function getStreak() {
+    return _memoStat('getStreak', () => _computeStreak());
+  }
+  function _computeStreak() {
     try {
-      const d = JSON.parse(localStorage.getItem('study-data') || '{}');
+      const d = _readStudyData();
       let streak = 0;
       const now = new Date();
       if (now.getHours() < 4) now.setDate(now.getDate() - 1);
@@ -2134,78 +2158,54 @@ function mergeKotsuTasksFromCloud(raw) {
   }
 }
 
-// ── 手順6: saveToCloud（保存前マージ＋削除ログ送信） ──────────
+// ── 手順6: クラウド保存の本体（マージ＋書き込み） ──────────
+// saveToCloud（遅延版）と saveToCloudNow（即時版）で共通利用。
+// 同じ処理を2か所に書いていたのを1つにまとめた。
+async function _syncMergeAndWrite() {
+  const ref = db.collection('users').doc(getSyncCode());
+  // 保存前にクラウドを読んでマージ
+  const snap = await ref.get();
+  if (snap.exists) {
+    const d = snap.data();
+    const cloudData    = JSON.parse(d.studyData    || '{}');
+    const cloudDeletes = JSON.parse(d.studyDeletes || '{}');
+    const merged = mergeStudyData(data, cloudData, studyDeletes, cloudDeletes);
+    data = merged.data;
+    studyDeletes = merged.deletes;
+    LS.set('study-data',    JSON.stringify(data));
+    LS.set('study-deletes', JSON.stringify(studyDeletes));
+    LS.set(_SYNC_THROTTLE_KEY, String(Date.now())); // readカウント更新
+    mergeKotsuTasksFromCloud(d.kotsuTasks);
+  }
+  await ref.set({
+    studyData:    JSON.stringify(data),
+    studyDeletes: JSON.stringify(studyDeletes),
+    studyNotes:   JSON.stringify(notes),
+    studyCust:    LS.get('study-cust',''),
+    studyBadges:  LS.get('study-badges',''),
+    studyMilestones: LS.get('study-milestones',''),
+    studyGoal:    LS.get('study-goal',''),
+    studyWeekGoal:LS.get('study-week-goal',''),
+    studyMonthGoal:LS.get('study-month-goal',''),
+    examDate:     LS.get('exam-date',''),
+    kotsuTasks:   (window.KotsuTasks ? JSON.stringify(window.KotsuTasks.exportData()) : ''),
+    updatedAt:    firebase.firestore.FieldValue.serverTimestamp()
+  });
+}
 function saveToCloud() {
   if (!db) return; // Firebase未初期化（オフライン時）はスキップ
   if (_cloudSaveTimer) clearTimeout(_cloudSaveTimer);
   _cloudSaveTimer = setTimeout(async () => {
-    try {
-      // 保存前にクラウドを読んでマージ
-      const snap = await db.collection('users').doc(getSyncCode()).get();
-      if (snap.exists) {
-        const d = snap.data();
-        const cloudData    = JSON.parse(d.studyData    || '{}');
-        const cloudDeletes = JSON.parse(d.studyDeletes || '{}');
-        const merged = mergeStudyData(data, cloudData, studyDeletes, cloudDeletes);
-        data = merged.data;
-        studyDeletes = merged.deletes;
-        LS.set('study-data',    JSON.stringify(data));
-        LS.set('study-deletes', JSON.stringify(studyDeletes));
-        LS.set(_SYNC_THROTTLE_KEY, String(Date.now())); // readカウント更新
-        mergeKotsuTasksFromCloud(d.kotsuTasks);
-      }
-      await db.collection('users').doc(getSyncCode()).set({
-        studyData:    JSON.stringify(data),
-        studyDeletes: JSON.stringify(studyDeletes),
-        studyNotes:   JSON.stringify(notes),
-        studyCust:    LS.get('study-cust',''),
-        studyBadges:  LS.get('study-badges',''),
-        studyMilestones: LS.get('study-milestones',''),
-        studyGoal:    LS.get('study-goal',''),
-        studyWeekGoal:LS.get('study-week-goal',''),
-        studyMonthGoal:LS.get('study-month-goal',''),
-        examDate:     LS.get('exam-date',''),
-        kotsuTasks:   (window.KotsuTasks ? JSON.stringify(window.KotsuTasks.exportData()) : ''),
-        updatedAt:    firebase.firestore.FieldValue.serverTimestamp()
-      });
-    } catch(e) { console.warn('クラウド保存エラー:', e); }
+    try { await _syncMergeAndWrite(); }
+    catch(e) { console.warn('クラウド保存エラー:', e); }
   }, 3000);
 }
 // 設定保存など即時同期が必要な場面で使う（遅延なし版）
 async function saveToCloudNow() {
   if (!db) return false;
   if (_cloudSaveTimer) { clearTimeout(_cloudSaveTimer); _cloudSaveTimer = null; }
-  try {
-    // 保存前にクラウドを読んでマージ
-    const snap = await db.collection('users').doc(getSyncCode()).get();
-    if (snap.exists) {
-      const d = snap.data();
-      const cloudData    = JSON.parse(d.studyData    || '{}');
-      const cloudDeletes = JSON.parse(d.studyDeletes || '{}');
-      const merged = mergeStudyData(data, cloudData, studyDeletes, cloudDeletes);
-      data = merged.data;
-      studyDeletes = merged.deletes;
-      LS.set('study-data',    JSON.stringify(data));
-      LS.set('study-deletes', JSON.stringify(studyDeletes));
-      LS.set(_SYNC_THROTTLE_KEY, String(Date.now()));
-      mergeKotsuTasksFromCloud(d.kotsuTasks);
-    }
-    await db.collection('users').doc(getSyncCode()).set({
-      studyData:    JSON.stringify(data),
-      studyDeletes: JSON.stringify(studyDeletes),
-      studyNotes:   JSON.stringify(notes),
-      studyCust:    LS.get('study-cust',''),
-      studyBadges:  LS.get('study-badges',''),
-      studyMilestones: LS.get('study-milestones',''),
-      studyGoal:    LS.get('study-goal',''),
-      studyWeekGoal:LS.get('study-week-goal',''),
-      studyMonthGoal:LS.get('study-month-goal',''),
-      examDate:     LS.get('exam-date',''),
-      kotsuTasks:   (window.KotsuTasks ? JSON.stringify(window.KotsuTasks.exportData()) : ''),
-      updatedAt:    firebase.firestore.FieldValue.serverTimestamp()
-    });
-    return true;
-  } catch(e) { console.warn('クラウド即時保存エラー:', e); return false; }
+  try { await _syncMergeAndWrite(); return true; }
+  catch(e) { console.warn('クラウド即時保存エラー:', e); return false; }
 }
 // ── 手順7: loadFromCloud（全上書きではなくマージ反映） ─────────
 async function loadFromCloud(code) {
@@ -2534,6 +2534,7 @@ function saveDeletes(){LS.set('study-deletes',JSON.stringify(studyDeletes));}
 function load(){try{data=JSON.parse(LS.get('study-data','{}'));}catch{data={};}}
 
 function save(){
+  _invalidateStudyStats();
   LS.set('study-data',JSON.stringify(data));
   saveDeletes();
   saveToCloud();
@@ -2559,7 +2560,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   input.addEventListener('input',()=>{saveNote(currentDate,input.value.trim());input.classList.toggle('has-note',input.value.length>0);});
 });
 
-const LS={get:(k,d=null)=>localStorage.getItem(k)??d,set:(k,v)=>localStorage.setItem(k,v),del:(k)=>localStorage.removeItem(k)};
+const LS={get:(k,d=null)=>localStorage.getItem(k)??d,set:(k,v)=>{if(k==='study-data')_invalidateStudyStats();return localStorage.setItem(k,v);},del:(k)=>localStorage.removeItem(k)};
 function loadGoal(){
   const s=parseInt(LS.get('study-goal'));if(s>0)GOAL=s;
   const sw=parseInt(LS.get('study-week-goal'));if(sw>0)WEEK_GOAL=sw;
@@ -2598,9 +2599,10 @@ function dayPartMinutes(ds){
   Object.entries(data[ds]).forEach(([key,val])=>{if(!val)return;const h=parseInt(key.split(':')[0]);if(MORNING.includes(h))morning+=10;else if(AFTERNOON.includes(h))afternoon+=10;else evening+=10;});
   return{morning,afternoon,evening};
 }
-function allTimeTotal(){return Object.values(data).reduce((sum,day)=>sum+Object.values(day).filter(Boolean).length*10,0);}
-function allTimeDays(){return Object.keys(data).filter(ds=>dayTotal(ds)>0).length;}
-function currentStreak(){
+function allTimeTotal(){return _memoStat('allTimeTotal',()=>Object.values(data).reduce((sum,day)=>sum+Object.values(day).filter(Boolean).length*10,0));}
+function allTimeDays(){return _memoStat('allTimeDays',()=>Object.keys(data).filter(ds=>dayTotal(ds)>0).length);}
+function currentStreak(){return _memoStat('currentStreak',()=>_computeCurrentStreak());}
+function _computeCurrentStreak(){
   const todayStudyStr=toStudyDateStr(new Date());const todayDt=parseDate(todayStudyStr);
   const startFrom=dayTotal(todayStudyStr)>0?todayDt:new Date(todayDt.getTime()-86400000);
   let streak=0;let cur=new Date(startFrom);
@@ -2619,16 +2621,20 @@ function maxConsecBlocks(ds){
   return max;
 }
 function countMorningBlocks(){
-  let cnt=0;
-  Object.entries(data).forEach(([ds,day])=>{if(!day)return;Object.entries(day).forEach(([k,v])=>{if(!v)return;const h=parseInt(k);if(h>=4&&h<8)cnt++;});});
-  return cnt;
+  return _memoStat('countMorningBlocks',()=>{
+    let cnt=0;
+    Object.entries(data).forEach(([ds,day])=>{if(!day)return;Object.entries(day).forEach(([k,v])=>{if(!v)return;const h=parseInt(k);if(h>=4&&h<8)cnt++;});});
+    return cnt;
+  });
 }
 function countNightBlocks(){
-  let cnt=0;
-  Object.entries(data).forEach(([ds,day])=>{if(!day)return;Object.entries(day).forEach(([k,v])=>{if(!v)return;const h=parseInt(k);if(h>=0&&h<4)cnt++;});});
-  return cnt;
+  return _memoStat('countNightBlocks',()=>{
+    let cnt=0;
+    Object.entries(data).forEach(([ds,day])=>{if(!day)return;Object.entries(day).forEach(([k,v])=>{if(!v)return;const h=parseInt(k);if(h>=0&&h<4)cnt++;});});
+    return cnt;
+  });
 }
-function countDailyGoalAchieved(){return Object.keys(data).filter(ds=>dayTotal(ds)>=GOAL).length;}
+function countDailyGoalAchieved(){return _memoStat('countDailyGoalAchieved',()=>Object.keys(data).filter(ds=>dayTotal(ds)>=GOAL).length);}
 function hasAchievedWeekGoal(){
   const achieved=JSON.parse(LS.get('weekly-goal-achieved','false'));return achieved;
 }
