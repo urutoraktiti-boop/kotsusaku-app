@@ -73,7 +73,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="stylesheet" href="./kotsu-tasks.css?v=kotsusaku-v111-performance">
+<link rel="stylesheet" href="./kotsu-tasks.css?v=kotsusaku-v109-performance">
 </head>
 <body>
 <canvas id="fw-canvas"></canvas>
@@ -211,9 +211,9 @@
 <div id="update-banner" style="display:none;position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,.72);align-items:center;justify-content:center;padding:20px;">
 <div style="background:#0f1117;border:2px solid #f472b6;border-radius:20px;padding:28px 24px;max-width:380px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(244,114,182,.35);">
 <div style="font-size:2.2rem;line-height:1;margin-bottom:10px;">📋</div>
-<div id="update-title-text" style="font-size:1.05rem;font-weight:800;color:#fde8f7;margin-bottom:4px;">更新のお知らせを整理しました</div>
-<div id="update-version-text" style="font-size:.82rem;font-weight:700;color:#fde8f7;margin-bottom:10px;">最新の更新だけ分かるようにしました。</div>
-<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">✅ 更新ポップアップの連続表示を抑制<br>📋 コツ習慣まわりの表示を調整</div>
+<div id="update-title-text" style="font-size:1.05rem;font-weight:800;color:#fde8f7;margin-bottom:4px;">v109 軽量化ゴリっと完了</div>
+<div id="update-version-text" style="font-size:.82rem;font-weight:700;color:#fde8f7;margin-bottom:10px;">画面の集計と描画を整理して、コツコツの足取りをサクサク寄りにしました。</div>
+<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">✅ 統計キャッシュを安定化<br>✅ チェック操作・ストップウォッチ中の描画を軽量化<br>✅ 週・月・ヒートマップ表示をサクサク化<br>🦍 余計な計算をそっと握力で圧縮したっぺ</div>
 <div id="update-data-note" style="font-size:.66rem;color:#fca5a5;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.22);border-radius:8px;padding:7px 10px;margin-bottom:12px;line-height:1.65;text-align:left;">※キャッシュ・サイトデータを削除すると、端末内の記録が消える場合があります。</div>
 <button id="update-reload-btn" style="display:block;width:100%;background:#f472b6;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:800;cursor:pointer;margin-bottom:12px;letter-spacing:.03em;">
 ✅ 今すぐ更新する
@@ -1222,7 +1222,7 @@
   setTimeout(window.__kotsusakuEnsureForecast,900);
   setTimeout(window.__kotsusakuEnsureForecast,2000);
 })();
-</script><script src="./kotsu-tasks.js?v=kotsusaku-v111-performance"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script><script>
+</script><script src="./kotsu-tasks.js?v=kotsusaku-v109-performance"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script><script>
 
 const $=id=>document.getElementById(id);
 
@@ -1270,7 +1270,7 @@ function trackEvent(name, params) {
   if (!analytics || !name) return;
   try {
     analytics.logEvent(name, Object.assign({
-      app_version: 'kotsusaku-v109-summary-kotsu-analytics'
+      app_version: 'kotsusaku-v109-performance'
     }, params || {}));
   } catch(e) {
     console.warn('Analytics送信エラー:', e);
@@ -1610,7 +1610,7 @@ function _memoStat(key, fn) {
     const now = new Date().toISOString();
     const base = {
       userId: getAnonymousId(),
-      appVersion: 'kotsusaku-v109-summary-kotsu-analytics',
+      appVersion: 'kotsusaku-v109-performance',
       lastAccess: now,
       firstAccess: getFirstAccess(),
       os: device.os,
@@ -6946,16 +6946,16 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v111-performance'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v109-performance'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
   var _latestVersionLabel = null;
   var UPDATE_PROMPT_SEEN_KEY = '_kotsusakuUpdatePromptSeenVersion';
   var UPDATE_PROMPT_APPLIED_KEY = '_kotsusakuUpdatePromptAppliedVersion';
   var UPDATE_COPY = {
-    title: 'コツ習慣集計の安定化',
-    body: 'みんなの数字を安全に集計できるよう整えたゴリ。',
-    notes: '✅ 全体集計の二重加算を防止<br>✅ コツ習慣の個別データを送信<br>✅ ダッシュボード集計の土台を整理'
+    title: 'v109 軽量化ゴリっと完了',
+    body: '画面の集計と描画を整理して、コツコツの足取りをサクサク寄りにしました。データはそのまま、裏側だけ筋トレ済みゴリ。',
+    notes: '✅ 統計キャッシュを安定化<br>✅ チェック操作・ストップウォッチ中の描画を軽量化<br>✅ 週・月・ヒートマップ表示をサクサク化<br>🦍 余計な計算をそっと握力で圧縮したっぺ'
   };
 
   function formatVersionBadge(ver) {
