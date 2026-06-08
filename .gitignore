@@ -1,0 +1,6 @@
+# 配布用に生成するZipファイル（リポジトリには含めない）
+*.zip
+
+# 動作確認用に一時導入する依存ライブラリ（jsdom など）
+node_modules/
+package-lock.json
