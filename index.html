@@ -6982,14 +6982,14 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
   var UPDATE_PROMPT_SEEN_KEY = '_kotsusakuUpdatePromptSeenVersion';
   var UPDATE_PROMPT_APPLIED_KEY = '_kotsusakuUpdatePromptAppliedVersion';
   var UPDATE_COPY = {
-    title: 'v109 軽量化ゴリっと完了',
-    body: '画面の集計と描画を整理して、コツコツの足取りをサクサク寄りにしました。データはそのまま、裏側だけ筋トレ済みゴリ。',
-    notes: '✅ 統計キャッシュを安定化<br>✅ チェック操作・ストップウォッチ中の描画を軽量化<br>✅ 週・月・ヒートマップ表示をサクサク化<br>🦍 余計な計算をそっと握力で圧縮したっぺ'
+    title: 'v110 逃げた記録、ひっ捕らえたっぺ！🦍',
+    body: '勝手に消えてた継続日数と学習記録を、ガッチリ握って離さないようにしたっぺ。',
+    notes: '✅ 消えてた継続日数・学習データを連れ戻した（もう逃がさん）<br>✅ 画面を2つ3つ開いても、記録同士がケンカしないよう仲裁したっぺ<br>✅ アプリに戻った瞬間の「あれ、消えてる…？」をブロック<br>✅「みんなの軌跡」の日付のズレ（朝の寝ぼけ）もシャキッと矯正<br>🦍 握力おかわり済み。きみの記録、もう手のひらの中だっぺ'
   };
 
   function formatVersionBadge(ver) {
     var match = String(ver || CURRENT_VERSION).match(/v(\d+)/i);
-    return match ? 'v' + match[1] : 'v109';
+    return match ? 'v' + match[1] : 'v110';
   }
 
   // ver-badge と CURRENT_VERSION を version.json の値で初期化
