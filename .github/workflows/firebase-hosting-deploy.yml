@@ -2,7 +2,9 @@
 # 自動で Firebase Hosting（本番アプリ）へ反映（デプロイ）する設定です。
 # これにより、ターミナルでの手動デプロイは不要になります。
 #
-# 動かすために必要な準備（1度だけ）:
+# デプロイが一時的な通信エラーで失敗しても、自動で最大3回までやり直します。
+#
+# 動かすために必要な準備（1度だけ・登録済み）:
 #   GitHub リポジトリの Settings → Secrets and variables → Actions に
 #   FIREBASE_SERVICE_ACCOUNT という名前で、Firebase のサービスアカウント鍵(JSON)を登録すること。
 
@@ -21,10 +23,20 @@ jobs:
       - name: コードを取得
         uses: actions/checkout@v4
 
-      - name: Firebase Hosting へデプロイ（本番=liveチャンネル）
-        uses: FirebaseExtended/action-hosting-deploy@v0
+      - name: Node.js を準備
+        uses: actions/setup-node@v4
         with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          channelId: live
-          projectId: kotsusaku-app
+          node-version: 20
+
+      - name: Firebase Hosting へデプロイ（失敗時は自動で最大3回リトライ）
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 3
+          retry_wait_seconds: 20
+          command: |
+            printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/firebase-sa.json"
+            export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-sa.json"
+            npx firebase-tools@latest deploy --only hosting --project kotsusaku-app --non-interactive
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
