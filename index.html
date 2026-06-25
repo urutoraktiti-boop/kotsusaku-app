@@ -987,6 +987,11 @@
     function readData(){try{return JSON.parse(localStorage.getItem('study-data')||'{}')||{};}catch(e){return{};}}
     function readCheckEmoji(){try{var c=JSON.parse(localStorage.getItem('study-cust')||'{}')||{};return c.checkEmoji||'🌸';}catch(e){return'🌸';}}
     function writeData(data){localStorage.setItem('study-data',JSON.stringify(data));}
+    // 削除ログ（study-deletes）も本体と同じ形式で扱う。チェックは時刻(ms)で保存し、
+    // 解除時は削除時刻を記録する。これをしないとクラウド同期(マージ)時に古い削除ログへ負けて
+    // チェックが消える不具合になる。
+    function readDels(){try{return JSON.parse(localStorage.getItem('study-deletes')||'{}')||{};}catch(e){return{};}}
+    function writeDels(d){localStorage.setItem('study-deletes',JSON.stringify(d));}
     function checked(data,ds,h,m){return !!(data[ds]&&data[ds][h+':'+m]);}
     function addGuideRow(){var guide=document.createElement('tr');guide.className='min-guide';var lbl=document.createElement('td');lbl.textContent='';guide.appendChild(lbl);var empty=document.createElement('td');guide.appendChild(empty);MINS.forEach(function(m){var td=document.createElement('td');td.textContent=m+'分';guide.appendChild(td);});tb.appendChild(guide);}
     var ds=studyDate(),data=readData();
@@ -998,11 +1003,16 @@
       var all=document.createElement('td');all.className='hour-btn-cell';
       var hb=document.createElement('button');hb.className='hour-btn';hb.textContent=checkEmoji;hb.type='button';
       hb.onclick=function(){
-        data=readData();if(!data[ds])data[ds]={};
+        data=readData();var dels=readDels();var now=Date.now();
+        if(!data[ds])data[ds]={};
         var allOn=MINS.every(function(m){return checked(data,ds,h,m);});
-        MINS.forEach(function(m){if(allOn)delete data[ds][h+':'+m];else data[ds][h+':'+m]=true;});
+        MINS.forEach(function(m){
+          var key=h+':'+m;
+          if(allOn){delete data[ds][key];if(!dels[ds])dels[ds]={};dels[ds][key]=now;}
+          else{data[ds][key]=now;if(dels[ds])delete dels[ds][key];}
+        });
         if(Object.keys(data[ds]).length===0)delete data[ds];
-        writeData(data);window.__kotsusakuEnsureGridReset();
+        writeData(data);writeDels(dels);window.__kotsusakuEnsureGridReset();
       };
       all.appendChild(hb);tr.appendChild(all);
       MINS.forEach(function(m,i){
@@ -1010,10 +1020,13 @@
         var div=document.createElement('div');div.className='block'+(i===0?' first':'')+(i===MINS.length-1?' last':'')+(checked(data,ds,h,m)?' checked':'');
         div.dataset.h=h;div.dataset.m=m;
         div.onclick=function(){
-          data=readData();if(!data[ds])data[ds]={};
-          var key=h+':'+m;if(data[ds][key])delete data[ds][key];else data[ds][key]=true;
+          data=readData();var dels=readDels();var now=Date.now();
+          if(!data[ds])data[ds]={};
+          var key=h+':'+m;
+          if(data[ds][key]){delete data[ds][key];if(!dels[ds])dels[ds]={};dels[ds][key]=now;}
+          else{data[ds][key]=now;if(dels[ds])delete dels[ds][key];}
           if(Object.keys(data[ds]).length===0)delete data[ds];
-          writeData(data);div.classList.toggle('checked');
+          writeData(data);writeDels(dels);div.classList.toggle('checked');
         };
         td.appendChild(div);tr.appendChild(td);
       });
@@ -1343,11 +1356,16 @@ function _memoStat(key, fn) {
     return aid;
   }
 
-  // --- 今日の日付文字列（アプリ基準：4時区切り）---
+  // --- ローカル日付を YYYY-MM-DD 形式で返す（toISOStringはUTC基準でズレるため使わない）---
+  function _localDateStr(dt) {
+    const p = n => String(n).padStart(2, '0');
+    return dt.getFullYear() + '-' + p(dt.getMonth() + 1) + '-' + p(dt.getDate());
+  }
+  // --- 今日の日付文字列（アプリ基準：4時区切り・ローカル日付）---
   function getAppDate() {
     const now = new Date();
     if (now.getHours() < 4) now.setDate(now.getDate() - 1);
-    return now.toISOString().slice(0, 10);
+    return _localDateStr(now);
   }
 
   // --- 今日の学習時間（分）---
@@ -1395,7 +1413,7 @@ function _memoStat(key, fn) {
       const now = new Date();
       if (now.getHours() < 4) now.setDate(now.getDate() - 1);
       let cur = new Date(now);
-      const toDs = dt => dt.toISOString().slice(0, 10);
+      const toDs = dt => _localDateStr(dt);
       const dayMin = ds => {
         if (!d[ds]) return 0;
         return Object.values(d[ds]).filter(Boolean).length * 10;
@@ -1498,7 +1516,7 @@ function _memoStat(key, fn) {
   function getFirstAccess() {
     let fa = localStorage.getItem('kotsusaku-first-access');
     if (!fa) {
-      fa = new Date().toISOString().slice(0, 10);
+      fa = _localDateStr(new Date());
       localStorage.setItem('kotsusaku-first-access', fa);
     }
     return fa;
@@ -1536,7 +1554,7 @@ function _memoStat(key, fn) {
       const todayDate = new Date(today + 'T00:00:00');
       const weekStartDate = new Date(todayDate);
       weekStartDate.setDate(todayDate.getDate() - ((todayDate.getDay() + 6) % 7));
-      const weekStart = weekStartDate.toISOString().slice(0, 10);
+      const weekStart = _localDateStr(weekStartDate);
       const month = today.slice(0, 7);
       const categoryCounts = {};
       let lastTaskAt = null;
@@ -2143,6 +2161,9 @@ async function syncFromCloudIfNeeded() {
     const d = doc.data();
     const cloudData    = JSON.parse(d.studyData    || '{}');
     const cloudDeletes = JSON.parse(d.studyDeletes || '{}');
+    // 別タブ/別画面の保存を取りこぼさないよう、端末内の最新を読み直してからマージ
+    try { data = JSON.parse(LS.get('study-data','{}')) || {}; } catch(_) {}
+    try { studyDeletes = JSON.parse(LS.get('study-deletes','{}')) || {}; } catch(_) {}
     const merged = mergeStudyData(data, cloudData, studyDeletes, cloudDeletes);
     data = merged.data;
     studyDeletes = merged.deletes;
@@ -2170,6 +2191,10 @@ function mergeKotsuTasksFromCloud(raw) {
 // 同じ処理を2か所に書いていたのを1つにまとめた。
 async function _syncMergeAndWrite() {
   const ref = db.collection('users').doc(getSyncCode());
+  // 別のタブ/アプリ画面が保存している場合があるため、メモリ上の古い値ではなく
+  // 端末内(localStorage)の最新を読み直してからマージする（古い記憶での上書きを防ぐ）。
+  try { data = JSON.parse(LS.get('study-data','{}')) || {}; } catch(_) {}
+  try { studyDeletes = JSON.parse(LS.get('study-deletes','{}')) || {}; } catch(_) {}
   // 保存前にクラウドを読んでマージ
   const snap = await ref.get();
   if (snap.exists) {
@@ -3107,7 +3132,7 @@ function checkBadges(){
   BADGE_DEF.forEach(b=>{
     const key=currentBadgeKey(b.id);
     if(!earnedBadges[key]&&b.check()){
-      earnedBadges[key]=new Date().toISOString().slice(0,10);
+      earnedBadges[key]=toDateStr(new Date());
       saveBadges();
       const disp=_getBadgeDispForStory(b,CUST.storyId);
       showBadgePopup(disp);
@@ -3119,7 +3144,7 @@ function checkBadges(){
     CUST.customBadges.forEach(cb=>{
       if(!earnedBadges[cb.id]&&cb.trigger!=='manual'){
         const th=parseFloat(cb.trigger)||0;
-        if(th>0&&_tMin>=th*60){earnedBadges[cb.id]=new Date().toISOString().slice(0,10);saveBadges();showBadgePopup({icon:cb.icon,name:cb.name,desc:cb.desc||''});newBadge=true;}
+        if(th>0&&_tMin>=th*60){earnedBadges[cb.id]=toDateStr(new Date());saveBadges();showBadgePopup({icon:cb.icon,name:cb.name,desc:cb.desc||''});newBadge=true;}
       }
     });
   }
@@ -3242,7 +3267,7 @@ function renderBadgeGrid(){
   }
 }
 function manualUnlockBadge(id){
-  earnedBadges[id]=new Date().toISOString().slice(0,10);
+  earnedBadges[id]=toDateStr(new Date());
   saveBadges();updateBadgeCount();renderBadgeGrid();
   const cb=CUST.customBadges&&CUST.customBadges.find(b=>b.id===id);
   if(cb)showBadgePopup({icon:cb.icon,name:cb.name,desc:cb.desc||''});
@@ -7836,6 +7861,20 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
+// 別のタブ/アプリ画面が保存したら、こちらもメモリを最新へ読み直す。
+// （複数画面を開いていると、古い記憶を持った画面が保存し直して新しいチェックを
+//   上書き＝消してしまうため、storageイベントで常に同期しておく）
+window.addEventListener('storage', (e) => {
+  if (e.key !== 'study-data' && e.key !== 'study-deletes' && e.key !== null) return;
+  try { data = JSON.parse(localStorage.getItem('study-data') || '{}') || {}; } catch(_) {}
+  try { studyDeletes = JSON.parse(localStorage.getItem('study-deletes') || '{}') || {}; } catch(_) {}
+  _invalidateStudyStats();
+  if (currentView === 'daily') { if(typeof refreshGrid==='function')refreshGrid(); if(typeof updateStats==='function')updateStats(); }
+  else if (currentView === 'weekly') { if(typeof renderWeekly==='function')renderWeekly(); }
+  else if (currentView === 'monthly') { if(typeof renderMonthly==='function')renderMonthly(); }
+  if(typeof safeRenderAllTimeCard==='function')safeRenderAllTimeCard();
+});
+
 
 // ══════════════════════════════════════════════
 // ITACHACHA House Crazy10 イベント制御
@@ -8221,7 +8260,7 @@ function _checkAsajukuBadges(){
   ];
   defs.forEach(b=>{
     if(!earnedBadges['asa_'+b.id.replace('asa_','')]&&b.check()){
-      earnedBadges[b.id]=new Date().toISOString().slice(0,10);
+      earnedBadges[b.id]=toDateStr(new Date());
       saveBadges();showBadgePopup({icon:b.icon,name:b.name,desc:b.desc});
     }
   });
