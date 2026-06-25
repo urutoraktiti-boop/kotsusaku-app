@@ -238,6 +238,60 @@
 </div>
 </div>
 </div>
+<!-- お知らせモーダル：文章は notice.json（唯一の出どころ）から実行時に差し込む。ここは空の入れ物。 -->
+<div id="notice-overlay" style="display:none;position:fixed;inset:0;z-index:20050;background:rgba(0,0,0,.72);align-items:center;justify-content:center;padding:20px;">
+<div style="background:#0f1117;border:2px solid #f472b6;border-radius:20px;padding:26px 22px;max-width:380px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(244,114,182,.35);">
+<div style="font-size:2rem;line-height:1;margin-bottom:10px;">📣</div>
+<div id="notice-title" style="font-size:1.05rem;font-weight:800;color:#fde8f7;margin-bottom:6px;"></div>
+<div id="notice-body" style="font-size:.82rem;font-weight:700;color:#fde8f7;margin-bottom:12px;"></div>
+<ul id="notice-notes" style="list-style:none;margin:0 0 16px;padding:10px 12px;font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;text-align:left;line-height:1.9;"></ul>
+<button id="notice-close-btn" style="display:block;width:100%;background:#f472b6;color:#fff;border:none;border-radius:12px;padding:13px;font-size:.95rem;font-weight:800;cursor:pointer;letter-spacing:.03em;">OK！読んだっぺ</button>
+</div>
+</div>
+<script>
+// お知らせ機能：notice.json を毎回ネットから取得して表示する。
+// 文章の出どころは notice.json ただ1か所（重複なし）。一度OKしたidは再表示しない。
+(function(){
+  var NOTICE_SEEN_KEY = 'kotsusaku-notice-seen-id';
+  function renderNotice(n){
+    if(!n || !n.id) return;
+    try { if(localStorage.getItem(NOTICE_SEEN_KEY) === String(n.id)) return; } catch(e){}
+    var ov = document.getElementById('notice-overlay');
+    if(!ov) return;
+    var t = document.getElementById('notice-title');
+    if(t) t.textContent = n.title || 'お知らせ';
+    var b = document.getElementById('notice-body');
+    if(b) b.textContent = n.body || '';
+    var list = document.getElementById('notice-notes');
+    if(list){
+      list.innerHTML = '';
+      var notes = Array.isArray(n.notes) ? n.notes : [];
+      notes.forEach(function(line){
+        var li = document.createElement('li');
+        li.style.marginBottom = '4px';
+        li.textContent = line;
+        list.appendChild(li);
+      });
+      list.style.display = notes.length ? 'block' : 'none';
+    }
+    ov.style.display = 'flex';
+    function dismiss(){
+      ov.style.display = 'none';
+      try { localStorage.setItem(NOTICE_SEEN_KEY, String(n.id)); } catch(e){}
+    }
+    var btn = document.getElementById('notice-close-btn');
+    if(btn) btn.onclick = dismiss;
+    ov.onclick = function(e){ if(e.target === ov) dismiss(); };
+  }
+  function checkNotice(){
+    fetch('./notice.json?_=' + Date.now(), { cache: 'no-store' })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(n){ if(n) renderNotice(n); })
+      .catch(function(){});
+  }
+  setTimeout(checkNotice, 1500);
+})();
+</script>
 <div id="badge-overlay" class="badge-overlay" onclick="if(event.target===this)closeBadgePanel()">
 <div class="badge-panel">
 <div class="badge-panel-header">
