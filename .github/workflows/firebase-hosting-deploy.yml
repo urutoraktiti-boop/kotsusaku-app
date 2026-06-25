@@ -1,0 +1,30 @@
+# GitHub の main ブランチに変更がマージされたら、
+# 自動で Firebase Hosting（本番アプリ）へ反映（デプロイ）する設定です。
+# これにより、ターミナルでの手動デプロイは不要になります。
+#
+# 動かすために必要な準備（1度だけ）:
+#   GitHub リポジトリの Settings → Secrets and variables → Actions に
+#   FIREBASE_SERVICE_ACCOUNT という名前で、Firebase のサービスアカウント鍵(JSON)を登録すること。
+
+name: Firebase Hosting にデプロイ
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # 手動でも実行できるようにする（Actions画面の「Run workflow」ボタン）
+
+jobs:
+  deploy_hosting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: コードを取得
+        uses: actions/checkout@v4
+
+      - name: Firebase Hosting へデプロイ（本番=liveチャンネル）
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          channelId: live
+          projectId: kotsusaku-app
