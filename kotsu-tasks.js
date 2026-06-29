@@ -1097,6 +1097,7 @@
       if (action === 'delete-template') deleteTemplate(actionEl.dataset.id);
       if (action === 'priority') setPriority(Number(actionEl.dataset.priority));
       if (action === 'open-story-settings') openStorySettings();
+      if (action === 'open-spirit-codex') setPage('equip');
       if (action === 'spirit-replay') {
         const sp = spiritById(actionEl.dataset.id);
         if (sp) playSpiritTheater([sp], { record: false });
@@ -1271,6 +1272,10 @@
   }
 
   function renderStoryEvolutionCompact(story, snapshot) {
+    // 100コツ到達後は、ストーリー進化帯を「スピリット・コレクション」に差し替える
+    if (snapshot.count >= 100) {
+      return renderSpiritCollectionStrip();
+    }
     const stage = snapshot.stage;
     const nextText = snapshot.next
       ? `次の進化まであと ${snapshot.nextRemaining} コツ`
@@ -1305,7 +1310,34 @@
           </div>
         </div>
       </div>
-      ${snapshot.count >= 100 ? '<div class="ks-task-evolution-complete">100コツ到達。ここまで積み上げたこと自体が、ちゃんとあなたの力です。第二部「スピリット編」は装備タブへ。</div>' : ''}
+    `;
+  }
+
+  // 100コツ到達後の進化帯。集めたスピリット8体を全幅で一覧表示する。
+  // 帯全体がタップ可能で、装備タブのスピリット名鑑へ移動する。
+  function renderSpiritCollectionStrip() {
+    const store = readSpiritStore();
+    const unlocked = store.unlocked || {};
+    const total = KOTSU_SPIRITS.length;
+    const gotCount = KOTSU_SPIRITS.filter((sp) => unlocked[sp.id]).length;
+    const isComplete = gotCount >= total;
+    const chips = KOTSU_SPIRITS.map((sp) => {
+      const got = !!unlocked[sp.id];
+      // 未解放はプレビューに合わせて実画像をグレー表示（CSS側で .is-locked を処理）
+      return `
+        <div class="ks-task-spirit-chip ${got ? 'is-open' : 'is-locked'}">
+          <img src="${escapeHtml(sp.image)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+          <div class="ks-task-spirit-chip-fallback">${got ? escapeHtml(sp.icon) : ''}</div>
+        </div>`;
+    }).join('');
+    return `
+      <div class="ks-task-spirit-collection" role="button" tabindex="0" data-ks-action="open-spirit-codex">
+        <div class="ks-task-spirit-collection-head">
+          <span class="ks-task-spirit-collection-title">スピリット <span class="ks-task-spirit-collection-count ${isComplete ? 'is-complete' : ''}">${gotCount} / ${total} 体${isComplete ? ' ✓' : ''}</span></span>
+        </div>
+        <div class="ks-task-spirit-collection-grid">${chips}</div>
+      </div>
+      <div class="ks-task-evolution-complete">100コツ到達。コツを積むほどスピリットが集まります。詳しくは装備タブの名鑑へ。</div>
     `;
   }
 
