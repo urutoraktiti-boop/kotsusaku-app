@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スピリット・コレクション（案B 全幅版）プレビュー</title>
+<style>
+  :root{
+    --bg:#0f1117; --surface:#1a1d27; --surface2:#22263a;
+    --accent:#4f8ef7; --checked:#3ecf8e; --text:#e8eaf6;
+    --text-muted:#6b7280; --border:#2d3148; --pink:#f472b6; --gold:#facc15;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+    padding:24px 12px 40px;
+  }
+  .page-head{max-width:430px;margin:0 auto 22px;}
+  .page-head h1{font-size:1.05rem;margin:0 0 8px;}
+  .page-head p{font-size:.72rem;line-height:1.7;color:#aeb4cc;margin:0 0 4px;}
+  .page-head .hint{color:var(--accent);font-weight:800;}
+
+  .phone{
+    max-width:430px;margin:0 auto 30px;background:var(--surface);
+    border:1px solid var(--border);border-radius:18px;padding:14px 13px 18px;
+    box-shadow:0 10px 30px rgba(0,0,0,.4);
+  }
+  .case-label{display:flex;align-items:center;gap:8px;margin:0 0 4px;}
+  .case-label .tag{background:var(--accent);color:#fff;font-size:.62rem;font-weight:900;padding:3px 9px;border-radius:999px;letter-spacing:.03em;}
+  .case-label .tag.grey{background:#555;}
+  .case-label h2{font-size:.86rem;margin:0;font-weight:900;}
+  .case-note{font-size:.66rem;color:#aeb4cc;line-height:1.6;margin:0 0 12px;}
+  .case-note b{color:#fff;}
+  .pros{font-size:.62rem;color:var(--checked);margin:8px 2px 0;line-height:1.5;}
+
+  /* ---- 共通骨格（参考の現状用） ---- */
+  .ks-task-evolution-row{display:grid;grid-template-columns:minmax(80px,.4fr) minmax(0,2.6fr);gap:6px;align-items:stretch;}
+  .ks-task-story-mini{min-width:0;border:1px solid var(--border);border-radius:10px;background:var(--surface2);padding:7px;display:flex;flex-direction:column;justify-content:center;gap:5px;}
+  .ks-task-evo-label{color:var(--text-muted);font-size:.5rem;font-weight:900;letter-spacing:.05em;white-space:nowrap;}
+  .ks-task-story-pill{min-height:30px;display:flex;align-items:center;gap:6px;border:1px solid rgba(79,142,247,.45);border-radius:9px;background:rgba(79,142,247,.14);color:var(--text);padding:0 6px;min-width:0;}
+  .ks-task-story-pill-icon{font-size:.95rem;line-height:1;flex-shrink:0;}
+  .ks-task-story-pill-name{min-width:0;font-size:.54rem;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ks-task-story-change{border:none;background:transparent;color:var(--accent);padding:0;font-size:.5rem;font-weight:900;white-space:nowrap;}
+
+  /* ====== スピリット・コレクション帯（全幅版） ====== */
+  .spirit-collection{
+    border:1px solid rgba(250,204,21,.42);border-radius:10px;
+    background:linear-gradient(135deg,rgba(250,204,21,.1),rgba(244,114,182,.08),var(--surface2));
+    padding:10px 12px;margin-bottom:8px;
+  }
+  .sc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;}
+  .sc-title{font-size:.78rem;font-weight:950;display:flex;align-items:baseline;gap:8px;}
+  .sc-count{font-size:.64rem;font-weight:900;color:var(--gold);}
+  .sc-go{font-size:.6rem;font-weight:900;color:var(--accent);white-space:nowrap;}
+  .sc-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;}
+  .sc-chip{
+    aspect-ratio:1;border-radius:10px;overflow:hidden;border:1px solid var(--border);
+    background:#fff;display:flex;align-items:center;justify-content:center;position:relative;
+  }
+  .sc-chip img{width:100%;height:100%;object-fit:cover;}
+  .sc-chip.locked{background:var(--surface);border-style:dashed;}
+  .sc-chip.locked img{opacity:.22;filter:grayscale(1);}
+  .sc-chip.locked::after{content:"？";position:absolute;color:var(--text-muted);font-size:.8rem;font-weight:950;}
+
+  .complete-banner{
+    border:1px solid rgba(62,207,142,.45);border-radius:10px;background:rgba(62,207,142,.1);
+    color:var(--checked);padding:8px 11px;margin-top:6px;font-size:.6rem;font-weight:900;line-height:1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>🐣✨ スピリット・コレクション（案B 全幅版）</h1>
+  <p>ご指定どおり、左の<b>「ストーリー」を削除</b>し、その分も含めて<span class="hint">帯の全幅をコレクションに</span>使う形にしました。横幅が広がったので<b>8体すべて</b>が折り返しなしで並びます。</p>
+</div>
+
+<!-- 参考：これまでの案B（左にストーリーあり） -->
+<div class="phone">
+  <div class="case-label"><span class="tag grey">前回</span><h2>左にストーリーがある形</h2></div>
+  <p class="case-note">左の青いストーリー枠が場所を取り、コレクションは右の狭いスペースだけ。サムネが小さく横スクロール前提だった。</p>
+  <div class="ks-task-evolution-row">
+    <div class="ks-task-story-mini">
+      <div class="ks-task-evo-label">ストーリー</div>
+      <button class="ks-task-story-pill"><span class="ks-task-story-pill-icon">🐣</span><span class="ks-task-story-pill-name">ニヤピヨ</span></button>
+      <button class="ks-task-story-change">変更</button>
+    </div>
+    <div class="spirit-collection" style="margin-bottom:0;padding:8px 9px;">
+      <div class="sc-head" style="margin-bottom:7px;"><div class="sc-title" style="font-size:.7rem;">スピリット <span class="sc-count" style="font-size:.58rem;">5/8体</span></div><div class="sc-go" style="font-size:.55rem;">名鑑へ ›</div></div>
+      <div style="display:flex;gap:5px;overflow:hidden;">
+        <div class="sc-chip" style="width:36px;height:36px;flex:0 0 auto;"><img src="assets/spirits/spirit_first_light.png" alt=""></div>
+        <div class="sc-chip" style="width:36px;height:36px;flex:0 0 auto;"><img src="assets/spirits/spirit_crash.png" alt=""></div>
+        <div class="sc-chip" style="width:36px;height:36px;flex:0 0 auto;"><img src="assets/spirits/spirit_rapid.png" alt=""></div>
+        <div class="sc-chip" style="width:36px;height:36px;flex:0 0 auto;"><img src="assets/spirits/spirit_horizon.png" alt=""></div>
+        <div class="sc-chip locked" style="width:36px;height:36px;flex:0 0 auto;"><img src="assets/spirits/spirit_surehand.png" alt=""></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 新：全幅版 -->
+<div class="phone">
+  <div class="case-label"><span class="tag">案B 全幅版</span><h2>これがご希望の形</h2></div>
+  <p class="case-note">ストーリー枠を消し、帯いっぱいに8体を表示。集めた体数（5/8体）が大きく見え、未解放（点線・？）が「あと何体」かも分かる。タップで名鑑へ。</p>
+  <div class="spirit-collection">
+    <div class="sc-head">
+      <div class="sc-title">スピリット <span class="sc-count">5 / 8 体</span></div>
+      <div class="sc-go">名鑑へ ›</div>
+    </div>
+    <div class="sc-grid">
+      <div class="sc-chip"><img src="assets/spirits/spirit_first_light.png" alt=""></div>
+      <div class="sc-chip"><img src="assets/spirits/spirit_crash.png" alt=""></div>
+      <div class="sc-chip"><img src="assets/spirits/spirit_rapid.png" alt=""></div>
+      <div class="sc-chip"><img src="assets/spirits/spirit_horizon.png" alt=""></div>
+      <div class="sc-chip"><img src="assets/spirits/spirit_everlasting.png" alt=""></div>
+      <div class="sc-chip locked"><img src="assets/spirits/spirit_surehand.png" alt=""></div>
+      <div class="sc-chip locked"><img src="assets/spirits/spirit_rising_core.png" alt=""></div>
+      <div class="sc-chip locked"><img src="assets/spirits/spirit_complete_soul.png" alt=""></div>
+    </div>
+  </div>
+  <div class="complete-banner">100コツ到達。コツを積むほどスピリットが集まります。詳しくは装備タブの名鑑へ。</div>
+  <div class="pros">◎ 8体が一望できる ・ 体数が主役 ・ 残りが見えて集めたくなる ・ サムネが大きく見やすい</div>
+</div>
+
+<!-- おまけ：全部集めた状態 -->
+<div class="phone">
+  <div class="case-label"><span class="tag" style="background:var(--checked);color:#0a2a1a;">参考</span><h2>8体コンプリート時</h2></div>
+  <p class="case-note">全部集まると全マスがカラーに。達成感が出ます（参考表示）。</p>
+  <div class="spirit-collection">
+    <div class="sc-head">
+      <div class="sc-title">スピリット <span class="sc-count" style="color:var(--checked);">8 / 8 体 ✓</span></div>
+      <div class="sc-go">名鑑へ ›</div>
+    </div>
+    <div class="sc-grid">
+      <div class="sc-chip"><img src="assets/spirits/spirit_first_light.png" alt=""></div>
+      <div class="sc-chip"><img src="assets/spirits/spirit_crash.png" alt=""></div>
+      <div class="sc-chip"><img src="assets/spirits/spirit_rapid.png" alt=""></div>
+      <div class="sc-chip"><img src="assets/spirits/spirit_horizon.png" alt=""></div>
+      <div class="sc-chip"><img src="assets/spirits/spirit_everlasting.png" alt=""></div>
+      <div class="sc-chip"><img src="assets/spirits/spirit_surehand.png" alt=""></div>
+      <div class="sc-chip"><img src="assets/spirits/spirit_rising_core.png" alt=""></div>
+      <div class="sc-chip"><img src="assets/spirits/spirit_complete_soul.png" alt=""></div>
+    </div>
+  </div>
+</div>
+
+<div class="page-head" style="margin-top:6px;">
+  <p>※ 体数・解放状況はすべて<b>サンプル</b>です。実際は各ユーザーの進行に合わせて変わります。</p>
+  <p>※ 左のストーリー変更ボタンは削除済み。100到達後のストーリー変更が必要なら、装備タブ側に入口を置く形にできます。</p>
+</div>
+
+</body>
+</html>
