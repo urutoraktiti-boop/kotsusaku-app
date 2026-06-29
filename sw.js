@@ -5,7 +5,7 @@
 //   2. index.html の CURRENT_VERSION（フォールバック値）
 //   3. version.json の version
 // ============================================================
-const CACHE_VERSION = 'kotsusaku-v110-datafix';
+const CACHE_VERSION = 'kotsusaku-v111-spirits';
 const CACHE_FILES = [
   './',
   './index.html',
@@ -22,6 +22,23 @@ const CACHE_FILES = [
   './assets/stories/mystery/story_mystery_080.png',
   './assets/stories/mystery/story_mystery_088.png',
   './assets/stories/mystery/story_mystery_100.png',
+  './assets/spirits/spirit_first_light.png',
+  './assets/spirits/spirit_crash.png',
+  './assets/spirits/spirit_rapid.png',
+  './assets/spirits/spirit_horizon.png',
+  './assets/spirits/spirit_everlasting.png',
+  './assets/spirits/spirit_surehand.png',
+  './assets/spirits/spirit_rising_core.png',
+  './assets/spirits/spirit_complete_soul.png',
+  './assets/spirits/spirit_locked.png',
+  './assets/spirits/spirit_unlock_banner.png',
+  './assets/spirits/spirit_egg_closed.png',
+  './assets/spirits/spirit_egg_crack_1.png',
+  './assets/spirits/spirit_egg_crack_2.png',
+  './assets/spirits/spirit_egg_open.png',
+  './assets/spirits/title_500.png',
+  './assets/spirits/title_1000.png',
+  './assets/spirits/title_2000.png',
   './icon.svg',
   './icon-192.png',
   './icon-512.png',

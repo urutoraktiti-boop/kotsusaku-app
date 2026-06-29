@@ -7029,21 +7029,21 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v110-datafix'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v111-spirits'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
   var _latestVersionLabel = null;
   var UPDATE_PROMPT_SEEN_KEY = '_kotsusakuUpdatePromptSeenVersion';
   var UPDATE_PROMPT_APPLIED_KEY = '_kotsusakuUpdatePromptAppliedVersion';
   var UPDATE_COPY = {
-    title: 'v110 逃げた記録、ひっ捕らえたっぺ！🦍',
-    body: '勝手に消えてた継続日数と学習記録を、ガッチリ握って離さないようにしたっぺ。',
-    notes: '✅ 消えてた継続日数・学習データを連れ戻した（もう逃がさん）<br>✅ 画面を2つ3つ開いても、記録同士がケンカしないよう仲裁したっぺ<br>✅ アプリに戻った瞬間の「あれ、消えてる…？」をブロック<br>✅「みんなの軌跡」の日付のズレ（朝の寝ぼけ）もシャキッと矯正<br>🦍 握力おかわり済み。きみの記録、もう手のひらの中だっぺ'
+    title: 'v111 タマゴ、割れる。🐣✨',
+    body: 'コツを100個積んだきみへ。タマピヨたちが殻をやぶって“スピリット”に目覚めたよ。第二部いこ〜！',
+    notes: '✅ 100コツでスピリット編がパカッと解放<br>✅ きみのがんばりが6つの能力（A〜E）になって見える化<br>✅ コツを積むほどスピリットがめざめる。ぜんぶAで完全覚醒！<br>✅ 覚醒Lv＆称号で、100のあともずーっと遊べる<br>🐣 「装備」タブの“スピリット名鑑”をのぞいてみてね'
   };
 
   function formatVersionBadge(ver) {
     var match = String(ver || CURRENT_VERSION).match(/v(\d+)/i);
-    return match ? 'v' + match[1] : 'v110';
+    return match ? 'v' + match[1] : 'v111';
   }
 
   // ver-badge と CURRENT_VERSION を version.json の値で初期化
