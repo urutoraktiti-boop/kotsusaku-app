@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スピリット表示案プレビュー（100コツ到達後の進化帯）</title>
+<style>
+  :root{
+    --bg:#0f1117; --surface:#1a1d27; --surface2:#22263a;
+    --accent:#4f8ef7; --checked:#3ecf8e; --text:#e8eaf6;
+    --text-muted:#6b7280; --border:#2d3148; --pink:#f472b6;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+    padding:24px 12px 60px;
+  }
+  .page-head{max-width:430px;margin:0 auto 22px;}
+  .page-head h1{font-size:1.05rem;margin:0 0 8px;}
+  .page-head p{font-size:.72rem;line-height:1.7;color:#aeb4cc;margin:0 0 4px;}
+  .page-head .hint{color:var(--accent);font-weight:800;}
+
+  .phone{
+    max-width:430px;margin:0 auto 34px;background:var(--surface);
+    border:1px solid var(--border);border-radius:18px;padding:14px 13px 18px;
+    box-shadow:0 10px 30px rgba(0,0,0,.4);
+  }
+  .case-label{
+    display:flex;align-items:center;gap:8px;margin:0 0 4px;
+  }
+  .case-label .tag{
+    background:var(--accent);color:#fff;font-size:.62rem;font-weight:900;
+    padding:3px 9px;border-radius:999px;letter-spacing:.03em;
+  }
+  .case-label h2{font-size:.86rem;margin:0;font-weight:900;}
+  .case-note{font-size:.66rem;color:#aeb4cc;line-height:1.6;margin:0 0 12px;}
+  .case-note b{color:#fff;}
+  .pros{font-size:.62rem;color:var(--checked);margin:8px 2px 0;line-height:1.5;}
+  .cons{font-size:.62rem;color:#f0a98a;margin:2px 2px 0;line-height:1.5;}
+
+  /* ---- 共通：現状の進化帯と同じ骨格 ---- */
+  .ks-task-evolution-row{
+    display:grid;grid-template-columns:minmax(80px,.4fr) minmax(0,2.6fr);
+    gap:6px;align-items:stretch;margin-bottom:8px;
+  }
+  .ks-task-story-mini{
+    min-width:0;border:1px solid var(--border);border-radius:10px;background:var(--surface2);
+    padding:7px;display:flex;flex-direction:column;justify-content:center;gap:5px;
+  }
+  .ks-task-evo-label{color:var(--text-muted);font-size:.5rem;font-weight:900;letter-spacing:.05em;white-space:nowrap;}
+  .ks-task-story-pill{
+    min-height:30px;display:flex;align-items:center;gap:6px;
+    border:1px solid rgba(79,142,247,.45);border-radius:9px;background:rgba(79,142,247,.14);
+    color:var(--text);padding:0 6px;min-width:0;cursor:pointer;
+  }
+  .ks-task-story-pill-icon{font-size:.95rem;line-height:1;flex-shrink:0;}
+  .ks-task-story-pill-name{min-width:0;font-size:.54rem;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ks-task-story-change{border:none;background:transparent;color:var(--accent);padding:0;font-size:.5rem;font-weight:900;white-space:nowrap;cursor:pointer;}
+
+  .ks-task-track{height:6px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin:5px 0;}
+  .ks-task-fill{height:100%;border-radius:999px;background:var(--pink);}
+
+  /* スピリット帯の枠（ピンク基調を流用しつつ覚醒は金色アクセント） */
+  .spirit-strip{
+    min-width:0;border:1px solid rgba(250,204,21,.4);border-radius:10px;
+    background:linear-gradient(135deg,rgba(250,204,21,.1),var(--surface2));
+    padding:8px 10px;
+  }
+
+  /* ====== 案A：覚醒Lvメーター（現状の骨格そのまま・絵だけスピリット） ====== */
+  .caseA .strip-grid{display:grid;grid-template-columns:46px minmax(0,1fr) 52px;gap:8px;align-items:center;}
+  .caseA .visual{
+    width:46px;aspect-ratio:91/132;border-radius:8px;overflow:hidden;
+    background:radial-gradient(circle at 50% 35%,rgba(250,204,21,.35),transparent 70%),#fff;
+    display:flex;align-items:center;justify-content:center;justify-self:center;
+    border:1px solid var(--border);
+  }
+  .caseA .visual img{width:100%;height:100%;object-fit:cover;}
+  .caseA .name{font-size:.74rem;font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .caseA .top{display:flex;align-items:baseline;gap:7px;}
+  .caseA .lvtag{flex-shrink:0;color:#facc15;font-size:.62rem;font-weight:950;white-space:nowrap;}
+  .caseA .msg{color:var(--text-muted);font-size:.55rem;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .caseA .right{min-width:0;border-left:1px solid var(--border);padding-left:8px;text-align:center;}
+  .caseA .right .num{color:#facc15;font-size:.95rem;font-weight:950;line-height:1;}
+  .caseA .right .lbl{margin-top:3px;color:var(--text-muted);font-size:.5rem;font-weight:900;line-height:1.35;}
+
+  /* ====== 案B：スピリット・コレクション横並び ====== */
+  .caseB .strip-inner{display:flex;flex-direction:column;gap:7px;}
+  .caseB .head{display:flex;align-items:center;justify-content:space-between;}
+  .caseB .head .ttl{font-size:.7rem;font-weight:950;}
+  .caseB .head .cnt{font-size:.6rem;font-weight:900;color:#facc15;}
+  .caseB .head .go{font-size:.55rem;font-weight:900;color:var(--accent);}
+  .caseB .row{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;}
+  .caseB .chip{
+    flex:0 0 auto;width:42px;height:42px;border-radius:10px;overflow:hidden;
+    border:1px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;
+  }
+  .caseB .chip img{width:100%;height:100%;object-fit:cover;}
+  .caseB .chip.locked{background:var(--surface);border-style:dashed;}
+  .caseB .chip.locked img{opacity:.25;filter:grayscale(1);}
+
+  /* ====== 案C：ヒーローカード（立ち絵を大きく・称号＋Lvバッジ） ====== */
+  .caseC .hero{
+    display:grid;grid-template-columns:78px minmax(0,1fr);gap:11px;align-items:center;
+  }
+  .caseC .hero-visual{
+    width:78px;aspect-ratio:91/132;border-radius:10px;overflow:hidden;position:relative;
+    background:radial-gradient(circle at 50% 35%,rgba(250,204,21,.4),transparent 70%),#fff;
+    border:1px solid var(--border);
+  }
+  .caseC .hero-visual img{width:100%;height:100%;object-fit:cover;}
+  .caseC .lvbadge{
+    position:absolute;top:4px;left:4px;background:#facc15;color:#1a1206;
+    font-size:.52rem;font-weight:950;padding:2px 6px;border-radius:999px;
+  }
+  .caseC .hero-main .name{font-size:.84rem;font-weight:950;}
+  .caseC .hero-main .title-badge{
+    display:inline-block;margin-top:4px;background:rgba(244,114,182,.16);
+    border:1px solid rgba(244,114,182,.4);color:var(--pink);
+    font-size:.56rem;font-weight:900;padding:2px 8px;border-radius:999px;
+  }
+  .caseC .hero-main .msg{font-size:.58rem;color:#aeb4cc;line-height:1.5;margin-top:6px;}
+  .caseC .nextline{font-size:.55rem;color:var(--text-muted);margin-top:5px;}
+
+  /* ====== 案D：切替カルーセル（1体ずつめくる） ====== */
+  .caseD .carousel{display:grid;grid-template-columns:26px 50px minmax(0,1fr) 26px;gap:7px;align-items:center;}
+  .caseD .arrow{
+    width:26px;height:26px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);
+    color:var(--text);font-size:.9rem;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:pointer;
+  }
+  .caseD .visual{
+    width:50px;aspect-ratio:91/132;border-radius:8px;overflow:hidden;border:1px solid var(--border);
+    background:radial-gradient(circle at 50% 35%,rgba(250,204,21,.35),transparent 70%),#fff;justify-self:center;
+  }
+  .caseD .visual img{width:100%;height:100%;object-fit:cover;}
+  .caseD .name{font-size:.74rem;font-weight:950;}
+  .caseD .serif{font-size:.56rem;color:#aeb4cc;line-height:1.5;margin-top:3px;}
+  .caseD .dots{display:flex;gap:4px;margin-top:6px;}
+  .caseD .dot{width:5px;height:5px;border-radius:999px;background:rgba(255,255,255,.2);}
+  .caseD .dot.on{background:#facc15;}
+
+  .complete-banner{
+    border:1px solid rgba(62,207,142,.45);border-radius:10px;background:rgba(62,207,142,.1);
+    color:var(--checked);padding:8px 11px;margin-top:6px;font-size:.6rem;font-weight:900;line-height:1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <h1>🐣✨ スピリット表示案プレビュー</h1>
+  <p>「今日のコツ」入力画面の上部にある<b>「ストーリー進化」の帯</b>を、100コツ到達後にスピリット表示へ切り替える案です。</p>
+  <p>下に同じスペースの<span class="hint">4案</span>を並べました。実際のスピリット画像・アプリと同じ配色で表示しています。気に入った案・組み合わせを教えてください。</p>
+</div>
+
+<!-- 参考：現状（100到達後の今） -->
+<div class="phone">
+  <div class="case-label"><span class="tag" style="background:#555">現状</span><h2>いまの表示（100到達後）</h2></div>
+  <p class="case-note">100コツ以降、ずっと同じ「完成の姿（ひよこ）」のまま。覚醒Lvは内部で上がっても、ここには出てこない。</p>
+  <div class="ks-task-evolution-row">
+    <div class="ks-task-story-mini">
+      <div class="ks-task-evo-label">ストーリー</div>
+      <button class="ks-task-story-pill"><span class="ks-task-story-pill-icon">🐣</span><span class="ks-task-story-pill-name">ニヤピヨ</span></button>
+      <button class="ks-task-story-change">変更</button>
+    </div>
+    <div class="ks-task-evolution-strip" style="border:1px solid rgba(244,114,182,.42);border-radius:10px;background:linear-gradient(135deg,rgba(244,114,182,.12),var(--surface2));padding:8px 10px;display:grid;grid-template-columns:46px minmax(0,1fr) 52px;gap:8px;align-items:center;">
+      <div style="width:46px;aspect-ratio:91/132;border-radius:8px;overflow:hidden;background:#fff;border:1px solid var(--border);justify-self:center;">
+        <img src="assets/spirits/spirit_first_light.png" style="width:100%;height:100%;object-fit:cover;" alt="">
+      </div>
+      <div style="min-width:0;">
+        <div class="ks-task-evo-label">ストーリー進化</div>
+        <div style="display:flex;align-items:baseline;gap:7px;"><div style="font-size:.74rem;font-weight:950;">完成の姿</div><div style="color:var(--pink);font-size:.62rem;font-weight:950;">100/100</div></div>
+        <div class="ks-task-track"><div class="ks-task-fill" style="width:100%"></div></div>
+        <div style="color:var(--text-muted);font-size:.55rem;">100コツに到達しました</div>
+      </div>
+      <div style="border-left:1px solid var(--border);padding-left:8px;text-align:center;"><div style="color:var(--checked);font-size:.95rem;font-weight:950;">OK</div><div style="color:var(--text-muted);font-size:.5rem;font-weight:900;">到達<br>コツ</div></div>
+    </div>
+  </div>
+  <div class="complete-banner">100コツ到達。第二部「スピリット編」は装備タブへ。</div>
+</div>
+
+<!-- 案A -->
+<div class="phone caseA">
+  <div class="case-label"><span class="tag">案A</span><h2>覚醒Lvメーター（最小変更）</h2></div>
+  <p class="case-note">いまの骨格はそのまま。<b>絵を代表スピリットに差し替え</b>、進捗バーは「次の覚醒Lvまで（コツ数を100で割った余り）」、右の数字を<b>覚醒Lv</b>に。違和感が少なく、100前と地続きで使える。</p>
+  <div class="ks-task-evolution-row">
+    <div class="ks-task-story-mini">
+      <div class="ks-task-evo-label">ストーリー</div>
+      <button class="ks-task-story-pill"><span class="ks-task-story-pill-icon">🐣</span><span class="ks-task-story-pill-name">ニヤピヨ</span></button>
+      <button class="ks-task-story-change">変更</button>
+    </div>
+    <div class="spirit-strip">
+      <div class="strip-grid">
+        <div class="visual"><img src="assets/spirits/spirit_complete_soul.png" alt=""></div>
+        <div>
+          <div class="ks-task-evo-label">スピリット</div>
+          <div class="top"><div class="name">カンペキ・タマシイ</div><div class="lvtag">Lv.3</div></div>
+          <div class="ks-task-track"><div class="ks-task-fill" style="width:48%;background:#facc15"></div></div>
+          <div class="msg">次の覚醒まであと 52 コツ</div>
+        </div>
+        <div class="right"><div class="num">Lv.3</div><div class="lbl">覚醒<br>レベル</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="pros">◎ 改修が軽い・現状とほぼ同じ操作感・毎日少しずつ伸びる実感が戻る</div>
+  <div class="cons">△ 「集めた8体」のコレクション感は出にくい（1体しか映らない）</div>
+</div>
+
+<!-- 案B -->
+<div class="phone caseB">
+  <div class="case-label"><span class="tag">案B</span><h2>スピリット・コレクション横並び</h2></div>
+  <p class="case-note">帯を<b>集めたスピリットのサムネ一覧</b>に。何体集まったか（例 5/8）が一目で分かり、未解放はグレーで「あと何体いる」が見える。タップで名鑑へ。</p>
+  <div class="ks-task-evolution-row">
+    <div class="ks-task-story-mini">
+      <div class="ks-task-evo-label">ストーリー</div>
+      <button class="ks-task-story-pill"><span class="ks-task-story-pill-icon">🐣</span><span class="ks-task-story-pill-name">ニヤピヨ</span></button>
+      <button class="ks-task-story-change">変更</button>
+    </div>
+    <div class="spirit-strip">
+      <div class="strip-inner">
+        <div class="head">
+          <span class="ttl">スピリット <span class="cnt">5 / 8 体</span></span>
+          <span class="go">名鑑へ ›</span>
+        </div>
+        <div class="row">
+          <div class="chip"><img src="assets/spirits/spirit_first_light.png" alt=""></div>
+          <div class="chip"><img src="assets/spirits/spirit_crash.png" alt=""></div>
+          <div class="chip"><img src="assets/spirits/spirit_rapid.png" alt=""></div>
+          <div class="chip"><img src="assets/spirits/spirit_horizon.png" alt=""></div>
+          <div class="chip"><img src="assets/spirits/spirit_everlasting.png" alt=""></div>
+          <div class="chip locked"><img src="assets/spirits/spirit_surehand.png" alt=""></div>
+          <div class="chip locked"><img src="assets/spirits/spirit_rising_core.png" alt=""></div>
+          <div class="chip locked"><img src="assets/spirits/spirit_complete_soul.png" alt=""></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pros">◎ 集める楽しさが最大・残りが見えるので継続動機になる・8体を全部見せられる</div>
+  <div class="cons">△ 進捗バー/覚醒Lvの「数字で伸びる実感」はこの帯からは消える（名鑑側に任せる）</div>
+</div>
+
+<!-- 案C -->
+<div class="phone caseC">
+  <div class="case-label"><span class="tag">案C</span><h2>ヒーローカード（立ち絵を主役に）</h2></div>
+  <p class="case-note">代表スピリットの立ち絵を<b>大きく</b>見せ、覚醒Lvバッジ＋いまの称号を添える特別感のある一枚。到達後の「ごほうび感」が一番強い。少し縦に場所を取る。</p>
+  <div class="spirit-strip" style="border-color:rgba(250,204,21,.45);">
+    <div class="hero">
+      <div class="hero-visual">
+        <span class="lvbadge">Lv.3</span>
+        <img src="assets/spirits/spirit_complete_soul.png" alt="">
+      </div>
+      <div class="hero-main">
+        <div class="name">カンペキ・タマシイ</div>
+        <span class="title-badge">👑 コツの匠</span>
+        <div class="msg">「すべてが、噛み合った。」</div>
+        <div class="nextline">次の覚醒まであと 52 コツ ・ 称号まであと 1000 コツ</div>
+      </div>
+    </div>
+  </div>
+  <div class="pros">◎ 達成感・特別感が最大・称号と覚醒Lvを同時に見せられる・立ち絵が映える</div>
+  <div class="cons">△ 高さが増えるぶん「今日のコツを積む」入力欄が少し下がる</div>
+</div>
+
+<!-- 案D -->
+<div class="phone caseD">
+  <div class="case-label"><span class="tag">案D</span><h2>切替カルーセル（1体ずつめくる）</h2></div>
+  <p class="case-note">コンパクトなまま、<b>‹ › で集めたスピリットを1体ずつめくれる</b>。それぞれのセリフも読める。場所は案Aと同じくらいで、コレクション感も少し出せる折衷案。</p>
+  <div class="ks-task-evolution-row">
+    <div class="ks-task-story-mini">
+      <div class="ks-task-evo-label">ストーリー</div>
+      <button class="ks-task-story-pill"><span class="ks-task-story-pill-icon">🐣</span><span class="ks-task-story-pill-name">ニヤピヨ</span></button>
+      <button class="ks-task-story-change">変更</button>
+    </div>
+    <div class="spirit-strip">
+      <div class="carousel">
+        <div class="arrow">‹</div>
+        <div class="visual"><img src="assets/spirits/spirit_crash.png" alt=""></div>
+        <div>
+          <div style="display:flex;align-items:baseline;gap:6px;"><div class="name">トッパ・ガリベン</div><div style="color:#facc15;font-size:.58rem;font-weight:900;">2 / 5体目</div></div>
+          <div class="serif">「壁は、超えるためにある。」</div>
+          <div class="dots"><span class="dot"></span><span class="dot on"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+        </div>
+        <div class="arrow">›</div>
+      </div>
+    </div>
+  </div>
+  <div class="pros">◎ コンパクトなまま全員見られる・セリフで愛着がわく・場所は案Aと同程度</div>
+  <div class="cons">△ めくる操作が要る（自分で動かさないと1体しか見えない）</div>
+</div>
+
+<div class="page-head" style="margin-top:6px;">
+  <p>※ 表示している覚醒Lv・称号・セリフ・集めた体数はすべて<b>サンプル</b>です。実際は各ユーザーの進行に合わせて変わります。</p>
+  <p>※ 画像は実装済みのスピリット立ち絵をそのまま使用しています。</p>
+</div>
+
+</body>
+</html>
