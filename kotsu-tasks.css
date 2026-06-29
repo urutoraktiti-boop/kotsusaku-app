@@ -2181,13 +2181,35 @@
 }
 
 .ks-spirit-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   border: 1px solid rgba(245, 200, 66, .55);
   border-radius: 99px;
   background: rgba(245, 200, 66, .12);
   color: #f5c842;
   font-size: .54rem;
   font-weight: 800;
-  padding: 3px 8px;
+  padding: 3px 9px 3px 4px;
+}
+
+.ks-spirit-title-badge {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ks-spirit-title-badge img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.ks-spirit-title-fallback {
+  display: none;
+  font-size: .8rem;
 }
 
 .ks-spirit-cards {

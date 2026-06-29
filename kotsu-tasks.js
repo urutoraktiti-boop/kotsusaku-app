@@ -192,9 +192,9 @@
 
   // 累計コツ数で付与される記念称号（仮名）
   const SPIRIT_TITLES = [
-    { min: 500, icon: '🎖️', name: 'コツの探究者' },
-    { min: 1000, icon: '🏅', name: 'コツの匠' },
-    { min: 2000, icon: '🏆', name: 'コツの伝説' }
+    { min: 500, icon: '🎖️', name: 'コツの探究者', image: 'assets/spirits/title_500.png' },
+    { min: 1000, icon: '🏅', name: 'コツの匠', image: 'assets/spirits/title_1000.png' },
+    { min: 2000, icon: '🏆', name: 'コツの伝説', image: 'assets/spirits/title_2000.png' }
   ];
 
   const CATEGORY_META = {
@@ -1480,7 +1480,7 @@
         ${edition ? `<img class="ks-spirit-banner" src="${escapeHtml(SPIRIT_BANNER_IMAGE)}" alt="スピリット編" onerror="this.style.display='none';">` : `<div class="ks-spirit-teaser">あと ${remaining} コツで第二部「スピリット編」が解放されます。</div>`}
         <div class="ks-spirit-abilities">${abilityRows}</div>
         <div class="ks-spirit-note">能力は現在の調子で変動します。一度解放したスピリット・称号は消えません。</div>
-        ${titleList.length ? `<div class="ks-spirit-titles">${titleList.map((t) => `<span class="ks-spirit-title">${escapeHtml(t.icon)} ${escapeHtml(t.name)}</span>`).join('')}</div>` : ''}
+        ${titleList.length ? `<div class="ks-spirit-titles">${titleList.map((t) => `<span class="ks-spirit-title"><span class="ks-spirit-title-badge"><img src="${escapeHtml(t.image)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='inline';"><span class="ks-spirit-title-fallback">${escapeHtml(t.icon)}</span></span>${escapeHtml(t.name)}</span>`).join('')}</div>` : ''}
         <div class="ks-spirit-cards">${cards}</div>
       </div>
     `;
