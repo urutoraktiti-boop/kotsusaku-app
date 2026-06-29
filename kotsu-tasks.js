@@ -183,6 +183,12 @@
 
   const SPIRIT_LOCKED_IMAGE = 'assets/spirits/spirit_locked.png';
   const SPIRIT_BANNER_IMAGE = 'assets/spirits/spirit_unlock_banner.png';
+  const SPIRIT_EGG_FRAMES = {
+    closed: 'assets/spirits/spirit_egg_closed.png',
+    crack1: 'assets/spirits/spirit_egg_crack_1.png',
+    crack2: 'assets/spirits/spirit_egg_crack_2.png',
+    open: 'assets/spirits/spirit_egg_open.png'
+  };
 
   // 累計コツ数で付与される記念称号（仮名）
   const SPIRIT_TITLES = [
@@ -836,12 +842,13 @@
 
   // 既存の100到達済みユーザー向け：初回だけ「スピリット編 解放」を案内（1回限り）
   function maybeShowSpiritIntro() {
-    if (readJson(STORE.spiritIntroSeen, false)) return;
     const result = syncSpirits();
     if (result.stats.totalDone < 100) return;
-    writeJson(STORE.spiritIntroSeen, true);
-    const count = Object.keys(result.store.unlocked || {}).length;
-    notify('🌌 第二部「スピリット編」解放！ ' + count + '体のスピリットが目覚めました（装備タブで確認）');
+    const store = result.store;
+    const pending = KOTSU_SPIRITS.filter((sp) => store.unlocked[sp.id] && !store.unlocked[sp.id].announcedAt);
+    if (!pending.length) return;
+    if (!readJson(STORE.spiritIntroSeen, false)) writeJson(STORE.spiritIntroSeen, true);
+    playSpiritTheater(pending, { record: true });
   }
 
   function calcTaskKP(task) {
@@ -991,9 +998,22 @@
           <div class="ks-task-float-kp" id="ks-task-float-kp">+10 KP</div>
         </div>
       </div>
+      <div class="ks-spirit-theater" id="ks-spirit-theater" aria-hidden="true">
+        <div class="ks-spirit-theater-flash" id="ks-spirit-theater-flash"></div>
+        <div class="ks-spirit-theater-sparks" id="ks-spirit-theater-sparks"></div>
+        <div class="ks-spirit-theater-stage">
+          <img class="ks-spirit-theater-egg" id="ks-spirit-theater-egg" src="" alt="" onerror="this.style.visibility='hidden';">
+          <div class="ks-spirit-theater-lineup" id="ks-spirit-theater-lineup"></div>
+          <div class="ks-spirit-theater-title" id="ks-spirit-theater-title"></div>
+          <div class="ks-spirit-theater-sub" id="ks-spirit-theater-sub"></div>
+        </div>
+        <button class="ks-spirit-theater-skip" type="button">スキップ ▶</button>
+      </div>
     `;
     document.body.appendChild(root);
     bindEvents(root);
+    const theater = $('ks-spirit-theater');
+    if (theater) theater.addEventListener('click', closeSpiritTheater);
     state.mounted = true;
     syncStoryProgress();
     updateButtonSummary();
@@ -1077,6 +1097,10 @@
       if (action === 'delete-template') deleteTemplate(actionEl.dataset.id);
       if (action === 'priority') setPriority(Number(actionEl.dataset.priority));
       if (action === 'open-story-settings') openStorySettings();
+      if (action === 'spirit-replay') {
+        const sp = spiritById(actionEl.dataset.id);
+        if (sp) playSpiritTheater([sp], { record: false });
+      }
     });
 
     root.addEventListener('keydown', function (event) {
@@ -1443,6 +1467,7 @@
             <div class="ks-spirit-name">${got ? escapeHtml(sp.name) : '？？？'}</div>
             <div class="ks-spirit-desc">${got ? escapeHtml(sp.desc) : '未解放'}</div>
             <div class="ks-spirit-meta">解放条件 ${escapeHtml(spiritUnlockLabel(sp))}${date ? ' / 解放日 ' + escapeHtml(date) : ''}</div>
+            ${got ? `<button class="ks-spirit-replay" type="button" data-ks-action="spirit-replay" data-id="${escapeHtml(sp.id)}">▶ もう一度見る</button>` : ''}
           </div>
         </div>`;
     }).join('');
@@ -1664,7 +1689,11 @@
       const unlockedStage = afterEvolution && afterEvolution.stage.count > beforeEvolutionStage ? afterEvolution : null;
       const afterSpiritIds = readSpiritStore().unlocked || {};
       const newSpirits = KOTSU_SPIRITS.filter((sp) => afterSpiritIds[sp.id] && beforeSpiritIds.indexOf(sp.id) < 0);
-      showFloat(task, unlockedStage, newSpirits);
+      if (newSpirits.length) {
+        playSpiritTheater(newSpirits, { record: true });
+      } else {
+        showFloat(task, unlockedStage);
+      }
     }, 650);
   }
 
@@ -2052,6 +2081,134 @@
     $('ks-task-float').classList.add('is-show');
     clearTimeout(state.floatTimer);
     state.floatTimer = setTimeout(() => $('ks-task-float').classList.remove('is-show'), 2600);
+  }
+
+  // --- 覚醒演出（タマゴ割れ覚醒シアター・3段階） ---
+  function prefersReducedMotion() {
+    try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+    catch (e) { return false; }
+  }
+
+  function vibrateSafe(pattern) {
+    try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {}
+  }
+
+  function playFanfare() {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      const ctx = new Ctx();
+      const notes = [[523, 0, 0.14], [659, 0.12, 0.14], [784, 0.24, 0.16], [1047, 0.4, 0.5]];
+      const play = () => notes.forEach(([freq, delay, dur]) => {
+        const osc = ctx.createOscillator();
+        const g = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.value = freq;
+        g.gain.setValueAtTime(0, ctx.currentTime + delay);
+        g.gain.linearRampToValueAtTime(0.18, ctx.currentTime + delay + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
+        osc.connect(g);
+        g.connect(ctx.destination);
+        osc.start(ctx.currentTime + delay);
+        osc.stop(ctx.currentTime + delay + dur + 0.05);
+      });
+      if (ctx.state === 'suspended') { ctx.resume().then(play); } else { play(); }
+    } catch (e) {}
+  }
+
+  // 種別: complete_soul=特別 > first_light=フル > その他=ミニ
+  function spiritTheaterKind(spirits) {
+    if (spirits.some((s) => s.id === 'complete_soul')) return 'special';
+    if (spirits.some((s) => s.id === 'first_light')) return 'full';
+    return 'mini';
+  }
+
+  function spiritById(id) {
+    return KOTSU_SPIRITS.find((s) => s.id === id) || null;
+  }
+
+  function markSpiritAnnounced(ids) {
+    const store = readSpiritStore();
+    let changed = false;
+    ids.forEach((id) => {
+      if (store.unlocked[id] && !store.unlocked[id].announcedAt) {
+        store.unlocked[id].announcedAt = new Date().toISOString();
+        changed = true;
+      }
+    });
+    if (changed) writeJson(STORE.spirits, store);
+  }
+
+  function closeSpiritTheater() {
+    const el = $('ks-spirit-theater');
+    if (!el) return;
+    (state.spiritTheaterTimers || []).forEach((t) => clearTimeout(t));
+    state.spiritTheaterTimers = [];
+    el.classList.remove('is-show', 'is-open', 'is-shake', 'is-mini', 'kind-full', 'kind-special', 'kind-mini');
+    el.setAttribute('aria-hidden', 'true');
+  }
+
+  // spirits: KOTSU_SPIRITS要素の配列。opts.kind省略時は自動。opts.record=false で announcedAt 記録しない（もう一度見る用）
+  function playSpiritTheater(spirits, opts) {
+    if (!state.mounted || !spirits || !spirits.length) return;
+    opts = opts || {};
+    const el = $('ks-spirit-theater');
+    if (!el) return;
+    const kind = opts.kind || spiritTheaterKind(spirits);
+    const record = opts.record !== false;
+    if (record) markSpiritAnnounced(spirits.map((s) => s.id));
+    closeSpiritTheater();
+    const reduced = prefersReducedMotion();
+    const egg = $('ks-spirit-theater-egg');
+    const lineup = $('ks-spirit-theater-lineup');
+    const titleEl = $('ks-spirit-theater-title');
+    const subEl = $('ks-spirit-theater-sub');
+    const timers = state.spiritTheaterTimers = [];
+    const after = (ms, fn) => timers.push(setTimeout(fn, ms));
+
+    lineup.innerHTML = spirits.map((sp) => `
+      <div class="ks-spirit-theater-card">
+        <div class="ks-spirit-theater-portrait">
+          <img src="${escapeHtml(sp.image)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+          <div class="ks-spirit-theater-fallback">${escapeHtml(sp.icon)}</div>
+        </div>
+        <div class="ks-spirit-theater-name">${escapeHtml(sp.name)}</div>
+        <div class="ks-spirit-theater-line">${escapeHtml(sp.desc)}</div>
+      </div>`).join('');
+
+    const headline = kind === 'special' ? '⭐ 完全覚醒！' : (kind === 'full' ? '🌌 スピリット覚醒！' : '✨ スピリット解放！');
+    titleEl.textContent = '';
+    subEl.textContent = spirits.length > 1 ? spirits.length + '体が目覚めた' : '';
+
+    el.setAttribute('aria-hidden', 'false');
+    el.classList.add('is-show', 'kind-' + kind);
+    if (kind === 'mini') el.classList.add('is-mini');
+    vibrateSafe(kind === 'mini' ? 30 : [0, 40, 60, 120]);
+
+    if (kind === 'mini') {
+      egg.style.display = 'none';
+      after(reduced ? 0 : 60, () => { el.classList.add('is-open'); titleEl.textContent = headline; });
+      return;
+    }
+
+    egg.style.display = '';
+    egg.style.visibility = 'visible';
+    egg.src = SPIRIT_EGG_FRAMES.closed;
+    if (reduced) {
+      egg.src = SPIRIT_EGG_FRAMES.open;
+      after(150, () => { el.classList.add('is-open'); titleEl.textContent = headline; playFanfare(); });
+      return;
+    }
+    after(420, () => { egg.src = SPIRIT_EGG_FRAMES.crack1; });
+    after(820, () => { egg.src = SPIRIT_EGG_FRAMES.crack2; el.classList.add('is-shake'); });
+    after(1180, () => {
+      el.classList.remove('is-shake');
+      egg.src = SPIRIT_EGG_FRAMES.open;
+      el.classList.add('is-open');
+      titleEl.textContent = headline;
+      playFanfare();
+      vibrateSafe([0, 60, 40, 80]);
+    });
   }
 
   function categoryCounts() {
