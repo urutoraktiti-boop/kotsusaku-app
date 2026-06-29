@@ -17,7 +17,8 @@
       "**/*.command",
       "README.txt",
       "completion-effects-demo.html",
-      "mockup-minna-no-kiseki.html"
+      "mockup-minna-no-kiseki.html",
+      "mockup-spirit-evolution-row.html"
     ]
   }
 }
