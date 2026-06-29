@@ -171,15 +171,18 @@
 
   // 第1弾 8体（仮名・絵文字アイコン。image は画像完成後に設定）
   const KOTSU_SPIRITS = [
-    { id: 'first_light', name: 'ファースト・ライト', desc: '最初の到達の証', icon: '🌅', image: '', unlock: { type: 'reach100' } },
-    { id: 'crash', name: 'クラッシュ・コーデックス', desc: '解いて砕く', icon: '⚔️', image: '', unlock: { type: 'abilityB', ability: 'power' } },
-    { id: 'rapid', name: 'ラピッド・ストリーク', desc: '止まらない加速', icon: '💨', image: '', unlock: { type: 'abilityB', ability: 'speed' } },
-    { id: 'horizon', name: 'ワイド・ホライズン', desc: '広く手を伸ばす', icon: '🔭', image: '', unlock: { type: 'abilityB', ability: 'range' } },
-    { id: 'everlasting', name: 'エバーラスティング', desc: '途切れない意志', icon: '🔥', image: '', unlock: { type: 'abilityB', ability: 'stamina' } },
-    { id: 'surehand', name: 'シュア・ハンド', desc: '狙った所に確実に', icon: '🎯', image: '', unlock: { type: 'abilityB', ability: 'precision' } },
-    { id: 'rising_core', name: 'ライジング・コア', desc: '伸び続ける核', icon: '💎', image: '', unlock: { type: 'abilityB', ability: 'growth' } },
-    { id: 'complete_soul', name: 'コンプリート・ソウル', desc: 'すべてを積み上げた者', icon: '👑', image: '', unlock: { type: 'allA' } }
+    { id: 'first_light', name: 'ファースト・ライト', desc: '最初の到達の証', icon: '🌅', image: 'assets/spirits/spirit_first_light.png', unlock: { type: 'reach100' } },
+    { id: 'crash', name: 'クラッシュ・コーデックス', desc: '解いて砕く', icon: '⚔️', image: 'assets/spirits/spirit_crash.png', unlock: { type: 'abilityB', ability: 'power' } },
+    { id: 'rapid', name: 'ラピッド・ストリーク', desc: '止まらない加速', icon: '💨', image: 'assets/spirits/spirit_rapid.png', unlock: { type: 'abilityB', ability: 'speed' } },
+    { id: 'horizon', name: 'ワイド・ホライズン', desc: '広く手を伸ばす', icon: '🔭', image: 'assets/spirits/spirit_horizon.png', unlock: { type: 'abilityB', ability: 'range' } },
+    { id: 'everlasting', name: 'エバーラスティング', desc: '途切れない意志', icon: '🔥', image: 'assets/spirits/spirit_everlasting.png', unlock: { type: 'abilityB', ability: 'stamina' } },
+    { id: 'surehand', name: 'シュア・ハンド', desc: '狙った所に確実に', icon: '🎯', image: 'assets/spirits/spirit_surehand.png', unlock: { type: 'abilityB', ability: 'precision' } },
+    { id: 'rising_core', name: 'ライジング・コア', desc: '伸び続ける核', icon: '💎', image: 'assets/spirits/spirit_rising_core.png', unlock: { type: 'abilityB', ability: 'growth' } },
+    { id: 'complete_soul', name: 'コンプリート・ソウル', desc: 'すべてを積み上げた者', icon: '👑', image: 'assets/spirits/spirit_complete_soul.png', unlock: { type: 'allA' } }
   ];
+
+  const SPIRIT_LOCKED_IMAGE = 'assets/spirits/spirit_locked.png';
+  const SPIRIT_BANNER_IMAGE = 'assets/spirits/spirit_unlock_banner.png';
 
   // 累計コツ数で付与される記念称号（仮名）
   const SPIRIT_TITLES = [
@@ -1429,9 +1432,13 @@
     const cards = KOTSU_SPIRITS.map((sp) => {
       const got = unlocked[sp.id];
       const date = got && got.unlockedAt ? got.unlockedAt.slice(0, 10) : '';
+      const img = got ? sp.image : SPIRIT_LOCKED_IMAGE;
       return `
         <div class="ks-spirit-card ${got ? 'is-open' : 'is-locked'}">
-          <div class="ks-spirit-icon">${got ? escapeHtml(sp.icon) : '？'}</div>
+          <div class="ks-spirit-icon">
+            <img src="${escapeHtml(img)}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+            <div class="ks-spirit-icon-fallback">${got ? escapeHtml(sp.icon) : '？'}</div>
+          </div>
           <div class="ks-spirit-main">
             <div class="ks-spirit-name">${got ? escapeHtml(sp.name) : '？？？'}</div>
             <div class="ks-spirit-desc">${got ? escapeHtml(sp.desc) : '未解放'}</div>
@@ -1445,7 +1452,7 @@
           <span>🌌 スピリット名鑑</span>
           <span style="color:var(--accent)">${edition ? '覚醒Lv ' + store.level : 'あと' + remaining + 'コツ'}</span>
         </div>
-        ${edition ? '' : `<div class="ks-spirit-teaser">あと ${remaining} コツで第二部「スピリット編」が解放されます。</div>`}
+        ${edition ? `<img class="ks-spirit-banner" src="${escapeHtml(SPIRIT_BANNER_IMAGE)}" alt="スピリット編" onerror="this.style.display='none';">` : `<div class="ks-spirit-teaser">あと ${remaining} コツで第二部「スピリット編」が解放されます。</div>`}
         <div class="ks-spirit-abilities">${abilityRows}</div>
         <div class="ks-spirit-note">能力は現在の調子で変動します。一度解放したスピリット・称号は消えません。</div>
         ${titleList.length ? `<div class="ks-spirit-titles">${titleList.map((t) => `<span class="ks-spirit-title">${escapeHtml(t.icon)} ${escapeHtml(t.name)}</span>`).join('')}</div>` : ''}
