@@ -171,14 +171,14 @@
 
   // 第1弾 8体（仮名・絵文字アイコン。image は画像完成後に設定）
   const KOTSU_SPIRITS = [
-    { id: 'first_light', name: 'ファースト・ライト', desc: '最初の到達の証', icon: '🌅', image: 'assets/spirits/spirit_first_light.png', unlock: { type: 'reach100' } },
-    { id: 'crash', name: 'クラッシュ・コーデックス', desc: '解いて砕く', icon: '⚔️', image: 'assets/spirits/spirit_crash.png', unlock: { type: 'abilityB', ability: 'power' } },
-    { id: 'rapid', name: 'ラピッド・ストリーク', desc: '止まらない加速', icon: '💨', image: 'assets/spirits/spirit_rapid.png', unlock: { type: 'abilityB', ability: 'speed' } },
-    { id: 'horizon', name: 'ワイド・ホライズン', desc: '広く手を伸ばす', icon: '🔭', image: 'assets/spirits/spirit_horizon.png', unlock: { type: 'abilityB', ability: 'range' } },
-    { id: 'everlasting', name: 'エバーラスティング', desc: '途切れない意志', icon: '🔥', image: 'assets/spirits/spirit_everlasting.png', unlock: { type: 'abilityB', ability: 'stamina' } },
-    { id: 'surehand', name: 'シュア・ハンド', desc: '狙った所に確実に', icon: '🎯', image: 'assets/spirits/spirit_surehand.png', unlock: { type: 'abilityB', ability: 'precision' } },
-    { id: 'rising_core', name: 'ライジング・コア', desc: '伸び続ける核', icon: '💎', image: 'assets/spirits/spirit_rising_core.png', unlock: { type: 'abilityB', ability: 'growth' } },
-    { id: 'complete_soul', name: 'コンプリート・ソウル', desc: 'すべてを積み上げた者', icon: '👑', image: 'assets/spirits/spirit_complete_soul.png', unlock: { type: 'allA' } }
+    { id: 'first_light', name: 'ヨアケ・ピヨーン', desc: 'ここからが本番ピヨ！', icon: '🌅', image: 'assets/spirits/spirit_first_light.png', unlock: { type: 'reach100' } },
+    { id: 'crash', name: 'トッパ・ガリベン', desc: '一問入魂、いくピヨ', icon: '⚔️', image: 'assets/spirits/spirit_crash.png', unlock: { type: 'abilityB', ability: 'power' } },
+    { id: 'rapid', name: 'ソッコー・ダッシュ', desc: 'もう終わったピヨ？', icon: '💨', image: 'assets/spirits/spirit_rapid.png', unlock: { type: 'abilityB', ability: 'speed' } },
+    { id: 'horizon', name: 'ミハラ・シーカー', desc: '世界は広いピヨ', icon: '🔭', image: 'assets/spirits/spirit_horizon.png', unlock: { type: 'abilityB', ability: 'range' } },
+    { id: 'everlasting', name: 'ズット・モエテル', desc: 'きょうもコツコツ燃えるピヨ', icon: '🔥', image: 'assets/spirits/spirit_everlasting.png', unlock: { type: 'abilityB', ability: 'stamina' } },
+    { id: 'surehand', name: 'ドンピシャ・アロー', desc: 'ハズさないピヨ', icon: '🎯', image: 'assets/spirits/spirit_surehand.png', unlock: { type: 'abilityB', ability: 'precision' } },
+    { id: 'rising_core', name: 'ノビシロ・モリモリ', desc: 'まだ育つピヨ！', icon: '💎', image: 'assets/spirits/spirit_rising_core.png', unlock: { type: 'abilityB', ability: 'growth' } },
+    { id: 'complete_soul', name: 'カンペキ・タマシイ', desc: 'コンプ、いただきピヨ👑', icon: '👑', image: 'assets/spirits/spirit_complete_soul.png', unlock: { type: 'allA' } }
   ];
 
   const SPIRIT_LOCKED_IMAGE = 'assets/spirits/spirit_locked.png';
