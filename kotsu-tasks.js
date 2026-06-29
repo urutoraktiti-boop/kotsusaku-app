@@ -9,6 +9,8 @@
     kp: 'kskotsu_kp',
     storyProgress: 'task-story-progress',
     equipmentUnlocked: 'task-equipment-unlocked',
+    spirits: 'kskotsu_spirits',
+    spiritIntroSeen: 'kskotsu_spirit_intro_seen',
     taskDataAlias: 'task-data',
     taskSettings: 'task-settings',
     subjectPrefix: 'kskotsu_subject_',
@@ -27,7 +29,7 @@
     { count: 65, icon: '💫', name: '成長の証', desc: '努力の輪郭がはっきりしてきました。', image: 'assets/stories/mystery/story_mystery_065.png' },
     { count: 80, icon: '🗡️', name: '突破の力', desc: 'あと少し。ここまで来た自分を信じて進めます。', image: 'assets/stories/mystery/story_mystery_080.png' },
     { count: 88, icon: '👑', name: '王冠の段階', desc: '大きな達成が近づいています。', image: 'assets/stories/mystery/story_mystery_088.png' },
-    { count: 100, icon: '🌟', name: '完成の姿', desc: '100コツ到達。続きは101コツ目から始まります。', image: 'assets/stories/mystery/story_mystery_100.png' }
+    { count: 100, icon: '🌟', name: '完成の姿', desc: '100コツ到達！第二部「スピリット編」が始まります。', image: 'assets/stories/mystery/story_mystery_100.png' }
   ];
 
   const STORY_EVOLUTION_OVERRIDES = {
@@ -42,7 +44,7 @@
       { name: '半ブロピヨ', desc: '半分以上ブロ。かなりいい感じです。', icon: '🥦' },
       { name: 'ブロッ剣ピヨ', desc: 'ブロッコリーの剣で、迷いをサクッと。', icon: '🗡️' },
       { name: 'イタチャチャ王冠ピヨ', desc: 'ここまで来た人だけの、ちょっと変な王冠。', icon: '👑' },
-      { name: '完全体ブロピヨ', desc: '100コツ到達。続きは101コツ目から始まります。', icon: '🌟' }
+      { name: '完全体ブロピヨ', desc: '100コツ到達！第二部「スピリット編」が始まります。', icon: '🌟' }
     ]
   };
 
@@ -147,6 +149,43 @@
     { min: 1500, icon: '⚡', name: 'コツ達人' },
     { min: 3000, icon: '👑', name: 'コツの申し子' },
     { min: 6000, icon: '🏆', name: '伝説のコツ' }
+  ];
+
+  // ============================================================
+  // スピリット編（100コツ到達後）
+  //   ・能力表(A〜E)は「コツ習得」データだけで算出（学習時間は不使用）
+  //   ・能力表は最新データで変動するが、解放済みスピリット・称号は永久保持
+  //   ・名前/絵文字/画像/セリフは下のデータ1か所に集約（後で差し替え可能）
+  // ============================================================
+  const SPIRIT_RANK_ORDER = ['E', 'D', 'C', 'B', 'A'];
+
+  // 6能力の定義（表示名・補足・A〜E境界）。bands=[Dの下限, Cの下限, Bの下限, Aの下限]
+  const SPIRIT_ABILITIES = [
+    { key: 'power', name: '破壊力', note: '演習', bands: [1, 10, 30, 60] },
+    { key: 'speed', name: 'スピード', note: '直近7日', bands: [0.01, 0.5, 1, 3] },
+    { key: 'range', name: '射程距離', note: '学びの広さ', bands: [1, 2, 4, 6] },
+    { key: 'stamina', name: '持続力', note: '連続日数', bands: [1, 3, 7, 14] },
+    { key: 'precision', name: '精密動作性', note: '完了率', bands: [1, 50, 70, 90] },
+    { key: 'growth', name: '成長性', note: 'KP', bands: [100, 300, 1500, 3000] }
+  ];
+
+  // 第1弾 8体（仮名・絵文字アイコン。image は画像完成後に設定）
+  const KOTSU_SPIRITS = [
+    { id: 'first_light', name: 'ファースト・ライト', desc: '最初の到達の証', icon: '🌅', image: '', unlock: { type: 'reach100' } },
+    { id: 'crash', name: 'クラッシュ・コーデックス', desc: '解いて砕く', icon: '⚔️', image: '', unlock: { type: 'abilityB', ability: 'power' } },
+    { id: 'rapid', name: 'ラピッド・ストリーク', desc: '止まらない加速', icon: '💨', image: '', unlock: { type: 'abilityB', ability: 'speed' } },
+    { id: 'horizon', name: 'ワイド・ホライズン', desc: '広く手を伸ばす', icon: '🔭', image: '', unlock: { type: 'abilityB', ability: 'range' } },
+    { id: 'everlasting', name: 'エバーラスティング', desc: '途切れない意志', icon: '🔥', image: '', unlock: { type: 'abilityB', ability: 'stamina' } },
+    { id: 'surehand', name: 'シュア・ハンド', desc: '狙った所に確実に', icon: '🎯', image: '', unlock: { type: 'abilityB', ability: 'precision' } },
+    { id: 'rising_core', name: 'ライジング・コア', desc: '伸び続ける核', icon: '💎', image: '', unlock: { type: 'abilityB', ability: 'growth' } },
+    { id: 'complete_soul', name: 'コンプリート・ソウル', desc: 'すべてを積み上げた者', icon: '👑', image: '', unlock: { type: 'allA' } }
+  ];
+
+  // 累計コツ数で付与される記念称号（仮名）
+  const SPIRIT_TITLES = [
+    { min: 500, icon: '🎖️', name: 'コツの探究者' },
+    { min: 1000, icon: '🏅', name: 'コツの匠' },
+    { min: 2000, icon: '🏆', name: 'コツの伝説' }
   ];
 
   const CATEGORY_META = {
@@ -689,6 +728,119 @@
     return KP_RANKS[idx + 1] || null;
   }
 
+  // --- スピリット編：能力表の算出（コツ習得データのみ・学習時間は不使用） ---
+  function spiritRank(value, bands) {
+    const v = Number(value) || 0;
+    if (v >= bands[3]) return 'A';
+    if (v >= bands[2]) return 'B';
+    if (v >= bands[1]) return 'C';
+    if (v >= bands[0]) return 'D';
+    return 'E';
+  }
+
+  function spiritRankAtLeast(rank, min) {
+    return SPIRIT_RANK_ORDER.indexOf(rank) >= SPIRIT_RANK_ORDER.indexOf(min);
+  }
+
+  // 連続コツ完了日数。今日まだでも前日からの連続は途切らせない。
+  function spiritStreak(doneDates) {
+    let streak = 0;
+    let offset = doneDates.has(studyDate(0)) ? 0 : -1;
+    while (doneDates.has(studyDate(offset))) {
+      streak += 1;
+      offset -= 1;
+    }
+    return streak;
+  }
+
+  // 全ストーリー横断（アカウント全体）で6能力の生値とA〜Eを返す。
+  function kotsuSpiritStats() {
+    const data = tasksByDate();
+    let totalDone = 0;    // 累計コツ（done・全ストーリー）
+    let totalActive = 0;  // todo+done（carried は除外）
+    let powerDone = 0;    // 演習(practice)系の完了数
+    const subjects = new Set();
+    const doneDates = new Set();
+    Object.keys(data).forEach((date) => {
+      const list = Array.isArray(data[date]) ? data[date] : [];
+      list.forEach((task) => {
+        if (!task || task.status === 'carried') return;
+        totalActive += 1;
+        if (task.status !== 'done') return;
+        totalDone += 1;
+        if (task.subject) subjects.add(task.subject);
+        if ((task.category || categoryFor(task.type)) === 'practice') powerDone += 1;
+        doneDates.add(date);
+      });
+    });
+    const last7 = completedCountBetween(dateObject(studyDate(-6)), dateObject(studyDate(0)));
+    const raw = {
+      power: powerDone,
+      speed: last7 / 7,
+      range: subjects.size,
+      stamina: spiritStreak(doneDates),
+      precision: totalActive ? (totalDone / totalActive * 100) : 0,
+      growth: getKP()
+    };
+    const ranks = {};
+    SPIRIT_ABILITIES.forEach((ability) => {
+      ranks[ability.key] = spiritRank(raw[ability.key], ability.bands);
+    });
+    return { raw, ranks, totalDone, level: Math.floor(totalDone / 100) };
+  }
+
+  function spiritUnlockMet(sp, stats) {
+    if (sp.unlock.type === 'reach100') return stats.totalDone >= 100;
+    if (sp.unlock.type === 'abilityB') return spiritRankAtLeast(stats.ranks[sp.unlock.ability], 'B');
+    if (sp.unlock.type === 'allA') return SPIRIT_ABILITIES.every((a) => stats.ranks[a.key] === 'A');
+    return false;
+  }
+
+  function readSpiritStore() {
+    const store = readJson(STORE.spirits, {});
+    if (!store || typeof store !== 'object') return { unlocked: {}, level: 0, titles: [] };
+    if (!store.unlocked || typeof store.unlocked !== 'object') store.unlocked = {};
+    if (!Array.isArray(store.titles)) store.titles = [];
+    if (typeof store.level !== 'number') store.level = 0;
+    return store;
+  }
+
+  // 解放・進行を記録（永久保持）。スピリット編は累計100コツで解放。
+  // 新規に解放したスピリット配列・最新statsを返す。
+  function syncSpirits() {
+    const stats = kotsuSpiritStats();
+    const store = readSpiritStore();
+    const newlyUnlocked = [];
+    // 100未到達・未解放なら何も保存しない（キーを汚さない）
+    if (stats.totalDone < 100 && !Object.keys(store.unlocked).length) {
+      return { stats, store, newlyUnlocked };
+    }
+    if (stats.totalDone >= 100) {
+      KOTSU_SPIRITS.forEach((sp) => {
+        if (store.unlocked[sp.id]) return;
+        if (spiritUnlockMet(sp, stats)) {
+          store.unlocked[sp.id] = { unlockedAt: new Date().toISOString() };
+          newlyUnlocked.push(sp);
+        }
+      });
+    }
+    store.level = stats.level;
+    store.titles = SPIRIT_TITLES.filter((t) => stats.totalDone >= t.min).map((t) => t.min);
+    store.updatedAt = new Date().toISOString();
+    writeJson(STORE.spirits, store);
+    return { stats, store, newlyUnlocked };
+  }
+
+  // 既存の100到達済みユーザー向け：初回だけ「スピリット編 解放」を案内（1回限り）
+  function maybeShowSpiritIntro() {
+    if (readJson(STORE.spiritIntroSeen, false)) return;
+    const result = syncSpirits();
+    if (result.stats.totalDone < 100) return;
+    writeJson(STORE.spiritIntroSeen, true);
+    const count = Object.keys(result.store.unlocked || {}).length;
+    notify('🌌 第二部「スピリット編」解放！ ' + count + '体のスピリットが目覚めました（装備タブで確認）');
+  }
+
   function calcTaskKP(task) {
     let kp = 10;
     if (Number(task.actualAmt) > 0) kp += Math.floor(Number(task.actualAmt));
@@ -707,6 +859,7 @@
 
   function afterDataChange() {
     syncStoryProgress();
+    syncSpirits();
     updateButtonSummary();
     if (typeof window.saveToCloud === 'function') window.saveToCloud();
     queueAnalyticsUpdate();
@@ -942,6 +1095,7 @@
     $('ks-task-sheet').classList.add('is-open');
     $('ks-task-sheet').setAttribute('aria-hidden', 'false');
     render();
+    maybeShowSpiritIntro();
   }
 
   function close() {
@@ -1113,7 +1267,7 @@
             <div class="ks-task-evo-label">ストーリー進化</div>
             <div class="ks-task-evo-top">
               <div class="ks-task-evo-name">${escapeHtml(stage.name)}</div>
-              <div class="ks-task-evo-count">${snapshot.count}/100</div>
+              <div class="ks-task-evo-count">${Math.min(snapshot.count, 100)}/100</div>
             </div>
             <div class="ks-task-track"><div class="ks-task-fill" style="width:${snapshot.percent}%"></div></div>
             <div class="ks-task-evo-msg">${escapeHtml(nextText)}</div>
@@ -1124,7 +1278,7 @@
           </div>
         </div>
       </div>
-      ${snapshot.count >= 100 ? '<div class="ks-task-evolution-complete">100コツ到達。ここまで積み上げたこと自体が、ちゃんとあなたの力です。</div>' : ''}
+      ${snapshot.count >= 100 ? '<div class="ks-task-evolution-complete">100コツ到達。ここまで積み上げたこと自体が、ちゃんとあなたの力です。第二部「スピリット編」は装備タブへ。</div>' : ''}
     `;
   }
 
@@ -1181,6 +1335,8 @@
     const equipment = equipmentMetaForStory();
     const counts = categoryCounts();
     const evolution = syncStoryProgress();
+    const spiritStats = kotsuSpiritStats();
+    const spiritStore = readSpiritStore();
     const rows = Object.entries(equipment).map(([category, meta]) => {
       const count = counts[category] || 0;
       const level = equipLevel(count);
@@ -1206,6 +1362,7 @@
         </div>
       </div>
       ${renderStoryEvolutionCodex(evolution)}
+      ${renderSpiritCodex(spiritStats, spiritStore)}
       <div class="ks-task-equip-grid">${rows}</div>
     `;
   }
@@ -1236,6 +1393,63 @@
             `;
           }).join('')}
         </div>
+      </div>
+    `;
+  }
+
+  // --- スピリット名鑑（100到達後の第二部） ---
+  function spiritAbilityFill(rank) {
+    return (SPIRIT_RANK_ORDER.indexOf(rank) + 1) / SPIRIT_RANK_ORDER.length * 100;
+  }
+
+  function spiritUnlockLabel(sp) {
+    if (sp.unlock.type === 'reach100') return '100コツ到達';
+    if (sp.unlock.type === 'allA') return '全能力 A';
+    if (sp.unlock.type === 'abilityB') {
+      const ab = SPIRIT_ABILITIES.find((a) => a.key === sp.unlock.ability);
+      return (ab ? ab.name : '') + ' B以上';
+    }
+    return '';
+  }
+
+  function renderSpiritCodex(stats, store) {
+    const unlocked = store.unlocked || {};
+    const edition = stats.totalDone >= 100;
+    const remaining = Math.max(0, 100 - stats.totalDone);
+    const titleList = SPIRIT_TITLES.filter((t) => (store.titles || []).indexOf(t.min) >= 0);
+    const abilityRows = SPIRIT_ABILITIES.map((a) => {
+      const rank = stats.ranks[a.key];
+      return `
+        <div class="ks-spirit-ability">
+          <div class="ks-spirit-ability-name">${escapeHtml(a.name)}<span>${escapeHtml(a.note)}</span></div>
+          <div class="ks-task-track"><div class="ks-task-fill" style="width:${spiritAbilityFill(rank)}%"></div></div>
+          <div class="ks-spirit-ability-rank rank-${escapeHtml(rank)}">${escapeHtml(rank)}</div>
+        </div>`;
+    }).join('');
+    const cards = KOTSU_SPIRITS.map((sp) => {
+      const got = unlocked[sp.id];
+      const date = got && got.unlockedAt ? got.unlockedAt.slice(0, 10) : '';
+      return `
+        <div class="ks-spirit-card ${got ? 'is-open' : 'is-locked'}">
+          <div class="ks-spirit-icon">${got ? escapeHtml(sp.icon) : '？'}</div>
+          <div class="ks-spirit-main">
+            <div class="ks-spirit-name">${got ? escapeHtml(sp.name) : '？？？'}</div>
+            <div class="ks-spirit-desc">${got ? escapeHtml(sp.desc) : '未解放'}</div>
+            <div class="ks-spirit-meta">解放条件 ${escapeHtml(spiritUnlockLabel(sp))}${date ? ' / 解放日 ' + escapeHtml(date) : ''}</div>
+          </div>
+        </div>`;
+    }).join('');
+    return `
+      <div class="ks-task-codex ks-spirit-codex">
+        <div class="ks-task-section-head" style="margin-top:0">
+          <span>🌌 スピリット名鑑</span>
+          <span style="color:var(--accent)">${edition ? '覚醒Lv ' + store.level : 'あと' + remaining + 'コツ'}</span>
+        </div>
+        ${edition ? '' : `<div class="ks-spirit-teaser">あと ${remaining} コツで第二部「スピリット編」が解放されます。</div>`}
+        <div class="ks-spirit-abilities">${abilityRows}</div>
+        <div class="ks-spirit-note">能力は現在の調子で変動します。一度解放したスピリット・称号は消えません。</div>
+        ${titleList.length ? `<div class="ks-spirit-titles">${titleList.map((t) => `<span class="ks-spirit-title">${escapeHtml(t.icon)} ${escapeHtml(t.name)}</span>`).join('')}</div>` : ''}
+        <div class="ks-spirit-cards">${cards}</div>
       </div>
     `;
   }
@@ -1414,6 +1628,7 @@
     if (!task) return;
     const storyId = task.storyId || getCurrentStory();
     const beforeEvolutionStage = storyProgressSnapshot(storyId).stage.count;
+    const beforeSpiritIds = Object.keys(readSpiritStore().unlocked || {});
     if (task.status === 'done') {
       task.status = 'todo';
       task.completedAt = null;
@@ -1440,7 +1655,9 @@
       render();
       const afterEvolution = syncStoryProgress(storyId);
       const unlockedStage = afterEvolution && afterEvolution.stage.count > beforeEvolutionStage ? afterEvolution : null;
-      showFloat(task, unlockedStage);
+      const afterSpiritIds = readSpiritStore().unlocked || {};
+      const newSpirits = KOTSU_SPIRITS.filter((sp) => afterSpiritIds[sp.id] && beforeSpiritIds.indexOf(sp.id) < 0);
+      showFloat(task, unlockedStage, newSpirits);
     }, 650);
   }
 
@@ -1798,7 +2015,7 @@
     setTimeout(() => { ripple.remove(); overlay.remove(); }, 1800);
   }
 
-  function showFloat(task, unlockedEvolution) {
+  function showFloat(task, unlockedEvolution, unlockedSpirits) {
     const story = getStoryMeta();
     const messages = {
       gorilla: '完了ゴリ。強くなったゴリ。',
@@ -1807,10 +2024,23 @@
       itachacha: 'ニヤニヤ……コツを積みましたね。',
       spartan: 'よくやった。次だ。'
     };
-    $('ks-task-float-char').textContent = unlockedEvolution ? unlockedEvolution.stage.icon : story.icon;
-    $('ks-task-float-msg').textContent = unlockedEvolution
-      ? (unlockedEvolution.count >= 100 ? 'ストーリー進化が100コツに到達しました。' : unlockedEvolution.stage.name + 'を解放しました。')
-      : (messages[getCurrentStory()] || 'コツを積みました。');
+    let floatChar;
+    let floatMsg;
+    if (unlockedSpirits && unlockedSpirits.length) {
+      const first = unlockedSpirits[0];
+      floatChar = first.icon;
+      if (unlockedSpirits.length > 1) floatMsg = 'スピリットが' + unlockedSpirits.length + '体 目覚めた！';
+      else if (first.id === 'first_light') floatMsg = '第二部「スピリット編」解放！';
+      else floatMsg = '「' + first.name + '」が目覚めた！';
+    } else if (unlockedEvolution) {
+      floatChar = unlockedEvolution.stage.icon;
+      floatMsg = unlockedEvolution.count >= 100 ? 'ストーリー進化が100コツに到達しました。' : unlockedEvolution.stage.name + 'を解放しました。';
+    } else {
+      floatChar = story.icon;
+      floatMsg = messages[getCurrentStory()] || 'コツを積みました。';
+    }
+    $('ks-task-float-char').textContent = floatChar;
+    $('ks-task-float-msg').textContent = floatMsg;
     $('ks-task-float-kp').textContent = '+' + task.earnedKP + ' KP';
     $('ks-task-float').classList.add('is-show');
     clearTimeout(state.floatTimer);
@@ -1901,6 +2131,8 @@
       kp: getKP(),
       storyProgress: readJson(STORE.storyProgress, {}),
       equipmentUnlocked: readJson(STORE.equipmentUnlocked, {}),
+      spirits: readJson(STORE.spirits, {}),
+      spiritIntroSeen: readJson(STORE.spiritIntroSeen, false),
       taskSettings: readJson(STORE.taskSettings, {}),
       lists: {}
     };
@@ -1922,6 +2154,8 @@
     setKP(Number(payload.kp) || 0);
     writeJson(STORE.storyProgress, payload.storyProgress || {});
     writeJson(STORE.equipmentUnlocked, payload.equipmentUnlocked || {});
+    writeJson(STORE.spirits, payload.spirits || {});
+    if (payload.spiritIntroSeen) writeJson(STORE.spiritIntroSeen, true);
     writeJson(STORE.taskSettings, payload.taskSettings || {});
     if (payload.lists && typeof payload.lists === 'object') {
       Object.keys(payload.lists).forEach((key) => {
@@ -1931,6 +2165,7 @@
       });
     }
     syncStoryProgress();
+    syncSpirits();
     updateButtonSummary();
     if (state.open) render();
   }
@@ -1967,6 +2202,15 @@
     saveDeletedIds(Array.from(deleted));
     writeJson(STORE.storyProgress, { ...(payload.storyProgress || {}), ...readJson(STORE.storyProgress, {}) });
     writeJson(STORE.equipmentUnlocked, { ...(payload.equipmentUnlocked || {}), ...readJson(STORE.equipmentUnlocked, {}) });
+    const localSpirits = readSpiritStore();
+    const incomingSpirits = (payload.spirits && typeof payload.spirits === 'object') ? payload.spirits : {};
+    const incomingUnlocked = (incomingSpirits.unlocked && typeof incomingSpirits.unlocked === 'object') ? incomingSpirits.unlocked : {};
+    writeJson(STORE.spirits, {
+      unlocked: { ...incomingUnlocked, ...localSpirits.unlocked },
+      level: Math.max(localSpirits.level || 0, Number(incomingSpirits.level) || 0),
+      titles: Array.from(new Set([].concat(localSpirits.titles || [], Array.isArray(incomingSpirits.titles) ? incomingSpirits.titles : [])))
+    });
+    if (payload.spiritIntroSeen) writeJson(STORE.spiritIntroSeen, true);
     if (payload.lists && typeof payload.lists === 'object') {
       Object.keys(payload.lists).forEach((key) => {
         if (key.indexOf(STORE.typeCategoryPrefix) === 0) {
@@ -1987,6 +2231,7 @@
     const earned = Object.values(mergedTasks).flat().reduce((sum, task) => sum + (task.status === 'done' ? Number(task.earnedKP || calcTaskKP(task)) : 0), 0);
     setKP(Math.max(getKP(), Number(payload.kp) || 0, earned));
     syncStoryProgress();
+    syncSpirits();
     updateButtonSummary();
     if (state.open) render();
     return exportData();
@@ -1994,7 +2239,7 @@
 
   function clearAll() {
     Object.keys(localStorage).forEach((key) => {
-      if (key === STORE.tasks || key === STORE.templates || key === STORE.templateDeleted || key === STORE.deleted || key === STORE.kp || key === STORE.storyProgress || key === STORE.equipmentUnlocked || key === STORE.taskDataAlias || key === STORE.taskSettings || key.indexOf(STORE.subjectPrefix) === 0 || key.indexOf(STORE.typePrefix) === 0 || key.indexOf(STORE.typeCategoryPrefix) === 0) {
+      if (key === STORE.tasks || key === STORE.templates || key === STORE.templateDeleted || key === STORE.deleted || key === STORE.kp || key === STORE.storyProgress || key === STORE.equipmentUnlocked || key === STORE.spirits || key === STORE.spiritIntroSeen || key === STORE.taskDataAlias || key === STORE.taskSettings || key.indexOf(STORE.subjectPrefix) === 0 || key.indexOf(STORE.typePrefix) === 0 || key.indexOf(STORE.typeCategoryPrefix) === 0) {
         localStorage.removeItem(key);
       }
     });
@@ -2016,6 +2261,7 @@
         open();
       });
     }
+    syncSpirits();
     updateButtonSummary();
     startTopStoryWatcher();
   }

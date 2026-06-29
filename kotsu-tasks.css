@@ -2107,3 +2107,144 @@
     grid-template-columns: 1fr .78fr 1fr;
   }
 }
+
+/* ===== スピリット名鑑（100到達後の第二部） ===== */
+.ks-spirit-codex {
+  border-color: rgba(96, 165, 250, .4);
+  background: linear-gradient(135deg, rgba(96, 165, 250, .12), rgba(139, 139, 255, .08), var(--surface2));
+}
+
+.ks-spirit-teaser {
+  margin: 6px 0 10px;
+  padding: 8px 10px;
+  border: 1px dashed rgba(96, 165, 250, .5);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: .6rem;
+  line-height: 1.5;
+}
+
+.ks-spirit-abilities {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.ks-spirit-ability {
+  display: grid;
+  grid-template-columns: 92px 1fr 22px;
+  gap: 8px;
+  align-items: center;
+}
+
+.ks-spirit-ability-name {
+  display: flex;
+  flex-direction: column;
+  font-size: .62rem;
+  font-weight: 900;
+  color: var(--text);
+}
+
+.ks-spirit-ability-name span {
+  font-size: .48rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.ks-spirit-ability-rank {
+  font-size: .8rem;
+  font-weight: 900;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.ks-spirit-ability-rank.rank-A { color: #f5c842; }
+.ks-spirit-ability-rank.rank-B { color: #4af0c0; }
+.ks-spirit-ability-rank.rank-C { color: #60a5fa; }
+.ks-spirit-ability-rank.rank-D { color: #9ca3af; }
+.ks-spirit-ability-rank.rank-E { color: #6b7280; }
+
+.ks-spirit-note {
+  color: var(--text-muted);
+  font-size: .54rem;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.ks-spirit-titles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+
+.ks-spirit-title {
+  border: 1px solid rgba(245, 200, 66, .55);
+  border-radius: 99px;
+  background: rgba(245, 200, 66, .12);
+  color: #f5c842;
+  font-size: .54rem;
+  font-weight: 800;
+  padding: 3px 8px;
+}
+
+.ks-spirit-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+
+.ks-spirit-card {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 8px;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface);
+  padding: 8px;
+}
+
+.ks-spirit-card.is-open {
+  border-color: rgba(96, 165, 250, .55);
+  box-shadow: inset 3px 0 0 #60a5fa;
+}
+
+.ks-spirit-card.is-locked {
+  opacity: .5;
+}
+
+.ks-spirit-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--surface2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+}
+
+.ks-spirit-main {
+  min-width: 0;
+}
+
+.ks-spirit-name {
+  font-size: .64rem;
+  font-weight: 900;
+  color: var(--text);
+}
+
+.ks-spirit-desc,
+.ks-spirit-meta {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: .52rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 360px) {
+  .ks-spirit-cards { grid-template-columns: 1fr; }
+}
