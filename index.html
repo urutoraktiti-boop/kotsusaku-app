@@ -7029,21 +7029,21 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v111-spirits'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v112-spirit-roster'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
   var _latestVersionLabel = null;
   var UPDATE_PROMPT_SEEN_KEY = '_kotsusakuUpdatePromptSeenVersion';
   var UPDATE_PROMPT_APPLIED_KEY = '_kotsusakuUpdatePromptAppliedVersion';
   var UPDATE_COPY = {
-    title: 'v111 タマゴ、割れる。🐣✨',
-    body: 'コツを100個積んだきみへ。タマピヨたちが殻をやぶって“スピリット”に目覚めたよ。第二部いこ〜！',
-    notes: '✅ 100コツでスピリット編がパカッと解放<br>✅ きみのがんばりが6つの能力（A〜E）になって見える化<br>✅ コツを積むほどスピリットがめざめる。ぜんぶAで完全覚醒！<br>✅ 覚醒Lv＆称号で、100のあともずーっと遊べる<br>🐣 「装備」タブの“スピリット名鑑”をのぞいてみてね'
+    title: 'v112 「スピリット」…それは、お前の積み重ねだピヨッ！ ゴゴゴゴ…',
+    body: 'コツを100個積み上げた者よ、見るがいいピヨ。お前が呼び覚ました“スピリット”たちが、ついに「今日のコツ」画面に勢ぞろいしたッ…！もはや「進化」だけでは終わらないピヨ——これは、お前の覚悟の“一覧表”だッ。',
+    notes: '✅ 100コツ到達後、「今日のコツ」画面に集めたスピリット8体がズラリと並ぶピヨ…！<br>✅ 解放済みは色鮮やかに、まだ見ぬ者は影と「？」の中で出会いを待つピヨ<br>✅ 「あと何体」が一目でわかるッ。集める者の血が、騒ぐだろォ…ピヨォッ！？<br>✅ 帯をタップすれば「スピリット名鑑」へ一直線ピヨ。そこにシビれる！あこがれるゥ！<br>🐣 ストーリーの殻はもう割れたピヨ。次に割るのは——お前自身だッ'
   };
 
   function formatVersionBadge(ver) {
     var match = String(ver || CURRENT_VERSION).match(/v(\d+)/i);
-    return match ? 'v' + match[1] : 'v111';
+    return match ? 'v' + match[1] : 'v112';
   }
 
   // ver-badge と CURRENT_VERSION を version.json の値で初期化
