@@ -42,9 +42,8 @@
     return Math.round((d.getTime() - t.getTime()) / 86400000);
   }
 
-  function todaysMessage() {
+  function buildMessage(d) {
     var story = DATA[currentStoryId()];
-    var d = daysLeft();
     if (d === null) {
       return {
         icon: story.icon,
@@ -68,18 +67,26 @@
     return { icon: story.icon, label: label, period: e[0], main: e[1], sub: e[2] };
   }
 
+  function todaysMessage() {
+    return buildMessage(daysLeft());
+  }
+
   /* ---------- UI ---------- */
 
   var CSS = [
     '#bloom-cd-overlay{position:fixed;inset:0;z-index:24500;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,.5);backdrop-filter:blur(2px);}',
     '#bloom-cd-overlay.show{display:flex;}',
-    '#bloom-cd-card{background:var(--surface,var(--surface2,#fff));color:var(--text,#1f2937);border:1px solid var(--border,#e5e7eb);border-radius:18px;max-width:340px;width:100%;padding:20px 18px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.35);animation:bloomCdPop .22s ease-out;}',
+    '#bloom-cd-card{position:relative;background:var(--surface,var(--surface2,#fff));color:var(--text,#1f2937);border:1px solid var(--border,#e5e7eb);border-radius:18px;max-width:340px;width:100%;padding:20px 18px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.35);animation:bloomCdPop .22s ease-out;touch-action:pan-y;user-select:none;}',
     '@keyframes bloomCdPop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}',
     '#bloom-cd-label{display:inline-block;font-size:.68rem;font-weight:800;color:var(--accent,#e97fae);border:1px solid var(--accent,#e97fae);border-radius:999px;padding:3px 12px;margin-bottom:10px;}',
     '#bloom-cd-icon{font-size:2.6rem;line-height:1.2;margin-bottom:2px;}',
     '#bloom-cd-period{font-size:.62rem;font-weight:700;color:var(--text-muted,#9ca3af);margin-bottom:10px;letter-spacing:.05em;}',
     '#bloom-cd-main{font-size:.92rem;font-weight:800;line-height:1.65;margin-bottom:8px;}',
     '#bloom-cd-sub{font-size:.78rem;line-height:1.65;color:var(--text-muted,#6b7280);margin-bottom:16px;}',
+    '#bloom-cd-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:14px;}',
+    '#bloom-cd-prev,#bloom-cd-next{width:30px;height:30px;border-radius:50%;border:1px solid var(--border,#e5e7eb);background:var(--surface2,#f3f4f6);color:var(--text,#1f2937);font-size:1rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}',
+    '#bloom-cd-prev:disabled,#bloom-cd-next:disabled{opacity:.3;cursor:default;}',
+    '#bloom-cd-daytag{font-size:.66rem;font-weight:700;color:var(--text-muted,#6b7280);min-width:52px;}',
     '#bloom-cd-close{width:100%;border:none;border-radius:12px;padding:11px 0;font-size:.85rem;font-weight:800;cursor:pointer;background:var(--accent,#e97fae);color:#fff;}',
     '#bloom-cd-close:active{transform:scale(.98);}'
   ].join('');
@@ -87,6 +94,11 @@
   /* アイコンを表示する期間: 開花日の30日前 〜 開花日の3日後 */
   var TRIGGER_SHOW_FROM_DAYS = 30;
   var TRIGGER_SHOW_UNTIL_DAYS = -3;
+
+  /* 過去の応援メッセージを遡って見られる範囲（今日から何日前まで） */
+  var MAX_HISTORY_OFFSET = 90;
+  var viewOffset = 0;
+  var openedDaysLeft = null;
 
   function buildUi() {
     if (document.getElementById('bloom-cd-overlay')) return;
@@ -106,24 +118,76 @@
       '<div id="bloom-cd-period"></div>' +
       '<div id="bloom-cd-main"></div>' +
       '<div id="bloom-cd-sub"></div>' +
+      '<div id="bloom-cd-nav">' +
+      '<button id="bloom-cd-prev" type="button" aria-label="前の日の応援メッセージ">‹</button>' +
+      '<span id="bloom-cd-daytag"></span>' +
+      '<button id="bloom-cd-next" type="button" aria-label="次の日の応援メッセージ">›</button>' +
+      '</div>' +
       '<button id="bloom-cd-close" type="button">🌸 開花スイッチ</button>' +
       '</div>';
     document.body.appendChild(ov);
     ov.addEventListener('click', function (e) { if (e.target === ov) hide(); });
     document.getElementById('bloom-cd-close').addEventListener('click', hide);
+    document.getElementById('bloom-cd-prev').addEventListener('click', goOlder);
+    document.getElementById('bloom-cd-next').addEventListener('click', goNewer);
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && ov.classList.contains('show')) hide();
+      if (!ov.classList.contains('show')) return;
+      if (e.key === 'Escape') hide();
+      if (e.key === 'ArrowLeft') goOlder();
+      if (e.key === 'ArrowRight') goNewer();
+    });
+
+    /* スワイプ操作（右にスワイプで前の日、左にスワイプで次の日） */
+    var card = document.getElementById('bloom-cd-card');
+    var swipeX = null, swipeY = null;
+    card.addEventListener('pointerdown', function (e) { swipeX = e.clientX; swipeY = e.clientY; });
+    card.addEventListener('pointerup', function (e) {
+      if (swipeX === null) return;
+      var dx = e.clientX - swipeX, dy = e.clientY - swipeY;
+      swipeX = null; swipeY = null;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        if (dx > 0) goOlder(); else goNewer();
+      }
     });
   }
 
-  function show() {
-    buildUi();
-    var m = todaysMessage();
+  function renderCard() {
+    var d = (openedDaysLeft === null) ? null : (openedDaysLeft + viewOffset);
+    var m = buildMessage(d);
     document.getElementById('bloom-cd-label').textContent = m.label;
     document.getElementById('bloom-cd-icon').textContent = m.icon;
     document.getElementById('bloom-cd-period').textContent = m.period;
     document.getElementById('bloom-cd-main').textContent = m.main;
     document.getElementById('bloom-cd-sub').textContent = m.sub;
+
+    var nav = document.getElementById('bloom-cd-nav');
+    if (openedDaysLeft === null) {
+      nav.style.visibility = 'hidden';
+      return;
+    }
+    nav.style.visibility = '';
+    document.getElementById('bloom-cd-daytag').textContent = viewOffset === 0 ? '今日' : viewOffset + '日前';
+    document.getElementById('bloom-cd-prev').disabled = viewOffset >= MAX_HISTORY_OFFSET;
+    document.getElementById('bloom-cd-next').disabled = viewOffset <= 0;
+  }
+
+  function goOlder() {
+    if (openedDaysLeft === null) return;
+    viewOffset = Math.min(MAX_HISTORY_OFFSET, viewOffset + 1);
+    renderCard();
+  }
+
+  function goNewer() {
+    if (openedDaysLeft === null) return;
+    viewOffset = Math.max(0, viewOffset - 1);
+    renderCard();
+  }
+
+  function show() {
+    buildUi();
+    viewOffset = 0;
+    openedDaysLeft = daysLeft();
+    renderCard();
     document.getElementById('bloom-cd-overlay').classList.add('show');
   }
 
@@ -149,7 +213,7 @@
     btn.style.display = visible ? '' : 'none';
   }
 
-  window.BLOOM_CD = { show: show, hide: hide, message: todaysMessage, updateTriggerVisibility: updateTriggerVisibility };
+  window.BLOOM_CD = { show: show, hide: hide, message: todaysMessage, older: goOlder, newer: goNewer, updateTriggerVisibility: updateTriggerVisibility };
 
   function init() {
     buildUi();
