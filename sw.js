@@ -12,6 +12,7 @@ const CACHE_FILES = [
   './manifest.json',
   './kotsu-tasks.css',
   './kotsu-tasks.js',
+  './bloom-countdown.js',
   './assets/stories/mystery/story_mystery_005.png',
   './assets/stories/mystery/story_mystery_010.png',
   './assets/stories/mystery/story_mystery_020.png',
