@@ -780,7 +780,7 @@
   <span class="ks-story-bubble" data-ks-runner-bubble>いくよ</span>
   <span class="ks-story-character ks-story-runner" data-ks-runner-char></span>
 </div>
-<button class="sw-icon-btn" id="badge-open-btn" onclick="openBadgePanel()" title="バッジコレクション">🏅<span class="badge-count" id="badge-count" style="font-size:.55rem;vertical-align:super;"></span></button>
+<button class="sw-icon-btn" id="bloom-cd-trigger-btn" type="button" data-bloom-cd-trigger title="開花日カウントダウン">🌸</button>
 </div>
 </div>
 <!-- ボタングリッド：スタート・ストップ・休憩・リセット -->
@@ -824,6 +824,7 @@
       <span class="ks-story-bubble" data-ks-bouncer-bubble>コツ</span>
       <span class="ks-story-character ks-story-bouncer" data-ks-bouncer-char></span>
     </span>
+    <button class="ks-task-challenge-btn" id="badge-open-btn" type="button" onclick="event.stopPropagation();openBadgePanel()" title="バッジコレクション">🏅<span class="badge-count" id="badge-count" style="font-size:.55rem;vertical-align:super;"></span></button>
     <button class="ks-task-challenge-btn" id="challenge-fab" type="button" onclick="event.stopPropagation();toggleChallengePopup()" title="今週のチャレンジ">🎯</button>
   </div>
 </div>

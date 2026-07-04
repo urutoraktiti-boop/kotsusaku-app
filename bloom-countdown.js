@@ -81,9 +81,12 @@
     '#bloom-cd-main{font-size:.92rem;font-weight:800;line-height:1.65;margin-bottom:8px;}',
     '#bloom-cd-sub{font-size:.78rem;line-height:1.65;color:var(--text-muted,#6b7280);margin-bottom:16px;}',
     '#bloom-cd-close{width:100%;border:none;border-radius:12px;padding:11px 0;font-size:.85rem;font-weight:800;cursor:pointer;background:var(--accent,#e97fae);color:#fff;}',
-    '#bloom-cd-close:active{transform:scale(.98);}',
-    '[data-ks-runner],[data-ks-bouncer]{cursor:pointer;}'
+    '#bloom-cd-close:active{transform:scale(.98);}'
   ].join('');
+
+  /* アイコンを表示する期間: 開花日の30日前 〜 開花日の3日後 */
+  var TRIGGER_SHOW_FROM_DAYS = 30;
+  var TRIGGER_SHOW_UNTIL_DAYS = -3;
 
   function buildUi() {
     if (document.getElementById('bloom-cd-overlay')) return;
@@ -129,19 +132,33 @@
     if (ov) ov.classList.remove('show');
   }
 
-  /* 動くキャラ（ランナー/バウンサー）タップで表示。
-     capture段階で拾い、コツ習得パネルの開閉より先に止める */
+  /* 専用アイコン（🌸 ストップウォッチ横）タップで表示 */
   document.addEventListener('click', function (e) {
-    var hit = e.target && e.target.closest && e.target.closest('[data-ks-runner],[data-ks-bouncer]');
+    var hit = e.target && e.target.closest && e.target.closest('[data-bloom-cd-trigger]');
     if (!hit) return;
     e.preventDefault();
-    e.stopPropagation();
     show();
-  }, true);
+  });
 
-  window.BLOOM_CD = { show: show, hide: hide, message: todaysMessage };
+  /* 専用アイコンの表示・非表示（開花日の30日前〜3日後だけ表示） */
+  function updateTriggerVisibility() {
+    var btn = document.querySelector('[data-bloom-cd-trigger]');
+    if (!btn) return;
+    var d = daysLeft();
+    var visible = (d !== null && d <= TRIGGER_SHOW_FROM_DAYS && d >= TRIGGER_SHOW_UNTIL_DAYS);
+    btn.style.display = visible ? '' : 'none';
+  }
 
-  function init() { buildUi(); }
+  window.BLOOM_CD = { show: show, hide: hide, message: todaysMessage, updateTriggerVisibility: updateTriggerVisibility };
+
+  function init() {
+    buildUi();
+    updateTriggerVisibility();
+    document.addEventListener('click', updateTriggerVisibility);
+    document.addEventListener('visibilitychange', updateTriggerVisibility);
+    window.addEventListener('focus', updateTriggerVisibility);
+    setInterval(updateTriggerVisibility, 30000);
+  }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
