@@ -687,6 +687,14 @@
 <div style="margin-top:10px;padding:8px 10px;background:var(--surface);border-radius:8px;font-size:.58rem;color:var(--text-muted);line-height:1.8;">
 🔒 コツ習慣の記録は端末内に保存されます。データ同期を利用している場合は、同期コードに紐づけてFirebaseにも保存され、端末変更時も同期コードで引き継げます。同期コードは他人に共有しないでください。
 </div>
+<div id="sync-paused-note" style="display:none;margin-top:8px;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:.6rem;color:var(--text-muted);line-height:1.7;">
+⏸ 同期は停止中です。この端末のデータはクラウドに送信されません。
+<button id="sync-resume-btn" style="margin-top:6px;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:7px 0;font-size:.66rem;font-weight:800;cursor:pointer;">▶ 同期を再開する</button>
+</div>
+<div style="display:flex;justify-content:center;margin-top:10px;">
+<button class="backup-btn clear-btn" id="sync-delete-btn" style="width:100%;">☁️ クラウドの同期データを削除</button>
+</div>
+<div style="font-size:.58rem;color:var(--text-muted);margin-top:5px;line-height:1.6;">クラウド上の同期データを消して、同期を停止します（端末内のデータはそのまま残ります）</div>
 </div>
 <div id="admin-recalibrate-section" style="display:none;margin:10px 0 0;padding:12px 10px;background:rgba(245,200,66,.08);border:1px solid rgba(245,200,66,.3);border-radius:10px;">
 <div style="font-size:.68rem;font-weight:900;color:#f5c842;margin-bottom:6px;">🔧 管理者用：アナリティクス補正</div>
@@ -701,6 +709,15 @@
 <span style="font-size:.72rem;color:var(--text-muted);">データ収集について</span>
 </div>
 <button onclick="_openDataPolicy()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-size:.62rem;padding:3px 10px;border-radius:6px;cursor:pointer;">詳細を見る</button>
+</div>
+</div>
+<div class="cust-sec" style="margin:10px 0 0;">
+<div style="display:flex;align-items:center;justify-content:space-between;">
+<div style="display:flex;align-items:center;gap:6px;">
+<span style="font-size:.9rem;">📄</span>
+<span style="font-size:.72rem;color:var(--text-muted);">プライバシーポリシー</span>
+</div>
+<a href="./privacy.html" target="_blank" rel="noopener" style="background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-size:.62rem;padding:3px 10px;border-radius:6px;text-decoration:none;">開く</a>
 </div>
 </div>
 <div class="cust-sec cust-official-link-fixed" style="margin:10px 0 0;">
@@ -1334,11 +1351,13 @@ try {
 } catch(e) {
   console.warn('Firebase初期化エラー（オフライン時は正常）:', e);
 }
+// アプリバージョン表記の唯一の出どころ（リリース時は version.json / sw.js と合わせて更新する）
+const KOTSUSAKU_APP_VERSION = 'kotsusaku-v113-bloom-diary';
 function trackEvent(name, params) {
   if (!analytics || !name) return;
   try {
     analytics.logEvent(name, Object.assign({
-      app_version: 'kotsusaku-v110-datafix'
+      app_version: KOTSUSAKU_APP_VERSION
     }, params || {}));
   } catch(e) {
     console.warn('Analytics送信エラー:', e);
@@ -1683,7 +1702,7 @@ function _memoStat(key, fn) {
     const now = new Date().toISOString();
     const base = {
       userId: getAnonymousId(),
-      appVersion: 'kotsusaku-v110-datafix',
+      appVersion: KOTSUSAKU_APP_VERSION,
       lastAccess: now,
       firstAccess: getFirstAccess(),
       os: device.os,
@@ -2150,6 +2169,13 @@ function getSyncCode() {
   if (!code) { code = generateSyncCode(); localStorage.setItem('kotsusaku-sync-code', code); }
   return code;
 }
+// ── 同期の停止フラグ（クラウドデータ削除後に再送信しないためのスイッチ） ──
+const _SYNC_DISABLED_KEY = 'kotsusaku-sync-disabled';
+function isSyncDisabled() { return localStorage.getItem(_SYNC_DISABLED_KEY) === '1'; }
+function updateSyncPausedUI() {
+  const note = $('sync-paused-note');
+  if (note) note.style.display = isSyncDisabled() ? '' : 'none';
+}
 let _cloudSaveTimer = null;
 
 // ── 手順5: 削除ログ込みマージ関数 ──────────────────────────────
@@ -2205,7 +2231,7 @@ const _SYNC_THROTTLE_KEY = 'kotsusaku-last-sync-read';
 const _SYNC_THROTTLE_MS  = 3 * 60 * 1000; // 最短3分
 let _syncInProgress = false;
 async function syncFromCloudIfNeeded() {
-  if (!db || _syncInProgress) return;
+  if (!db || _syncInProgress || isSyncDisabled()) return;
   const lastRead = parseInt(LS.get(_SYNC_THROTTLE_KEY, '0') || '0', 10);
   if (Date.now() - lastRead < _SYNC_THROTTLE_MS) return; // スロットル
   _syncInProgress = true;
@@ -2280,7 +2306,7 @@ async function _syncMergeAndWrite() {
   });
 }
 function saveToCloud() {
-  if (!db) return; // Firebase未初期化（オフライン時）はスキップ
+  if (!db || isSyncDisabled()) return; // Firebase未初期化（オフライン時）・同期停止中はスキップ
   if (_cloudSaveTimer) clearTimeout(_cloudSaveTimer);
   _cloudSaveTimer = setTimeout(async () => {
     try { await _syncMergeAndWrite(); }
@@ -2289,7 +2315,7 @@ function saveToCloud() {
 }
 // 設定保存など即時同期が必要な場面で使う（遅延なし版）
 async function saveToCloudNow() {
-  if (!db) return false;
+  if (!db || isSyncDisabled()) return false;
   if (_cloudSaveTimer) { clearTimeout(_cloudSaveTimer); _cloudSaveTimer = null; }
   try { await _syncMergeAndWrite(); return true; }
   catch(e) { console.warn('クラウド即時保存エラー:', e); return false; }
@@ -2392,6 +2418,45 @@ function appConfirm(message, options) {
 function initSyncUI() {
   const disp = $('sync-code-display');
   if (disp) disp.textContent = getSyncCode();
+  updateSyncPausedUI();
+
+  // クラウドの同期データ削除（プライバシーポリシー記載の削除手段）
+  const delBtn = $('sync-delete-btn');
+  if (delBtn) delBtn.addEventListener('click', async () => {
+    if (!db) { showSyncStatus('⚠️ オフラインのため削除できません', 'err'); return; }
+    const ok = await appConfirm(
+      'クラウドに保存された同期データを削除し、この端末からの同期を停止します。\n端末内のデータはそのまま残ります。\n\n※ 別の端末で同じ同期コードを使っている場合、その端末が保存するとクラウドにデータが作り直されることがあります。その場合は各端末で削除してください。',
+      { title:'クラウドの同期データを削除しますか？', okText:'削除する' }
+    );
+    if (!ok) return;
+    delBtn.disabled = true; delBtn.textContent = '削除中…';
+    try {
+      if (_cloudSaveTimer) { clearTimeout(_cloudSaveTimer); _cloudSaveTimer = null; }
+      await db.collection('users').doc(getSyncCode()).delete();
+      localStorage.setItem(_SYNC_DISABLED_KEY, '1');
+      updateSyncPausedUI();
+      showSyncStatus('✅ クラウドのデータを削除しました（同期は停止中）', 'ok');
+    } catch(e) {
+      console.warn('クラウド削除エラー:', e);
+      showSyncStatus('⚠️ 削除に失敗しました。通信環境を確認してください', 'err');
+    }
+    delBtn.disabled = false; delBtn.textContent = '☁️ クラウドの同期データを削除';
+  });
+
+  // 同期の再開
+  const resumeBtn = $('sync-resume-btn');
+  if (resumeBtn) resumeBtn.addEventListener('click', async () => {
+    const ok = await appConfirm(
+      '同期を再開すると、この端末のデータが再びクラウドに保存されるようになります。',
+      { title:'同期を再開しますか？', okText:'再開する' }
+    );
+    if (!ok) return;
+    localStorage.removeItem(_SYNC_DISABLED_KEY);
+    updateSyncPausedUI();
+    showSyncStatus('✅ 同期を再開しました', 'ok');
+    saveToCloud();
+  });
+
   const btn = $('sync-import-btn');
   if (!btn) return;
   btn.addEventListener('click', async () => {
@@ -2403,6 +2468,8 @@ function initSyncUI() {
     btn.disabled = true; btn.textContent = '読込中…';
     const ok = await loadFromCloud(formatted);
     if (ok) {
+      localStorage.removeItem(_SYNC_DISABLED_KEY); // コードを取り込んだ＝同期の再開とみなす
+      updateSyncPausedUI();
       localStorage.setItem('kotsusaku-sync-code', formatted);
       if ($('sync-code-display')) $('sync-code-display').textContent = formatted;
       showSyncStatus('✅ 同期完了！', 'ok');
@@ -7030,7 +7097,7 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v113-bloom-diary'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = (typeof KOTSUSAKU_APP_VERSION !== 'undefined' ? KOTSUSAKU_APP_VERSION : 'kotsusaku-v113-bloom-diary'); // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
   var _latestVersionLabel = null;
