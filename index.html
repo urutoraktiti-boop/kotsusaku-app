@@ -65,6 +65,55 @@
 .cust-official-link-fixed{position:sticky;bottom:0;z-index:3;background:var(--surface);border-top:1px solid var(--border);padding:10px 0 0!important;margin:10px -2px 0!important;}
 .cust-official-link-fixed a{box-shadow:0 -8px 18px rgba(0,0,0,.18);}
 @media(max-width:560px){.cust-overlay.show{align-items:stretch!important;padding:0!important;}.cust-panel{width:100%!important;height:100dvh!important;border-radius:0!important;}.cust-panel-hd{border-radius:0!important;}.cust-panel>div[style*="overflow-y:auto"]{padding:14px 14px 94px!important;}.cust-official-link-fixed{margin:10px -14px 0!important;padding:10px 14px calc(10px + env(safe-area-inset-bottom))!important;}}
+</style><style id="subject-colors">
+/* ── 科目カラー（10分マスの科目別色分け） ──
+   ⚠ 色を変えるときは JS の SUBJECT_PALETTE 定数と両方直すこと（canvas描画・凡例ドットで使用） */
+.block.checked.subj-c1{background:linear-gradient(135deg,rgba(147,197,253,.55) 0%,rgba(59,130,246,.62) 100%);border-color:rgba(59,130,246,.55)}
+.block.checked.subj-c1.last{border-right:1px solid rgba(59,130,246,.55)}
+.block.checked.subj-c2{background:linear-gradient(135deg,rgba(110,231,183,.55) 0%,rgba(16,185,129,.62) 100%);border-color:rgba(16,185,129,.55)}
+.block.checked.subj-c2.last{border-right:1px solid rgba(16,185,129,.55)}
+.block.checked.subj-c3{background:linear-gradient(135deg,rgba(253,186,116,.55) 0%,rgba(249,115,22,.62) 100%);border-color:rgba(249,115,22,.55)}
+.block.checked.subj-c3.last{border-right:1px solid rgba(249,115,22,.55)}
+.block.checked.subj-c4{background:linear-gradient(135deg,rgba(196,181,253,.55) 0%,rgba(139,92,246,.62) 100%);border-color:rgba(139,92,246,.55)}
+.block.checked.subj-c4.last{border-right:1px solid rgba(139,92,246,.55)}
+.block.checked.subj-c5{background:linear-gradient(135deg,rgba(253,224,71,.55) 0%,rgba(234,179,8,.62) 100%);border-color:rgba(234,179,8,.55)}
+.block.checked.subj-c5.last{border-right:1px solid rgba(234,179,8,.55)}
+.block.checked.subj-c6{background:linear-gradient(135deg,rgba(103,232,249,.55) 0%,rgba(6,182,212,.62) 100%);border-color:rgba(6,182,212,.55)}
+.block.checked.subj-c6.last{border-right:1px solid rgba(6,182,212,.55)}
+.block.checked.subj-c7{background:linear-gradient(135deg,rgba(252,165,165,.55) 0%,rgba(239,68,68,.62) 100%);border-color:rgba(239,68,68,.55)}
+.block.checked.subj-c7.last{border-right:1px solid rgba(239,68,68,.55)}
+.block.checked.subj-c8{background:linear-gradient(135deg,rgba(203,213,225,.55) 0%,rgba(100,116,139,.62) 100%);border-color:rgba(100,116,139,.55)}
+.block.checked.subj-c8.last{border-right:1px solid rgba(100,116,139,.55)}
+/* 科目チップ（🌈ポップアップ内の科目切り替え・当日合計の凡例を兼ねる） */
+.subj-chip{display:inline-flex;align-items:center;gap:5px;background:var(--surface2);border:1.5px solid var(--border);border-radius:999px;padding:4px 10px;font-size:.68rem;font-weight:700;color:var(--text-muted);cursor:pointer}
+.subj-chip.active{border-color:var(--accent);color:var(--text);background:var(--surface)}
+.subj-chip-min{font-size:.6rem;font-weight:800;opacity:.75}
+.subj-dot{width:9px;height:9px;border-radius:50%;flex:none}
+.subj-dot-none{background:linear-gradient(135deg,rgba(255,214,228,.9),rgba(255,133,161,.95))}
+.subj-dot-c1{background:#60a5fa}.subj-dot-c2{background:#34d399}.subj-dot-c3{background:#fb923c}.subj-dot-c4{background:#a78bfa}
+.subj-dot-c5{background:#facc15}.subj-dot-c6{background:#22d3ee}.subj-dot-c7{background:#f87171}.subj-dot-c8{background:#94a3b8}
+/* 設定画面の科目エディタ */
+.subj-edit-row{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px;margin-bottom:6px}
+.subj-edit-top{display:flex;align-items:center;gap:6px;margin-bottom:7px}
+.subj-swatch-row{display:flex;gap:7px;flex-wrap:wrap}
+.subj-swatch{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;flex:none;padding:0}
+.subj-swatch.active{border-color:var(--text);box-shadow:0 0 0 2px var(--accent)}
+/* 科目選択ポップアップ（「🌸まであと」表示のすぐ右の🌈ボタンから開く） */
+#subject-pop-btn{position:relative;width:34px;height:34px;font-size:.95rem;border:1.5px solid transparent;background:linear-gradient(var(--surface2),var(--surface2)) padding-box,conic-gradient(#f87171,#fb923c,#facc15,#34d399,#22d3ee,#60a5fa,#a78bfa,#f87171) border-box}
+/* 🌈ボタン右下の小さなドット＝いま選択中の科目の色 */
+.subj-cur-dot{position:absolute;right:-2px;bottom:-2px;width:13px;height:13px;border-radius:50%;border:2px solid var(--surface);pointer-events:none}
+#subject-pop-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:15000;align-items:flex-start;justify-content:center;padding:80px 16px 16px}
+#subject-pop-overlay.show{display:flex}
+.subject-pop-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;max-width:340px;width:100%;box-shadow:0 14px 40px rgba(0,0,0,.35)}
+.subject-pop-title{font-size:.78rem;font-weight:800;color:var(--text);margin-bottom:10px}
+.subject-pop-list{display:flex;flex-wrap:wrap;gap:7px}
+.subject-pop-hint{font-size:.6rem;color:var(--text-muted);margin-top:10px;line-height:1.5}
+/* 週間ビューの科目別内訳カード */
+#subject-week-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin:10px 2px}
+.subject-week-title{font-size:.68rem;font-weight:800;color:var(--text-muted);margin-bottom:6px}
+.subject-week-row{display:flex;align-items:center;gap:7px;font-size:.7rem;color:var(--text);padding:3px 0}
+.subject-week-row .swr-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+.subject-week-row .swr-min{font-weight:800;font-variant-numeric:tabular-nums;color:var(--text-muted)}
 </style><link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#4f8ef7">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -547,6 +596,20 @@
 <div class="cust-emoji-grid" id="cust-check-grid"></div>
 </div>
 </div>
+<!-- 科目の色分け -->
+<div class="cust-sec" style="margin-bottom:0;padding-bottom:10px;border-bottom:1px solid var(--border);">
+<div class="cust-sec-title">🎨 科目の色分け</div>
+<div style="font-size:.65rem;color:var(--text-muted);margin-bottom:6px;">科目を登録すると、10分マスを科目ごとの色で塗り分けられます（最大12件）。「おすすめ科目」ならいまの試験制度の全科目が入ります。試験メニューでどの試験の科目にするかも選べます（メインストーリーはそのままでOK）。使わない科目は🗑で消してOK。ストップウォッチ横の🌈ボタンで科目を選んでからチェックしてね。</div>
+<div id="cust-subject-list"></div>
+<div style="display:flex;gap:6px;margin-top:6px;">
+<button type="button" class="cust-btn ok" id="cust-subject-add" onclick="_subjAdd()">＋ 科目を追加</button>
+</div>
+<!-- おすすめ科目：試験を選ぶメニュー＋投入ボタン（メインストーリーとは独立して選べる） -->
+<div style="display:flex;gap:6px;margin-top:6px;align-items:stretch;">
+<select id="cust-subject-preset-sel" class="cust-input" style="flex:1;min-width:0;font-size:.68rem;"></select>
+<button type="button" class="cust-btn" id="cust-subject-preset" onclick="_subjPreset()" style="flex:none;">📚 おすすめ科目を入れる</button>
+</div>
+</div>
 <!-- 成長段階メッセージ（アコーディオン・一番下） -->
 <div class="cust-sec" style="margin-bottom:0;">
 <button id="story-tiers-acc-hd" onclick="_toggleStoryTiersAcc()" style="width:100%;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.12);border:1px solid var(--border);border-radius:7px;padding:7px 12px;cursor:pointer;color:var(--text-muted);font-size:.65rem;font-weight:700;">
@@ -760,6 +823,14 @@
 <button class="tab-btn" data-view="monthly">📆 月</button>
 </div>
 </header>
+<!-- 科目カラー：🌈ボタンから開く科目選択ポップアップ（中身はJSのrenderSubjectPopListが描画） -->
+<div id="subject-pop-overlay" onclick="if(event.target===this)closeSubjectPop()">
+<div class="subject-pop-card">
+<div class="subject-pop-title">🎨 いま勉強する科目は？</div>
+<div id="subject-pop-list" class="subject-pop-list"></div>
+<div class="subject-pop-hint">選んだ科目の色で、これからのチェック（マス・ストップウォッチ）が塗られます</div>
+</div>
+</div>
 <div class="sw-wrap">
 <div class="sw-card">
 <div class="sw-top-row">
@@ -772,6 +843,8 @@
 <div class="sw-next-lbl">🌸まであと</div>
 <div id="sw-next-time" class="sw-next-time">--:--</div>
 </div>
+<!-- 科目カラー：いま勉強する科目をポップアップで選ぶ（科目未登録なら非表示＝従来と同じ見た目） -->
+<button class="sw-icon-btn" id="subject-pop-btn" type="button" title="科目の色をえらぶ" style="display:none" onclick="openSubjectPop()">🌈<span class="subj-cur-dot" id="subject-cur-dot"></span></button>
 </div>
 <div class="sw-hint" id="sw-hint">10分ごとに 🌸</div>
 </div>
@@ -1048,8 +1121,20 @@
     function readDels(){try{return JSON.parse(localStorage.getItem('study-deletes')||'{}')||{};}catch(e){return{};}}
     function writeDels(d){localStorage.setItem('study-deletes',JSON.stringify(d));}
     function checked(data,ds,h,m){return !!(data[ds]&&data[ds][h+':'+m]);}
+    // ── 科目カラー（study-subjects）──
+    // 本体の toggle()/refreshGrid() と挙動を合わせること（CLAUDE-lessons #004参照）。
+    // ルール: タップは常に「選択中の科目に合わせる」— すでに一致していれば解除、違えば塗り替え。
+    function readSubjMap(){try{return JSON.parse(localStorage.getItem('study-subjects')||'{}')||{};}catch(e){return{};}}
+    function writeSubjMap(m){localStorage.setItem('study-subjects',JSON.stringify(m));}
+    function readSubjects(){try{var c=JSON.parse(localStorage.getItem('study-cust')||'{}')||{};return Array.isArray(c.subjects)?c.subjects:[];}catch(e){return[];}}
+    function subjById(id){if(!id)return null;var l=readSubjects();for(var i=0;i<l.length;i++){if(l[i]&&l[i].id===id)return l[i];}return null;}
+    function curSubj(){var id=localStorage.getItem('study-subject-current')||'';return subjById(id)?id:'';}
+    function subjOfMap(map,ds,key){var id=(map[ds]&&map[ds][key])||'';return subjById(id)?id:'';}
+    function setSubjIn(map,ds,key,id){if(id){(map[ds]=map[ds]||{})[key]=id;}else if(map[ds]){delete map[ds][key];if(!Object.keys(map[ds]).length)delete map[ds];}}
+    function colorClsOf(id){var s=subjById(id);return s?' subj-'+s.color:'';}
+    function stripSubjCls(div){div.className=div.className.replace(/\s*subj-c\d/g,'');}
     function addGuideRow(){var guide=document.createElement('tr');guide.className='min-guide';var lbl=document.createElement('td');lbl.textContent='';guide.appendChild(lbl);var empty=document.createElement('td');guide.appendChild(empty);MINS.forEach(function(m){var td=document.createElement('td');td.textContent=m+'分';guide.appendChild(td);});tb.appendChild(guide);}
-    var ds=studyDate(),data=readData();
+    var ds=studyDate(),data=readData(),subjMap=readSubjMap();
     var checkEmoji=readCheckEmoji();
     var head=document.getElementById('grid-all-icon-head');if(head)head.textContent=checkEmoji;
     HOURS.forEach(function(h){
@@ -1058,30 +1143,41 @@
       var all=document.createElement('td');all.className='hour-btn-cell';
       var hb=document.createElement('button');hb.className='hour-btn';hb.textContent=checkEmoji;hb.type='button';
       hb.onclick=function(){
-        data=readData();var dels=readDels();var now=Date.now();
+        data=readData();var dels=readDels();var map=readSubjMap();var now=Date.now();
         if(!data[ds])data[ds]={};
+        var cur=curSubj();
         var allOn=MINS.every(function(m){return checked(data,ds,h,m);});
+        var allMatch=allOn&&MINS.every(function(m){return subjOfMap(map,ds,h+':'+m)===cur;});
         MINS.forEach(function(m){
           var key=h+':'+m;
-          if(allOn){delete data[ds][key];if(!dels[ds])dels[ds]={};dels[ds][key]=now;}
-          else{data[ds][key]=now;if(dels[ds])delete dels[ds][key];}
+          if(allMatch){delete data[ds][key];if(!dels[ds])dels[ds]={};dels[ds][key]=now;setSubjIn(map,ds,key,'');}
+          else{data[ds][key]=now;if(dels[ds])delete dels[ds][key];setSubjIn(map,ds,key,cur);}
         });
         if(Object.keys(data[ds]).length===0)delete data[ds];
-        writeData(data);writeDels(dels);window.__kotsusakuEnsureGridReset();
+        writeData(data);writeDels(dels);writeSubjMap(map);window.__kotsusakuEnsureGridReset();
       };
       all.appendChild(hb);tr.appendChild(all);
       MINS.forEach(function(m,i){
         var td=document.createElement('td');td.className='block-cell';
-        var div=document.createElement('div');div.className='block'+(i===0?' first':'')+(i===MINS.length-1?' last':'')+(checked(data,ds,h,m)?' checked':'');
+        var div=document.createElement('div');div.className='block'+(i===0?' first':'')+(i===MINS.length-1?' last':'')+(checked(data,ds,h,m)?' checked'+colorClsOf(subjOfMap(subjMap,ds,h+':'+m)):'');
         div.dataset.h=h;div.dataset.m=m;
         div.onclick=function(){
-          data=readData();var dels=readDels();var now=Date.now();
+          data=readData();var dels=readDels();var map=readSubjMap();var now=Date.now();
           if(!data[ds])data[ds]={};
           var key=h+':'+m;
-          if(data[ds][key]){delete data[ds][key];if(!dels[ds])dels[ds]={};dels[ds][key]=now;}
-          else{data[ds][key]=now;if(dels[ds])delete dels[ds][key];}
+          var cur=curSubj();
+          if(data[ds][key]&&subjOfMap(map,ds,key)===cur){
+            // 同じ科目（または両方「指定なし」）→ 解除
+            delete data[ds][key];if(!dels[ds])dels[ds]={};dels[ds][key]=now;setSubjIn(map,ds,key,'');
+          }else{
+            // 新規チェック or 別の科目への塗り替え
+            data[ds][key]=now;if(dels[ds])delete dels[ds][key];setSubjIn(map,ds,key,cur);
+          }
           if(Object.keys(data[ds]).length===0)delete data[ds];
-          writeData(data);writeDels(dels);div.classList.toggle('checked');
+          writeData(data);writeDels(dels);writeSubjMap(map);
+          var on=!!(data[ds]&&data[ds][key]);
+          stripSubjCls(div);div.classList.toggle('checked',on);
+          if(on){var cc=colorClsOf(cur);if(cc)div.className+=cc;}
         };
         td.appendChild(div);tr.appendChild(td);
       });
@@ -1140,6 +1236,8 @@
 <div class="week-section-label" id="week-prev-label"></div>
 <div class="bar-chart" id="bar-chart-prev"></div>
 <div class="bar-bottom"></div>
+<!-- 科目別の学習時間（科目が1件も未登録なら非表示。renderSubjectWeekCard() が描画） -->
+<div id="subject-week-card" style="display:none"></div>
 <div class="forecast-section" style="display:none">
 <div class="forecast-title">📈 試験日までの学習予測</div>
 <div class="forecast-cols">
@@ -1233,6 +1331,16 @@
     var h=Math.floor(min/60),m=min%60;
     return h>=100?h+'時間':h+'時間 <span class="atc-min">'+m+'分</span>';
   }
+  // 本体スクリプトの fmtStudyTimeText と同じ書式のローカル版。
+  // このIIFEは本体より先に実行されることがあり、本体の関数を直接呼ぶと
+  // ReferenceError になるため（教訓#004と同種）、ここに複製を持つ。
+  function fmtShort(min){
+    min=Math.max(0,Math.round(min||0));
+    var h=Math.floor(min/60),m=min%60;
+    if(h>0&&m>0)return h+'時間'+m+'分';
+    if(h>0)return h+'時間';
+    return m+'分';
+  }
   function currentStreak(data){
     var today=studyDate(new Date()),cur=new Date(today),streak=0;
     if(dayTotal(data,today)<=0)cur.setDate(cur.getDate()-1);
@@ -1261,7 +1369,7 @@
       '<div class="atc-body">'+
         '<div class="atc-label">累計学習時間</div>'+
         '<div class="atc-value">'+fmtLong(total)+'</div>'+
-        '<div class="atc-sub">1日平均 '+fmtStudyTimeText(avg)+'</div>'+
+        '<div class="atc-sub">1日平均 '+fmtShort(avg)+'</div>'+
       '</div>'+
       '<div class="atc-elapsed"><div class="atc-streak-val">'+streakText+'</div><div class="atc-elapsed-lbl">'+streakLabel+'</div></div>'+
       '<div class="atc-days"><div class="atc-days-val">'+days+'日</div><div class="atc-days-lbl">学習日数</div></div>';
@@ -2200,6 +2308,29 @@ function mergeStudyData(localData, cloudData, localDels, cloudDels) {
   return { data: mergedData, deletes: mergedDels };
 }
 
+// ── 科目マップ (study-subjects) のマージ ──
+// mergedData: mergeStudyData後のdata / lData,cData: マージ前の各端末のstudy-data / lSubj,cSubj: 各端末の科目マップ
+// ルール: チェック時刻が新しい側の科目を採用。その側に科目が無ければもう片方を採用（union）。
+// クラウド側に科目マップが無い場合（旧バージョンのアプリがドキュメントを上書きした等）でも、
+// 「クラウドに意見なし＝ローカル優先」となり、ローカルの色は消えない。
+// 削除済みマスは mergedData に存在しないので、対応する科目情報も自然に消える。
+function mergeStudySubjects(mergedData, lData, cData, lSubj, cSubj) {
+  const out = {};
+  for (const ds in mergedData) {
+    for (const key in mergedData[ds]) {
+      const lRaw = (lData && lData[ds]) ? lData[ds][key] : 0;
+      const cRaw = (cData && cData[ds]) ? cData[ds][key] : 0;
+      const lTs = lRaw ? (lRaw === true ? 1 : Number(lRaw) || 0) : 0;
+      const cTs = cRaw ? (cRaw === true ? 1 : Number(cRaw) || 0) : 0;
+      const lS = (lSubj && lSubj[ds] && lSubj[ds][key]) || '';
+      const cS = (cSubj && cSubj[ds] && cSubj[ds][key]) || '';
+      const s = (lTs >= cTs) ? (lS || cS) : (cS || lS);
+      if (s) { (out[ds] = out[ds] || {})[key] = s; }
+    }
+  }
+  return out;
+}
+
 // ── 手順8: 復帰時クラウド確認（read間隔制限付き） ──────────────
 const _SYNC_THROTTLE_KEY = 'kotsusaku-last-sync-read';
 const _SYNC_THROTTLE_MS  = 3 * 60 * 1000; // 最短3分
@@ -2216,14 +2347,19 @@ async function syncFromCloudIfNeeded() {
     const d = doc.data();
     const cloudData    = JSON.parse(d.studyData    || '{}');
     const cloudDeletes = JSON.parse(d.studyDeletes || '{}');
+    const cloudSubj    = JSON.parse(d.studySubjects || '{}');
     // 別タブ/別画面の保存を取りこぼさないよう、端末内の最新を読み直してからマージ
     try { data = JSON.parse(LS.get('study-data','{}')) || {}; } catch(_) {}
     try { studyDeletes = JSON.parse(LS.get('study-deletes','{}')) || {}; } catch(_) {}
+    try { studySubjMap = JSON.parse(LS.get('study-subjects','{}')) || {}; } catch(_) {}
+    const localData = data; // 科目マージ用にマージ前のローカルを保持
     const merged = mergeStudyData(data, cloudData, studyDeletes, cloudDeletes);
     data = merged.data;
     studyDeletes = merged.deletes;
+    studySubjMap = mergeStudySubjects(data, localData, cloudData, studySubjMap, cloudSubj);
     LS.set('study-data',    JSON.stringify(data));
     LS.set('study-deletes', JSON.stringify(studyDeletes));
+    LS.set('study-subjects', JSON.stringify(studySubjMap));
     // 表示を更新
     if (currentView === 'daily')   { refreshGrid(); updateStats(); }
     if (currentView === 'weekly')  { if(typeof renderWeekly==='function')renderWeekly(); }
@@ -2250,23 +2386,29 @@ async function _syncMergeAndWrite() {
   // 端末内(localStorage)の最新を読み直してからマージする（古い記憶での上書きを防ぐ）。
   try { data = JSON.parse(LS.get('study-data','{}')) || {}; } catch(_) {}
   try { studyDeletes = JSON.parse(LS.get('study-deletes','{}')) || {}; } catch(_) {}
+  try { studySubjMap = JSON.parse(LS.get('study-subjects','{}')) || {}; } catch(_) {}
   // 保存前にクラウドを読んでマージ
   const snap = await ref.get();
   if (snap.exists) {
     const d = snap.data();
     const cloudData    = JSON.parse(d.studyData    || '{}');
     const cloudDeletes = JSON.parse(d.studyDeletes || '{}');
+    const cloudSubj    = JSON.parse(d.studySubjects || '{}');
+    const localData = data; // 科目マージ用にマージ前のローカルを保持
     const merged = mergeStudyData(data, cloudData, studyDeletes, cloudDeletes);
     data = merged.data;
     studyDeletes = merged.deletes;
+    studySubjMap = mergeStudySubjects(data, localData, cloudData, studySubjMap, cloudSubj);
     LS.set('study-data',    JSON.stringify(data));
     LS.set('study-deletes', JSON.stringify(studyDeletes));
+    LS.set('study-subjects', JSON.stringify(studySubjMap));
     LS.set(_SYNC_THROTTLE_KEY, String(Date.now())); // readカウント更新
     mergeKotsuTasksFromCloud(d.kotsuTasks);
   }
   await ref.set({
     studyData:    JSON.stringify(data),
     studyDeletes: JSON.stringify(studyDeletes),
+    studySubjects: JSON.stringify(studySubjMap),
     studyNotes:   JSON.stringify(notes),
     studyCust:    LS.get('study-cust',''),
     studyBadges:  LS.get('study-badges',''),
@@ -2304,11 +2446,15 @@ async function loadFromCloud(code) {
       if (d.studyData) {
         const cloudData    = JSON.parse(d.studyData    || '{}');
         const cloudDeletes = JSON.parse(d.studyDeletes || '{}');
+        const cloudSubj    = JSON.parse(d.studySubjects || '{}');
+        const localData = data; // 科目マージ用にマージ前のローカルを保持
         const merged = mergeStudyData(data, cloudData, studyDeletes, cloudDeletes);
         data = merged.data;
         studyDeletes = merged.deletes;
+        studySubjMap = mergeStudySubjects(data, localData, cloudData, studySubjMap, cloudSubj);
         LS.set('study-data',    JSON.stringify(data));
         LS.set('study-deletes', JSON.stringify(studyDeletes));
+        LS.set('study-subjects', JSON.stringify(studySubjMap));
         LS.set(_SYNC_THROTTLE_KEY, String(Date.now()));
       }
       if (d.studyNotes) { notes = JSON.parse(d.studyNotes); LS.set('study-notes', d.studyNotes); }
@@ -2618,12 +2764,38 @@ let studyDeletes={};
 function loadDeletes(){try{studyDeletes=JSON.parse(LS.get('study-deletes','{}'));}catch{studyDeletes={};}}
 function saveDeletes(){LS.set('study-deletes',JSON.stringify(studyDeletes));}
 
+// === 科目カラー (study-subjects) ===
+// studySubjMap[ds][key] = 科目ID … そのマスをどの科目で塗ったか（「指定なし」はキー自体なし）
+// 学習時間の本体は study-data のまま変えず、色の情報だけを横に並べて持つ
+// （既存の集計・クラウド同期のマージを一切壊さないための設計）。
+// フォールバックグリッド（index.html 上部のIIFE）にも同じルールの複製があるので、挙動を変えるときは両方直すこと。
+let studySubjMap={};
+function loadSubjMap(){try{studySubjMap=JSON.parse(LS.get('study-subjects','{}'))||{};}catch{studySubjMap={};}}
+function saveSubjMap(){LS.set('study-subjects',JSON.stringify(studySubjMap));}
+function getSubjects(){try{return Array.isArray(CUST.subjects)?CUST.subjects:[];}catch(e){return[];}}
+function getSubjectById(id){if(!id)return null;return getSubjects().find(s=>s&&s.id===id)||null;}
+function getCurrentSubjectId(){const id=localStorage.getItem('study-subject-current')||'';return getSubjectById(id)?id:'';}
+// 削除済み・不明な科目IDは ''（指定なし）として扱う
+function subjOf(ds,key){const id=(studySubjMap[ds]&&studySubjMap[ds][key])||'';return getSubjectById(id)?id:'';}
+function setSubj(ds,key,id){
+  if(id){(studySubjMap[ds]=studySubjMap[ds]||{})[key]=id;}
+  else if(studySubjMap[ds]){delete studySubjMap[ds][key];if(!Object.keys(studySubjMap[ds]).length)delete studySubjMap[ds];}
+}
+function subjectColorClass(id){const s=getSubjectById(id);return s?'subj-'+s.color:'';}
+function setBlockSubjectClass(div,id){
+  Array.from(div.classList).forEach(c=>{if(/^subj-c\d$/.test(c))div.classList.remove(c);});
+  const c=subjectColorClass(id);if(c)div.classList.add(c);
+}
+// その日の科目別合計（分）。キー '' は「指定なし」（科目未指定＋削除済み科目）
+function subjectDayTotals(ds){const day=data[ds]||{},t={};for(const k in day){if(!day[k])continue;const id=subjOf(ds,k);t[id]=(t[id]||0)+10;}return t;}
+
 function load(){try{data=JSON.parse(LS.get('study-data','{}'));}catch{data={};}_invalidateStudyStats();}
 
 function save(){
   _invalidateStudyStats();
   LS.set('study-data',JSON.stringify(data));
   saveDeletes();
+  saveSubjMap();
   saveToCloud();
   if(typeof window.queueKotsuAnalyticsUpdate==='function')window.queueKotsuAnalyticsUpdate();
 }
@@ -3897,7 +4069,8 @@ function exportDailyReport(){
   const W=700;
   const headerH=64;
   const bigTimeH=100;
-  const blocksH=100;
+  // 科目を登録している場合は、科目別凡例の1行分だけ高くする（未登録なら従来と同一）
+  const blocksH=getSubjects().length?124:100;
   const divH=1;
   const lvH=40;
   const storyH=130;
@@ -3969,6 +4142,26 @@ function exportDailyReport(){
     ctx.font='9px sans-serif';ctx.fillStyle=cnt>0?row.color:mutedColor;ctx.textAlign='right';
     ctx.fillText(cnt>0?fmt(cnt*10):'─',W-bPad,ry+10);
   });
+  // 科目別凡例（科目を登録している場合のみ・当日分）
+  if(getSubjects().length){
+    const subjTotals=subjectDayTotals(ds);
+    const items=[];
+    getSubjects().forEach(su=>{const min=subjTotals[su.id]||0;if(min>0)items.push({hex:(SUBJECT_PALETTE[su.color]||{}).hex||mutedColor,label:su.name||'科目',min});});
+    const noneMin=subjTotals['']||0;
+    if(noneMin>0)items.push({hex:'#ff85a1',label:'指定なし',min:noneMin});
+    let sx=bPad;const sy=bTop+20+3*(bH+rowGap)+12;
+    ctx.font='bold 10px sans-serif';ctx.textAlign='left';
+    if(!items.length){
+      ctx.fillStyle=mutedColor;ctx.fillText('📚 科目別：まだ今日の記録がありません',sx,sy);
+    }
+    items.forEach(it=>{
+      ctx.fillStyle=it.hex;
+      ctx.beginPath();ctx.arc(sx+4,sy-4,4,0,Math.PI*2);ctx.fill();
+      const txt=it.label+' '+_fmtSubjMin(it.min);
+      ctx.fillText(txt,sx+12,sy);
+      sx+=12+ctx.measureText(txt).width+16;
+    });
+  }
   y+=blocksH;
 
   // ── 仕切り線
@@ -4233,14 +4426,18 @@ function _itachachaBlockClass(h,m){
 }
 function onHourBtn(h){
   const allChecked=MINS.every(m=>isChecked(currentDate,h,m));
+  const cur=getCurrentSubjectId();
+  // 全マスが選択中の科目と一致しているときだけ「全解除」。それ以外は科目色でまとめて塗る
+  const allMatch=allChecked&&MINS.every(m=>subjOf(currentDate,h+':'+m)===cur);
   const now=Date.now();
   if(!data[currentDate])data[currentDate]={};
-  if(allChecked){
+  if(allMatch){
     MINS.forEach(m=>{
       const key=h+':'+m;
       delete data[currentDate][key];
       if(!studyDeletes[currentDate])studyDeletes[currentDate]={};
       studyDeletes[currentDate][key]=now;
+      setSubj(currentDate,key,'');
     });
     if(Object.keys(data[currentDate]).length===0)delete data[currentDate];
   }else{
@@ -4248,6 +4445,7 @@ function onHourBtn(h){
       const key=h+':'+m;
       data[currentDate][key]=now;
       if(studyDeletes[currentDate])delete studyDeletes[currentDate][key];
+      setSubj(currentDate,key,cur);
     });
   }
   save();refreshGrid();updateStats();
@@ -4271,8 +4469,17 @@ function onBlock(e){
   const div=e.currentTarget;
   const h=+div.dataset.h,m=+div.dataset.m;
   const wasChecked=isChecked(currentDate,h,m);
-  toggle(currentDate,h,m);
+  const res=toggle(currentDate,h,m);
   div.classList.toggle('checked',isChecked(currentDate,h,m));
+  setBlockSubjectClass(div,isChecked(currentDate,h,m)?subjOf(currentDate,h+':'+m):'');
+  // 塗り替え時：初回だけ説明トーストを出す（コンボ等は wasChecked ガードで発火しない）
+  if(res==='recolor'){
+    if(typeof trackEvent==='function')trackEvent('subject_recolor');
+    if(!localStorage.getItem('subject-recolor-hint')){
+      localStorage.setItem('subject-recolor-hint','1');
+      showEasterToast('🎨 選択中の科目に塗り替えました（同じ科目でもう一度タップすると解除）');
+    }
+  }
   // ラッキーブロック判定
   if(!wasChecked)onLuckyCheck(h,m);
   // コンボ
@@ -4308,30 +4515,46 @@ function isLucky(h,m){
   return currentDate===lb.ds&&h===lb.h&&m===lb.m;
 }
 function isChecked(ds,h,m){return !!(data[ds]&&data[ds][h+':'+m]);}
+// タップは常に「選択中の科目に合わせる」：
+//   一致していれば解除（従来動作）／違う科目なら塗り替え／未チェックなら新規チェック。
+// 戻り値: 'off'（解除）| 'recolor'（塗り替え）| 'on'（新規チェック）
 function toggle(ds,h,m){
   const key=h+':'+m;
   const now=Date.now();
+  const cur=getCurrentSubjectId();
   if(!data[ds])data[ds]={};
-  if(data[ds][key]){
+  let result;
+  if(data[ds][key]&&subjOf(ds,key)===cur){
     // チェックを外す → data から削除し、削除ログに時刻を記録
     delete data[ds][key];
     if(Object.keys(data[ds]).length===0)delete data[ds];
     if(!studyDeletes[ds])studyDeletes[ds]={};
     studyDeletes[ds][key]=now;
+    setSubj(ds,key,'');
+    result='off';
+  }else if(data[ds][key]){
+    // 別の科目 → 塗り替え（時刻を更新することで、同期時に塗り替えた側が勝つ）
+    data[ds][key]=now;
+    setSubj(ds,key,cur);
+    result='recolor';
   }else{
     // チェックを入れる → タイムスタンプで記録し、削除ログがあれば消す
     data[ds][key]=now;
     if(studyDeletes[ds])delete studyDeletes[ds][key];
+    setSubj(ds,key,cur);
+    result='on';
   }
   save();
   // ブロックタップ時にsummaryへ差分送信
   if(typeof pushSummaryDiff==='function')pushSummaryDiff();
+  return result;
 }
 function refreshGrid(){
   document.querySelectorAll('.block').forEach(div=>{
     const h=+div.dataset.h,m=+div.dataset.m;
     const chk=isChecked(currentDate,h,m);
     div.classList.toggle('checked',chk);
+    setBlockSubjectClass(div,chk?subjOf(currentDate,h+':'+m):'');
     div.classList.toggle('lucky',isLucky(h,m)&&!chk);
   });
   document.querySelectorAll('.hour-btn').forEach(btn=>{
@@ -4395,7 +4618,7 @@ function showToast(msg,isError=false){
   setTimeout(()=>t.classList.remove('show'),_toastDuration(msg));
 }
 $('export-btn').addEventListener('click',()=>{
-  const backup={version:1,exportedAt:new Date().toISOString(),studyData:JSON.parse(LS.get('study-data','{}')),studyDeletes:JSON.parse(LS.get('study-deletes','{}')),studyNotes:JSON.parse(LS.get('study-notes','{}')),studyGoal:localStorage.getItem('study-goal'),studyWeekGoal:localStorage.getItem('study-week-goal'),studyMonthGoal:localStorage.getItem('study-month-goal'),examDate:LS.get('exam-date'),theme:LS.get('study-theme'),badges:localStorage.getItem('study-badges'),milestones:localStorage.getItem('study-milestones'),customizations:LS.get('study-cust'),kotsuTasks:window.KotsuTasks?window.KotsuTasks.exportData():null};
+  const backup={version:1,exportedAt:new Date().toISOString(),studyData:JSON.parse(LS.get('study-data','{}')),studyDeletes:JSON.parse(LS.get('study-deletes','{}')),studySubjects:JSON.parse(LS.get('study-subjects','{}')),studyNotes:JSON.parse(LS.get('study-notes','{}')),studyGoal:localStorage.getItem('study-goal'),studyWeekGoal:localStorage.getItem('study-week-goal'),studyMonthGoal:localStorage.getItem('study-month-goal'),examDate:LS.get('exam-date'),theme:LS.get('study-theme'),badges:localStorage.getItem('study-badges'),milestones:localStorage.getItem('study-milestones'),customizations:LS.get('study-cust'),kotsuTasks:window.KotsuTasks?window.KotsuTasks.exportData():null};
   const json=JSON.stringify(backup,null,2);
   const blob=new Blob([json],{type:'application/json'});
   const url=URL.createObjectURL(blob);
@@ -4423,6 +4646,7 @@ $('import-file-input').addEventListener('change',function(){
       if(!(await appConfirm('バックアップ（'+exportDate+'）を復元します。\n現在のデータは上書きされます。よろしいですか？', { title:'バックアップを復元しますか？', okText:'復元する' })))return;
       LS.set('study-data',JSON.stringify(backup.studyData));
       LS.set('study-deletes',JSON.stringify(backup.studyDeletes||{}));
+      if(backup.studySubjects)LS.set('study-subjects',JSON.stringify(backup.studySubjects));
       if(backup.studyNotes)LS.set('study-notes',JSON.stringify(backup.studyNotes));
       if(backup.studyGoal)LS.set('study-goal',backup.studyGoal);
       if(backup.studyWeekGoal)LS.set('study-week-goal',backup.studyWeekGoal);
@@ -4433,7 +4657,7 @@ $('import-file-input').addEventListener('change',function(){
       if(backup.milestones)LS.set('study-milestones',backup.milestones);
       if(backup.customizations)LS.set('study-cust',backup.customizations);
       if(backup.kotsuTasks&&window.KotsuTasks)window.KotsuTasks.importData(backup.kotsuTasks);
-      load();loadDeletes();loadNotes();loadGoal();loadCountdown();loadBadges();loadMilestones();loadCust();
+      load();loadDeletes();loadSubjMap();loadNotes();loadGoal();loadCountdown();loadBadges();loadMilestones();loadCust();
       applyTheme(LS.get('study-theme','light'));
       applyAllCust();
       lastBloomPct=-1;lastWeeklyPct=-1;lastMonthlyPct=-1;lastLv=0;
@@ -4447,11 +4671,11 @@ $('import-file-input').addEventListener('change',function(){
 $('clear-all-btn').addEventListener('click',async ()=>{
   if(!(await appConfirm('すべての学習データ・設定をクリアします。\nこの操作は元に戻せません。よろしいですか？', { title:'全データをクリアしますか？', okText:'次へ' })))return;
   if(!(await appConfirm('本当にすべて削除してよろしいですか？', { title:'最終確認', okText:'削除する' })))return;
-  ['study-data','study-deletes','study-notes','study-goal','study-week-goal','study-month-goal','exam-date','study-theme','study-badges','study-milestones','weekly-goal-achieved','monthly-goal-achieved','study-cust'].forEach(k=>LS.del(k));
+  ['study-data','study-deletes','study-subjects','study-subject-current','study-notes','study-goal','study-week-goal','study-month-goal','exam-date','study-theme','study-badges','study-milestones','weekly-goal-achieved','monthly-goal-achieved','study-cust'].forEach(k=>LS.del(k));
   if(window.KotsuTasks)window.KotsuTasks.clearAll();
   clearMilestoneToastFlags();
   clearChachaToastFlag();
-  data={};notes={};studyDeletes={};earnedBadges={};achievedMs={};GOAL=120;WEEK_GOAL=600;MONTH_GOAL=1800;CUST={...CUST_DEFAULTS};_invalidateStudyStats();
+  data={};notes={};studyDeletes={};studySubjMap={};earnedBadges={};achievedMs={};GOAL=120;WEEK_GOAL=600;MONTH_GOAL=1800;CUST={...CUST_DEFAULTS};_invalidateStudyStats();
   lastBloomPct=-1;lastWeeklyPct=-1;lastMonthlyPct=-1;lastLv=0;
   currentDate=toStudyDateStr(new Date());
   loadGoal();loadCountdown();applyTheme('dark');applyAllCust();
@@ -4514,6 +4738,7 @@ function renderWeekly(){
   const prevLabel=$('week-prev-label');prevLabel.className='week-section-label';
   prevLabel.innerHTML=`<span class="wsl-name">${weekName(prevDates)}</span><span class="wsl-total">${fmtStudyTimeText(prevTotal)}</span>`;
   buildChart('bar-chart-prev',prevDates,false);buildChart('bar-chart-curr',currDates,true);
+  renderSubjectWeekCard(currDates,weekName(currDates));
   safeRenderForecast();
 }
 
@@ -4611,6 +4836,7 @@ function updateStats(){
   renderLevelBar();
   checkMilestones(allTimeTotal());
   renderChallenge();
+  if(typeof renderSubjectChips==='function')renderSubjectChips();
 }
 
 function _formatMonthDayWeek(dateStr){
@@ -4991,6 +5217,8 @@ $('weekly-report-btn').addEventListener('click',exportWeeklyReport);
     if(!data[ds][key]){
       data[ds][key]=boundaryMs; // タイムスタンプで記録
       if(studyDeletes[ds])delete studyDeletes[ds][key]; // 削除ログがあれば消す
+      // 選択中の科目で塗る（チップはlocalStorage永続なので、再起動後の追い付き処理でも正しく色が付く）
+      const _subj=getCurrentSubjectId();if(_subj)setSubj(ds,key,_subj);
       save();if(currentView==='daily'&&currentDate===ds){refreshGrid();updateStats();if(typeof renderCrazy10Stars==='function')renderCrazy10Stars();if(typeof renderAsajukuStars==='function')renderAsajukuStars();}
       if(typeof trackEvent==='function')trackEvent('ten_min_check',{source:'stopwatch'});
       hintEl.textContent=String(h===0?24:h).padStart(2,'0')+':'+String(blockMin).padStart(2,'0')+' '+getActiveCheckEmoji();
@@ -5723,7 +5951,205 @@ function getStoryTierMsg(tierIdx){
   return (ov['tierMsg'+tierIdx]!==undefined&&ov['tierMsg'+tierIdx]!=='')?ov['tierMsg'+tierIdx]:s.tiers[tierIdx]?.msg||'';
 }
 
-const CUST_DEFAULTS={appName:'コツコツ✏️サクサク🌸',checkEmoji:'🌸',comboEmoji:'✨',comboText:'コンボ！',comboHighText:'すごい！',showTreeBg:true,customQuotes:[],useCustomQuotesOnly:false,levelNames:{},levelIcons:{},badgeOverrides:{},customBadges:[],storyId:'samurai',storyOverrides:{},storyLoopCount:{},storyLoopStartMin:{},targetTotalH:0,appIcon:'A',crazy10Joined:{},myEvents:[],storyChoiceTouched:false,learningGoalsTouched:false,targetTotalTouched:false};
+const CUST_DEFAULTS={appName:'コツコツ✏️サクサク🌸',checkEmoji:'🌸',comboEmoji:'✨',comboText:'コンボ！',comboHighText:'すごい！',showTreeBg:true,customQuotes:[],useCustomQuotesOnly:false,levelNames:{},levelIcons:{},badgeOverrides:{},customBadges:[],storyId:'samurai',storyOverrides:{},storyLoopCount:{},storyLoopStartMin:{},targetTotalH:0,appIcon:'A',crazy10Joined:{},myEvents:[],storyChoiceTouched:false,learningGoalsTouched:false,targetTotalTouched:false,subjects:[],subjectsSeededFor:''};
+
+// ── 科目カラー：パレット・プリセット・チップバー・設定エディタ ──
+const SUBJECT_COLOR_SLOTS=['c1','c2','c3','c4','c5','c6','c7','c8'];
+// ⚠ 色を変えるときは <style id="subject-colors"> のCSSと両方直すこと（マスの塗り色はCSS側で定義）
+const SUBJECT_PALETTE={c1:{name:'ブルー',hex:'#60a5fa'},c2:{name:'グリーン',hex:'#34d399'},c3:{name:'オレンジ',hex:'#fb923c'},c4:{name:'パープル',hex:'#a78bfa'},c5:{name:'イエロー',hex:'#facc15'},c6:{name:'シアン',hex:'#22d3ee'},c7:{name:'レッド',hex:'#f87171'},c8:{name:'グレー',hex:'#94a3b8'}};
+// ストーリー（資格）別のおすすめ科目。該当ストーリーが無い場合は _default
+// 各試験の現行制度（2026年度）を調査して全科目を収録：
+//  - 税理士: 会計2科目＋税法9科目の全11科目（国税庁の試験科目）
+//  - 社労士: 全10科目（労基法／安衛法／労災／雇用／徴収法／労一／社一／健保／厚年／国年）
+//  - 診断士: 1次7科目＋2次対策（2026年度から口述試験は廃止）
+//  - 会計士: 短答4科目＋租税法＋選択科目（経営学・経済学・民法・統計学から1つ）
+//  - FP2級: 学科6分野＋実技 ／ 宅建: 4分野＋5問免除科目
+//  - 簿記3級は商業簿記のみの試験のため学習分野で分割
+//  - 公務員: 国家一般職（大卒）の基礎能力試験の構成（2024年度改定反映）を代表に
+const SUBJECT_PRESETS={
+  boki3:['仕訳','帳簿・勘定記入','試算表','決算・精算表'],
+  boki2:['商業簿記','工業簿記'],
+  fp2:['ライフプランニング','リスク管理','金融資産運用','タックスプランニング','不動産','相続・事業承継','実技対策'],
+  zeirishi:['簿記論','財務諸表論','所得税法','法人税法','相続税法','消費税法','酒税法','国税徴収法','住民税','事業税','固定資産税'],
+  kaikeishi:['財務会計論','管理会計論','監査論','企業法','租税法','選択科目'],
+  takken:['権利関係','宅建業法','法令上の制限','税・その他','免除科目'],
+  sharoshi:['労働基準法','労働安全衛生法','労災保険法','雇用保険法','労働保険徴収法','労働一般（労一）','社会一般（社一）','健康保険法','厚生年金保険法','国民年金法'],
+  shindanshi:['経済学・経済政策','財務・会計','企業経営理論','運営管理','経営法務','経営情報システム','中小企業経営・政策','2次対策'],
+  koumuin:['文章理解','判断推理','数的推理','資料解釈','時事・情報','専門科目','論文・面接'],
+  _default:['インプット','アウトプット','復習']
+};
+// 最大科目数：いちばん科目が多い税理士（11科目）が収まる件数にしてある
+const SUBJECT_MAX=12;
+// おすすめ科目の「試験を選ぶメニュー」用（メインストーリーが物語でも資格の科目を投入できる）
+// key は SUBJECT_PRESETS のキーと一致させること
+const SUBJECT_PRESET_MENU=[
+  {key:'',label:'いまのストーリーに合わせる（自動）'},
+  {key:'zeirishi',label:'🧮 税理士（11科目）'},
+  {key:'sharoshi',label:'⚖️ 社労士（10科目）'},
+  {key:'kaikeishi',label:'🔍 公認会計士'},
+  {key:'shindanshi',label:'💼 中小企業診断士'},
+  {key:'takken',label:'🏠 宅建'},
+  {key:'fp2',label:'💰 FP2級'},
+  {key:'koumuin',label:'🏛️ 公務員試験'},
+  {key:'boki2',label:'📒 日商簿記2級'},
+  {key:'boki3',label:'📗 日商簿記3級'},
+  {key:'_default',label:'📚 汎用（インプット・アウトプット・復習）'}
+];
+// 設定画面の試験メニュー（select）に選択肢を流し込む（初回のみ）
+function _subjPresetMenuInit(){
+  const sel=document.getElementById('cust-subject-preset-sel');
+  if(!sel||sel.options.length)return;
+  SUBJECT_PRESET_MENU.forEach(m=>{
+    const o=document.createElement('option');
+    o.value=m.key;o.textContent=m.label;
+    sel.appendChild(o);
+  });
+}
+function _fmtSubjMin(min){return Math.floor(min/60)+':'+String(min%60).padStart(2,'0');}
+// グリッド上の科目チップバー（科目切り替え＋当日の科目別合計の凡例を兼ねる）
+// 🌈ボタン（「🌸まであと」のすぐ右）の表示更新。科目の選択UIはポップアップに集約した。
+// 科目が1件も未登録なら非表示＝従来と同じ見た目。右下のドットは選択中の科目の色。
+function renderSubjectChips(){
+  const subs=getSubjects();
+  const popBtn=document.getElementById('subject-pop-btn');
+  if(!popBtn)return;
+  popBtn.style.display=subs.length?'flex':'none';
+  const dot=document.getElementById('subject-cur-dot');
+  if(dot){
+    const cur=getCurrentSubjectId();
+    const s=cur?getSubjectById(cur):null;
+    dot.className='subj-cur-dot '+(s?'subj-dot-'+s.color:'subj-dot-none');
+  }
+}
+// 科目選択ポップアップ（🌈ボタンから開く。選択状態は study-subject-current で共有）
+function renderSubjectPopList(){
+  const list=document.getElementById('subject-pop-list');if(!list)return;
+  list.innerHTML='';
+  const cur=getCurrentSubjectId();
+  const totals=subjectDayTotals(currentDate);
+  const mk=(id,label,dotCls)=>{
+    const b=document.createElement('button');
+    b.type='button';b.className='subj-chip'+(id===cur?' active':'');
+    if(dotCls){const d=document.createElement('span');d.className='subj-dot '+dotCls;b.appendChild(d);}
+    const t=document.createElement('span');t.textContent=label;b.appendChild(t);
+    const min=totals[id]||0;
+    if(min>0){const mn=document.createElement('span');mn.className='subj-chip-min';mn.textContent=_fmtSubjMin(min);b.appendChild(mn);}
+    b.onclick=()=>{
+      localStorage.setItem('study-subject-current',id);
+      renderSubjectChips();closeSubjectPop();
+      if(typeof trackEvent==='function')trackEvent('subject_pop_select');
+    };
+    list.appendChild(b);
+  };
+  mk('','指定なし','subj-dot-none');
+  getSubjects().forEach(s=>{if(s&&s.id)mk(s.id,s.name||'科目','subj-dot-'+s.color);});
+  // 設定画面の科目エディタへ（新しい科目の追加・名前や色の変更）
+  const add=document.createElement('button');
+  add.type='button';add.className='subj-chip';add.textContent='＋ 科目を追加・編集';
+  add.onclick=()=>{
+    closeSubjectPop();openCustPanel();
+    const sec=document.getElementById('cust-subject-list');
+    if(sec&&typeof _scrollCustPanelTo==='function')_scrollCustPanelTo(sec);
+    if(typeof trackEvent==='function')trackEvent('subject_pop_edit');
+  };
+  list.appendChild(add);
+}
+function openSubjectPop(){
+  if(!getSubjects().length){openCustPanel();return;}
+  renderSubjectPopList();
+  const o=document.getElementById('subject-pop-overlay');if(o)o.classList.add('show');
+  if(typeof trackEvent==='function')trackEvent('subject_pop_open');
+}
+function closeSubjectPop(){const o=document.getElementById('subject-pop-overlay');if(o)o.classList.remove('show');}
+// 設定画面：科目エディタ
+function _newSubjId(){return 's_'+Date.now().toString(36)+Math.floor(Math.random()*1296).toString(36);}
+function _firstFreeColor(){const used=getSubjects().map(s=>s&&s.color);return SUBJECT_COLOR_SLOTS.find(c=>!used.includes(c))||'c1';}
+function _subjChanged(){saveCust();_renderSubjectEditList();renderSubjectChips();if(typeof refreshGrid==='function')refreshGrid();if(typeof trackEvent==='function')trackEvent('subject_edit');}
+function _subjAdd(){
+  if(!Array.isArray(CUST.subjects))CUST.subjects=[];
+  if(CUST.subjects.length>=SUBJECT_MAX){showToast('❌ 科目は'+SUBJECT_MAX+'件までです',true);return;}
+  CUST.subjects.push({id:_newSubjId(),name:'科目'+(CUST.subjects.length+1),color:_firstFreeColor()});
+  _subjChanged();
+}
+async function _subjPreset(){
+  // 試験メニューで選ばれていればその試験の科目、未選択（自動）ならいまのストーリーに合わせる
+  const sel=document.getElementById('cust-subject-preset-sel');
+  const picked=sel?sel.value:'';
+  const key=picked||CUST.storyId||'';
+  const names=SUBJECT_PRESETS[key]||SUBJECT_PRESETS._default;
+  if(getSubjects().length){
+    if(!(await appConfirm('今の科目リストを、おすすめ科目（'+names.join('・')+'）に置き換えますか？\nマスに塗った色の記録は消えません。',{title:'おすすめ科目に置き換え',okText:'置き換える'})))return;
+  }
+  CUST.subjects=names.slice(0,SUBJECT_MAX).map((n,i)=>({id:_newSubjId()+i,name:n,color:SUBJECT_COLOR_SLOTS[i%SUBJECT_COLOR_SLOTS.length]}));
+  CUST.subjectsSeededFor=key;
+  _subjChanged();
+  if(typeof trackEvent==='function')trackEvent('subject_preset',{preset:key||'_default'});
+}
+async function _subjDelete(id){
+  const s=getSubjectById(id);if(!s)return;
+  if(!(await appConfirm('「'+(s.name||'科目')+'」を削除します。\nこの科目で塗ったマスは標準の色に戻ります（学習記録は消えません）。',{title:'科目を削除しますか？',okText:'削除する'})))return;
+  CUST.subjects=getSubjects().filter(x=>x&&x.id!==id);
+  _subjChanged();
+}
+function _renderSubjectEditList(){
+  _subjPresetMenuInit();
+  const wrap=document.getElementById('cust-subject-list');if(!wrap)return;
+  wrap.innerHTML='';
+  const subs=getSubjects();
+  if(!subs.length){
+    const p=document.createElement('div');
+    p.style.cssText='font-size:.62rem;color:var(--text-muted);padding:4px 0;';
+    p.textContent='まだ科目がありません。「＋ 科目を追加」か「📚 おすすめ科目を入れる」から始めてね。';
+    wrap.appendChild(p);return;
+  }
+  subs.forEach(s=>{
+    if(!s||!s.id)return;
+    const row=document.createElement('div');row.className='subj-edit-row';
+    const top=document.createElement('div');top.className='subj-edit-top';
+    const dot=document.createElement('span');dot.className='subj-dot subj-dot-'+s.color;top.appendChild(dot);
+    const inp=document.createElement('input');
+    inp.type='text';inp.className='cust-input';inp.maxLength=10;inp.value=s.name||'';
+    inp.placeholder='科目名';inp.style.cssText='flex:1;min-width:0;';
+    inp.addEventListener('input',()=>{s.name=inp.value;saveCust();renderSubjectChips();});
+    top.appendChild(inp);
+    const del=document.createElement('button');
+    del.type='button';del.textContent='🗑';del.title='削除';
+    del.style.cssText='background:transparent;border:none;cursor:pointer;font-size:.9rem;flex:none;padding:2px;';
+    del.onclick=()=>{_subjDelete(s.id);};
+    top.appendChild(del);
+    row.appendChild(top);
+    const swRow=document.createElement('div');swRow.className='subj-swatch-row';
+    SUBJECT_COLOR_SLOTS.forEach(c=>{
+      const sw=document.createElement('button');
+      sw.type='button';sw.className='subj-swatch'+(s.color===c?' active':'');
+      sw.style.background=SUBJECT_PALETTE[c].hex;sw.title=SUBJECT_PALETTE[c].name;
+      sw.onclick=()=>{s.color=c;_subjChanged();};
+      swRow.appendChild(sw);
+    });
+    row.appendChild(swRow);
+    wrap.appendChild(row);
+  });
+}
+// 週間ビュー：科目別の学習時間カード（表示中の週＋累計）
+function subjectRangeTotals(dsList){const t={};dsList.forEach(ds=>{const dt=subjectDayTotals(ds);for(const k in dt)t[k]=(t[k]||0)+dt[k];});return t;}
+function subjectAllTimeTotals(){const t={};for(const ds in data){const dt=subjectDayTotals(ds);for(const k in dt)t[k]=(t[k]||0)+dt[k];}return t;}
+function renderSubjectWeekCard(currDates,weekLabel){
+  const card=document.getElementById('subject-week-card');if(!card)return;
+  const subs=getSubjects();
+  if(!subs.length){card.style.display='none';card.innerHTML='';return;}
+  const week=subjectRangeTotals(currDates);
+  const all=subjectAllTimeTotals();
+  const rows=[];
+  subs.forEach(s=>{if(s&&s.id)rows.push({dot:'subj-dot-'+s.color,label:s.name||'科目',w:week[s.id]||0,a:all[s.id]||0});});
+  const noneW=week['']||0,noneA=all['']||0;
+  if(noneW>0||noneA>0)rows.push({dot:'subj-dot-none',label:'指定なし',w:noneW,a:noneA});
+  card.style.display='block';
+  card.innerHTML='<div class="subject-week-title">📚 科目別の学習時間</div>'+rows.map(r=>
+    '<div class="subject-week-row"><span class="subj-dot '+r.dot+'"></span><span class="swr-name"></span><span class="swr-min">'+weekLabel+' '+_fmtSubjMin(r.w)+'</span><span class="swr-min">累計 '+_fmtSubjMin(r.a)+'</span></div>').join('');
+  // 科目名は自由入力なので textContent で安全に流し込む
+  const names=card.querySelectorAll('.swr-name');
+  rows.forEach((r,i)=>{if(names[i])names[i].textContent=r.label;});
+}
 
 // ── ITACHACHA House Crazy10 イベント定義 ──
 const CRAZY10_EVENTS=[
@@ -6271,6 +6697,7 @@ function applyAllCust(){
   updateStoryMainCard();
   syncStopwatchIconLabels();
   applyAppIcon(CUST.appIcon||'A');
+  if(typeof renderSubjectChips==='function')renderSubjectChips();
 }
 
 function updateGridHeaderIcon(){
@@ -6326,6 +6753,8 @@ function closeCustPanel(){
   if(_custSnapshot){
     CUST=Object.assign({},JSON.parse(_custSnapshot));
     applyAllCust();
+    // 科目の色をエディタで変えてからキャンセルした場合に、マスの色も元に戻す
+    if(typeof refreshGrid==='function')refreshGrid();
     _custSnapshot=null;
   }
   $('cust-overlay').classList.remove('show');
@@ -6618,7 +7047,7 @@ function _syncCustPanel(){
   if(co){co.value=isItachacha?'🥦':(CUST.comboEmoji||'✨');co.disabled=isItachacha;co.style.opacity=isItachacha?'0.4':'';co.title=isItachacha?'itachachaストーリー中は🥦固定':'';}
   const tt=$('cust-tree-tog');if(tt)tt.checked=CUST.showTreeBg!==false;
   const qo=$('cust-qonly');if(qo)qo.checked=!!CUST.useCustomQuotesOnly;
-  _renderCheckGrid();_renderComboGrid();_renderQuotesList();_renderLevelList();_renderBadgeEditList();
+  _renderCheckGrid();_renderComboGrid();_renderQuotesList();_renderLevelList();_renderBadgeEditList();_renderSubjectEditList();
   const ct=$('cust-combo-text');if(ct)ct.value=CUST.comboText&&CUST.comboText!=='コンボ！'?CUST.comboText:'';
   const cht=$('cust-combo-high');if(cht)cht.value=CUST.comboHighText&&CUST.comboHighText!=='すごい！'?CUST.comboHighText:'';
   const cdInp=$('cust-cd-input');if(cdInp)cdInp.value=LS.get('exam-date')||'';
@@ -6849,11 +7278,11 @@ function _renderQuotesList(){
   if(rstBtn)rstBtn.addEventListener('click',async ()=>{
     if(!(await appConfirm('設定と学習データをすべてリセットします。\n日々の入力記録も含めてすべて初期状態に戻ります。\nよろしいですか？', { title:'すべてリセットしますか？', okText:'次へ' })))return;
     if(!(await appConfirm('本当にすべてリセットしてよろしいですか？\nこの操作は元に戻せません。', { title:'最終確認', okText:'リセットする' })))return;
-    ['study-data','study-deletes','study-notes','study-goal','study-week-goal','study-month-goal','exam-date','study-theme','study-badges','study-milestones','weekly-goal-achieved','monthly-goal-achieved','study-cust'].forEach(k=>LS.del(k));
+    ['study-data','study-deletes','study-subjects','study-subject-current','study-notes','study-goal','study-week-goal','study-month-goal','exam-date','study-theme','study-badges','study-milestones','weekly-goal-achieved','monthly-goal-achieved','study-cust'].forEach(k=>LS.del(k));
     if(window.KotsuTasks)window.KotsuTasks.clearAll();
     clearMilestoneToastFlags();
     clearChachaToastFlag();
-    data={};notes={};studyDeletes={};earnedBadges={};achievedMs={};GOAL=120;WEEK_GOAL=600;MONTH_GOAL=1800;CUST={...CUST_DEFAULTS};_invalidateStudyStats();
+    data={};notes={};studyDeletes={};studySubjMap={};earnedBadges={};achievedMs={};GOAL=120;WEEK_GOAL=600;MONTH_GOAL=1800;CUST={...CUST_DEFAULTS};_invalidateStudyStats();
     lastBloomPct=-1;lastWeeklyPct=-1;lastMonthlyPct=-1;lastLv=0;
     currentDate=toStudyDateStr(new Date());
     loadGoal();loadCountdown();applyTheme('dark');applyAllCust();
@@ -6865,7 +7294,7 @@ function _renderQuotesList(){
   });
 })();
 
-loadCust();load();loadDeletes();loadNotes();loadGoal();loadBadges();loadMilestones();loadCountdown();
+loadCust();load();loadDeletes();loadSubjMap();loadNotes();loadGoal();loadBadges();loadMilestones();loadCountdown();
 // クラウドから自動同期（初回起動時）
 (async () => {
   const ok = await loadFromCloud(getSyncCode());
@@ -7030,7 +7459,7 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v113-bloom-diary'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v114-subject-colors'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
   var _latestVersionLabel = null;
