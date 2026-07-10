@@ -108,6 +108,7 @@
 .subject-pop-title{font-size:.78rem;font-weight:800;color:var(--text);margin-bottom:10px}
 .subject-pop-list{display:flex;flex-wrap:wrap;gap:7px}
 .subject-pop-hint{font-size:.6rem;color:var(--text-muted);margin-top:10px;line-height:1.5}
+.subject-pop-empty{font-size:.68rem;color:var(--text-muted);line-height:1.6;margin-bottom:10px;width:100%}
 /* 週間ビューの科目別内訳カード */
 #subject-week-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin:10px 2px}
 .subject-week-title{font-size:.68rem;font-weight:800;color:var(--text-muted);margin-bottom:6px}
@@ -826,9 +827,9 @@
 <!-- 科目カラー：🌈ボタンから開く科目選択ポップアップ（中身はJSのrenderSubjectPopListが描画） -->
 <div id="subject-pop-overlay" onclick="if(event.target===this)closeSubjectPop()">
 <div class="subject-pop-card">
-<div class="subject-pop-title">🎨 いま勉強する科目は？</div>
+<div class="subject-pop-title" id="subject-pop-title">🎨 いま勉強する科目は？</div>
 <div id="subject-pop-list" class="subject-pop-list"></div>
-<div class="subject-pop-hint">選んだ科目の色で、これからのチェック（マス・ストップウォッチ）が塗られます</div>
+<div class="subject-pop-hint" id="subject-pop-hint">選んだ科目の色で、これからのチェック（マス・ストップウォッチ）が塗られます</div>
 </div>
 </div>
 <div class="sw-wrap">
@@ -844,7 +845,7 @@
 <div id="sw-next-time" class="sw-next-time">--:--</div>
 </div>
 <!-- 科目カラー：いま勉強する科目をポップアップで選ぶ（科目未登録なら非表示＝従来と同じ見た目） -->
-<button class="sw-icon-btn" id="subject-pop-btn" type="button" title="科目の色をえらぶ" style="display:none" onclick="openSubjectPop()">🌈<span class="subj-cur-dot" id="subject-cur-dot"></span></button>
+<button class="sw-icon-btn" id="subject-pop-btn" type="button" title="科目の色をえらぶ" onclick="openSubjectPop()">🌈<span class="subj-cur-dot" id="subject-cur-dot" style="display:none"></span></button>
 </div>
 <div class="sw-hint" id="sw-hint">10分ごとに 🌸</div>
 </div>
@@ -6007,24 +6008,44 @@ function _subjPresetMenuInit(){
 }
 function _fmtSubjMin(min){return Math.floor(min/60)+':'+String(min%60).padStart(2,'0');}
 // グリッド上の科目チップバー（科目切り替え＋当日の科目別合計の凡例を兼ねる）
-// 🌈ボタン（「🌸まであと」のすぐ右）の表示更新。科目の選択UIはポップアップに集約した。
-// 科目が1件も未登録なら非表示＝従来と同じ見た目。右下のドットは選択中の科目の色。
+// 🌈ボタン（「🌸まであと」のすぐ右）の表示更新。常時表示＝科目未登録でもボタンは出す。
+// 右下のドットは、科目を1件以上登録していて選択中の時だけ表示（選べる状態が視覚的に分かる）。
 function renderSubjectChips(){
-  const subs=getSubjects();
-  const popBtn=document.getElementById('subject-pop-btn');
-  if(!popBtn)return;
-  popBtn.style.display=subs.length?'flex':'none';
   const dot=document.getElementById('subject-cur-dot');
-  if(dot){
-    const cur=getCurrentSubjectId();
-    const s=cur?getSubjectById(cur):null;
-    dot.className='subj-cur-dot '+(s?'subj-dot-'+s.color:'subj-dot-none');
-  }
+  if(!dot)return;
+  const cur=getCurrentSubjectId();
+  const s=cur?getSubjectById(cur):null;
+  if(s){dot.className='subj-cur-dot subj-dot-'+s.color;dot.style.display='block';}
+  else{dot.style.display='none';}
 }
 // 科目選択ポップアップ（🌈ボタンから開く。選択状態は study-subject-current で共有）
+// 科目が1件も未登録の場合は、選択肢の代わりに設定画面への案内を出す。
 function renderSubjectPopList(){
   const list=document.getElementById('subject-pop-list');if(!list)return;
   list.innerHTML='';
+  const subs=getSubjects();
+  const title=document.getElementById('subject-pop-title');
+  const hint=document.getElementById('subject-pop-hint');
+  if(!subs.length){
+    if(title)title.textContent='🎨 科目の色分け、はじめませんか？';
+    if(hint)hint.style.display='none';
+    const msg=document.createElement('div');
+    msg.className='subject-pop-empty';
+    msg.textContent='まだ科目が登録されていません。設定から科目を登録すると、ここで色を選べるようになります。';
+    list.appendChild(msg);
+    const go=document.createElement('button');
+    go.type='button';go.className='cust-btn ok';go.textContent='⚙️ 設定で科目を登録する';
+    go.onclick=()=>{
+      closeSubjectPop();openCustPanel();
+      const sec=document.getElementById('cust-subject-list');
+      if(sec&&typeof _scrollCustPanelTo==='function')_scrollCustPanelTo(sec);
+      if(typeof trackEvent==='function')trackEvent('subject_pop_guide_to_settings');
+    };
+    list.appendChild(go);
+    return;
+  }
+  if(title)title.textContent='🎨 いま勉強する科目は？';
+  if(hint)hint.style.display='';
   const cur=getCurrentSubjectId();
   const totals=subjectDayTotals(currentDate);
   const mk=(id,label,dotCls)=>{
@@ -6042,7 +6063,7 @@ function renderSubjectPopList(){
     list.appendChild(b);
   };
   mk('','指定なし','subj-dot-none');
-  getSubjects().forEach(s=>{if(s&&s.id)mk(s.id,s.name||'科目','subj-dot-'+s.color);});
+  subs.forEach(s=>{if(s&&s.id)mk(s.id,s.name||'科目','subj-dot-'+s.color);});
   // 設定画面の科目エディタへ（新しい科目の追加・名前や色の変更）
   const add=document.createElement('button');
   add.type='button';add.className='subj-chip';add.textContent='＋ 科目を追加・編集';
@@ -6055,7 +6076,6 @@ function renderSubjectPopList(){
   list.appendChild(add);
 }
 function openSubjectPop(){
-  if(!getSubjects().length){openCustPanel();return;}
   renderSubjectPopList();
   const o=document.getElementById('subject-pop-overlay');if(o)o.classList.add('show');
   if(typeof trackEvent==='function')trackEvent('subject_pop_open');
