@@ -99,6 +99,14 @@
 .subj-swatch-row{display:flex;gap:7px;flex-wrap:wrap}
 .subj-swatch{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;flex:none;padding:0}
 .subj-swatch.active{border-color:var(--text);box-shadow:0 0 0 2px var(--accent)}
+/* 科目選択ポップアップ（ストップウォッチ横の🌈ボタンから開く） */
+#subject-pop-btn{border:1.5px solid transparent;background:linear-gradient(var(--surface2),var(--surface2)) padding-box,conic-gradient(#f87171,#fb923c,#facc15,#34d399,#22d3ee,#60a5fa,#a78bfa,#f87171) border-box}
+#subject-pop-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:15000;align-items:flex-start;justify-content:center;padding:80px 16px 16px}
+#subject-pop-overlay.show{display:flex}
+.subject-pop-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;max-width:340px;width:100%;box-shadow:0 14px 40px rgba(0,0,0,.35)}
+.subject-pop-title{font-size:.78rem;font-weight:800;color:var(--text);margin-bottom:10px}
+.subject-pop-list{display:flex;flex-wrap:wrap;gap:7px}
+.subject-pop-hint{font-size:.6rem;color:var(--text-muted);margin-top:10px;line-height:1.5}
 /* 週間ビューの科目別内訳カード */
 #subject-week-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin:10px 2px}
 .subject-week-title{font-size:.68rem;font-weight:800;color:var(--text-muted);margin-bottom:6px}
@@ -590,11 +598,15 @@
 <!-- 科目の色分け -->
 <div class="cust-sec" style="margin-bottom:0;padding-bottom:10px;border-bottom:1px solid var(--border);">
 <div class="cust-sec-title">🎨 科目の色分け</div>
-<div style="font-size:.65rem;color:var(--text-muted);margin-bottom:6px;">科目を登録すると、10分マスを科目ごとの色で塗り分けられます（最大12件）。「おすすめ科目」ならいまの試験制度の全科目が入ります。使わない科目は🗑で消してOK。マス表の上に出るチップで科目を選んでからチェックしてね。</div>
+<div style="font-size:.65rem;color:var(--text-muted);margin-bottom:6px;">科目を登録すると、10分マスを科目ごとの色で塗り分けられます（最大12件）。「おすすめ科目」ならいまの試験制度の全科目が入ります。試験メニューでどの試験の科目にするかも選べます（メインストーリーはそのままでOK）。使わない科目は🗑で消してOK。マス表の上のチップ、またはストップウォッチ横の🌈から科目を選んでチェックしてね。</div>
 <div id="cust-subject-list"></div>
 <div style="display:flex;gap:6px;margin-top:6px;">
 <button type="button" class="cust-btn ok" id="cust-subject-add" onclick="_subjAdd()">＋ 科目を追加</button>
-<button type="button" class="cust-btn" id="cust-subject-preset" onclick="_subjPreset()">📚 おすすめ科目を入れる</button>
+</div>
+<!-- おすすめ科目：試験を選ぶメニュー＋投入ボタン（メインストーリーとは独立して選べる） -->
+<div style="display:flex;gap:6px;margin-top:6px;align-items:stretch;">
+<select id="cust-subject-preset-sel" class="cust-input" style="flex:1;min-width:0;font-size:.68rem;"></select>
+<button type="button" class="cust-btn" id="cust-subject-preset" onclick="_subjPreset()" style="flex:none;">📚 おすすめ科目を入れる</button>
 </div>
 </div>
 <!-- 成長段階メッセージ（アコーディオン・一番下） -->
@@ -810,6 +822,14 @@
 <button class="tab-btn" data-view="monthly">📆 月</button>
 </div>
 </header>
+<!-- 科目カラー：🌈ボタンから開く科目選択ポップアップ（中身はJSのrenderSubjectPopListが描画） -->
+<div id="subject-pop-overlay" onclick="if(event.target===this)closeSubjectPop()">
+<div class="subject-pop-card">
+<div class="subject-pop-title">🎨 いま勉強する科目は？</div>
+<div id="subject-pop-list" class="subject-pop-list"></div>
+<div class="subject-pop-hint">選んだ科目の色で、これからのチェック（マス・ストップウォッチ）が塗られます</div>
+</div>
+</div>
 <div class="sw-wrap">
 <div class="sw-card">
 <div class="sw-top-row">
@@ -830,6 +850,8 @@
   <span class="ks-story-bubble" data-ks-runner-bubble>いくよ</span>
   <span class="ks-story-character ks-story-runner" data-ks-runner-char></span>
 </div>
+<!-- 科目カラー：いま勉強する科目をポップアップで選ぶ（科目未登録なら非表示＝従来と同じ見た目） -->
+<button class="sw-icon-btn" id="subject-pop-btn" type="button" title="科目の色をえらぶ" style="display:none" onclick="openSubjectPop()">🌈</button>
 <button class="sw-icon-btn" id="bloom-cd-trigger-btn" type="button" data-bloom-cd-trigger title="開花日カウントダウン">🌸</button>
 </div>
 </div>
@@ -5959,11 +5981,39 @@ const SUBJECT_PRESETS={
 };
 // 最大科目数：いちばん科目が多い税理士（11科目）が収まる件数にしてある
 const SUBJECT_MAX=12;
+// おすすめ科目の「試験を選ぶメニュー」用（メインストーリーが物語でも資格の科目を投入できる）
+// key は SUBJECT_PRESETS のキーと一致させること
+const SUBJECT_PRESET_MENU=[
+  {key:'',label:'いまのストーリーに合わせる（自動）'},
+  {key:'zeirishi',label:'🧮 税理士（11科目）'},
+  {key:'sharoshi',label:'⚖️ 社労士（10科目）'},
+  {key:'kaikeishi',label:'🔍 公認会計士'},
+  {key:'shindanshi',label:'💼 中小企業診断士'},
+  {key:'takken',label:'🏠 宅建'},
+  {key:'fp2',label:'💰 FP2級'},
+  {key:'koumuin',label:'🏛️ 公務員試験'},
+  {key:'boki2',label:'📒 日商簿記2級'},
+  {key:'boki3',label:'📗 日商簿記3級'},
+  {key:'_default',label:'📚 汎用（インプット・アウトプット・復習）'}
+];
+// 設定画面の試験メニュー（select）に選択肢を流し込む（初回のみ）
+function _subjPresetMenuInit(){
+  const sel=document.getElementById('cust-subject-preset-sel');
+  if(!sel||sel.options.length)return;
+  SUBJECT_PRESET_MENU.forEach(m=>{
+    const o=document.createElement('option');
+    o.value=m.key;o.textContent=m.label;
+    sel.appendChild(o);
+  });
+}
 function _fmtSubjMin(min){return Math.floor(min/60)+':'+String(min%60).padStart(2,'0');}
 // グリッド上の科目チップバー（科目切り替え＋当日の科目別合計の凡例を兼ねる）
 function renderSubjectChips(){
-  const bar=document.getElementById('subject-bar');if(!bar)return;
   const subs=getSubjects();
+  // ストップウォッチ横の🌈ボタンは科目が1件以上あるときだけ出す（未登録なら従来と同じ見た目）
+  const popBtn=document.getElementById('subject-pop-btn');
+  if(popBtn)popBtn.style.display=subs.length?'flex':'none';
+  const bar=document.getElementById('subject-bar');if(!bar)return;
   if(!subs.length){bar.style.display='none';bar.innerHTML='';return;}
   bar.style.display='flex';
   const cur=getCurrentSubjectId();
@@ -5987,6 +6037,33 @@ function renderSubjectChips(){
   add.onclick=()=>{openCustPanel();const sec=document.getElementById('cust-subject-list');if(sec&&typeof _scrollCustPanelTo==='function')_scrollCustPanelTo(sec);};
   bar.appendChild(add);
 }
+// 科目選択ポップアップ（ストップウォッチ横の🌈ボタンから開く。チップバーと同じ選択状態を共有）
+function renderSubjectPopList(){
+  const list=document.getElementById('subject-pop-list');if(!list)return;
+  list.innerHTML='';
+  const cur=getCurrentSubjectId();
+  const mk=(id,label,dotCls)=>{
+    const b=document.createElement('button');
+    b.type='button';b.className='subj-chip'+(id===cur?' active':'');
+    if(dotCls){const d=document.createElement('span');d.className='subj-dot '+dotCls;b.appendChild(d);}
+    const t=document.createElement('span');t.textContent=label;b.appendChild(t);
+    b.onclick=()=>{
+      localStorage.setItem('study-subject-current',id);
+      renderSubjectChips();closeSubjectPop();
+      if(typeof trackEvent==='function')trackEvent('subject_pop_select');
+    };
+    list.appendChild(b);
+  };
+  mk('','指定なし','subj-dot-none');
+  getSubjects().forEach(s=>{if(s&&s.id)mk(s.id,s.name||'科目','subj-dot-'+s.color);});
+}
+function openSubjectPop(){
+  if(!getSubjects().length){openCustPanel();return;}
+  renderSubjectPopList();
+  const o=document.getElementById('subject-pop-overlay');if(o)o.classList.add('show');
+  if(typeof trackEvent==='function')trackEvent('subject_pop_open');
+}
+function closeSubjectPop(){const o=document.getElementById('subject-pop-overlay');if(o)o.classList.remove('show');}
 // 設定画面：科目エディタ
 function _newSubjId(){return 's_'+Date.now().toString(36)+Math.floor(Math.random()*1296).toString(36);}
 function _firstFreeColor(){const used=getSubjects().map(s=>s&&s.color);return SUBJECT_COLOR_SLOTS.find(c=>!used.includes(c))||'c1';}
@@ -5998,13 +6075,18 @@ function _subjAdd(){
   _subjChanged();
 }
 async function _subjPreset(){
-  const names=SUBJECT_PRESETS[CUST.storyId]||SUBJECT_PRESETS._default;
+  // 試験メニューで選ばれていればその試験の科目、未選択（自動）ならいまのストーリーに合わせる
+  const sel=document.getElementById('cust-subject-preset-sel');
+  const picked=sel?sel.value:'';
+  const key=picked||CUST.storyId||'';
+  const names=SUBJECT_PRESETS[key]||SUBJECT_PRESETS._default;
   if(getSubjects().length){
     if(!(await appConfirm('今の科目リストを、おすすめ科目（'+names.join('・')+'）に置き換えますか？\nマスに塗った色の記録は消えません。',{title:'おすすめ科目に置き換え',okText:'置き換える'})))return;
   }
   CUST.subjects=names.slice(0,SUBJECT_MAX).map((n,i)=>({id:_newSubjId()+i,name:n,color:SUBJECT_COLOR_SLOTS[i%SUBJECT_COLOR_SLOTS.length]}));
-  CUST.subjectsSeededFor=CUST.storyId||'';
+  CUST.subjectsSeededFor=key;
   _subjChanged();
+  if(typeof trackEvent==='function')trackEvent('subject_preset',{preset:key||'_default'});
 }
 async function _subjDelete(id){
   const s=getSubjectById(id);if(!s)return;
@@ -6013,6 +6095,7 @@ async function _subjDelete(id){
   _subjChanged();
 }
 function _renderSubjectEditList(){
+  _subjPresetMenuInit();
   const wrap=document.getElementById('cust-subject-list');if(!wrap)return;
   wrap.innerHTML='';
   const subs=getSubjects();
