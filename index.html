@@ -115,6 +115,22 @@
 .subject-week-row{display:flex;align-items:center;gap:7px;font-size:.7rem;color:var(--text);padding:3px 0}
 .subject-week-row .swr-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
 .subject-week-row .swr-min{font-weight:800;font-variant-numeric:tabular-nums;color:var(--text-muted)}
+/* 科目別カードのグラフ（各行の横棒＋週・月の構成比バー）
+   ⚠ .subj-bar-cX の色は .block.checked.subj-cX / SUBJECT_PALETTE と同系統。色を変えるときは全部そろえること */
+.swr-bar-track{height:7px;border-radius:99px;background:rgba(127,127,127,.18);overflow:hidden;margin:1px 0 5px 16px}
+.swr-bar-fill{height:100%;border-radius:99px;width:0;transition:width .6s cubic-bezier(.22,.9,.35,1)}
+.subj-bar-c1{background:linear-gradient(90deg,rgba(147,197,253,.75),rgba(59,130,246,.85))}
+.subj-bar-c2{background:linear-gradient(90deg,rgba(110,231,183,.75),rgba(16,185,129,.85))}
+.subj-bar-c3{background:linear-gradient(90deg,rgba(253,186,116,.75),rgba(249,115,22,.85))}
+.subj-bar-c4{background:linear-gradient(90deg,rgba(196,181,253,.75),rgba(139,92,246,.85))}
+.subj-bar-c5{background:linear-gradient(90deg,rgba(253,224,71,.75),rgba(234,179,8,.85))}
+.subj-bar-c6{background:linear-gradient(90deg,rgba(103,232,249,.75),rgba(6,182,212,.85))}
+.subj-bar-c7{background:linear-gradient(90deg,rgba(252,165,165,.75),rgba(239,68,68,.85))}
+.subj-bar-c8{background:linear-gradient(90deg,rgba(203,213,225,.75),rgba(100,116,139,.85))}
+.subj-bar-none{background:linear-gradient(90deg,rgba(255,214,228,.9),rgba(255,133,161,.95))}
+.subject-stack-bar{display:flex;height:10px;border-radius:99px;overflow:hidden;background:rgba(127,127,127,.12);margin:2px 0 8px}
+.subject-stack-seg{height:100%}
+.swr-pct{font-size:.6rem;font-weight:800;color:var(--text-muted);flex:none}
 </style><link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#4f8ef7">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -6161,31 +6177,57 @@ function _renderSubjectEditList(){
 // 週間・月間ビュー：科目別の学習時間カード（表示中の期間＋累計）
 function subjectRangeTotals(dsList){const t={};dsList.forEach(ds=>{const dt=subjectDayTotals(ds);for(const k in dt)t[k]=(t[k]||0)+dt[k];});return t;}
 function subjectAllTimeTotals(){const t={};for(const ds in data){const dt=subjectDayTotals(ds);for(const k in dt)t[k]=(t[k]||0)+dt[k];}return t;}
+// 前回の棒グラフ幅（cardId|科目id → %）。再描画のたびに0から伸び直すチラつきを防ぎ、差分だけ動かす
+let _subjBarPrev={};
 // 共通描画：cardId のカードに、dsList（対象期間の日付リスト）の科目別合計と累計を出す
-function _renderSubjectRangeCard(cardId,dsList,rangeLabel){
+// opts.stacked=構成比バー（1本の帯を科目色で分割）、opts.pct=各行に割合% を追加（週・月で使用）
+function _renderSubjectRangeCard(cardId,dsList,rangeLabel,opts){
+  opts=opts||{};
   const card=document.getElementById(cardId);if(!card)return;
   const subs=getSubjects();
   if(!subs.length){card.style.display='none';card.innerHTML='';return;}
   const range=subjectRangeTotals(dsList);
   const all=subjectAllTimeTotals();
   const rows=[];
-  subs.forEach(s=>{if(s&&s.id)rows.push({dot:'subj-dot-'+s.color,label:s.name||'科目',w:range[s.id]||0,a:all[s.id]||0});});
+  subs.forEach(s=>{if(s&&s.id)rows.push({id:s.id,bar:'subj-bar-'+s.color,dot:'subj-dot-'+s.color,label:s.name||'科目',w:range[s.id]||0,a:all[s.id]||0});});
   const noneW=range['']||0,noneA=all['']||0;
-  if(noneW>0||noneA>0)rows.push({dot:'subj-dot-none',label:'指定なし',w:noneW,a:noneA});
+  if(noneW>0||noneA>0)rows.push({id:'_none',bar:'subj-bar-none',dot:'subj-dot-none',label:'指定なし',w:noneW,a:noneA});
+  // 期間内の多い順（同値は登録順を維持：sortは安定ソート）
+  rows.sort((x,y)=>y.w-x.w);
+  const totalW=rows.reduce((s,r)=>s+r.w,0);
+  const maxW=rows.reduce((m,r)=>Math.max(m,r.w),0);
   card.style.display='block';
-  card.innerHTML='<div class="subject-week-title">📚 科目別の学習時間</div>'+rows.map(r=>
-    '<div class="subject-week-row"><span class="subj-dot '+r.dot+'"></span><span class="swr-name"></span><span class="swr-min">'+rangeLabel+' '+_fmtSubjMin(r.w)+'</span><span class="swr-min">累計 '+_fmtSubjMin(r.a)+'</span></div>').join('');
+  let html='<div class="subject-week-title">📚 科目別の学習時間</div>';
+  if(opts.stacked&&totalW>0){
+    html+='<div class="subject-stack-bar">'+rows.filter(r=>r.w>0).map(r=>'<span class="subject-stack-seg '+r.bar+'" style="flex:'+r.w+'"></span>').join('')+'</div>';
+  }
+  html+=rows.map(r=>{
+    const pctHtml=(opts.pct&&totalW>0)?'<span class="swr-pct">'+Math.round(r.w/totalW*100)+'%</span>':'';
+    return '<div class="subject-week-row"><span class="subj-dot '+r.dot+'"></span><span class="swr-name"></span>'+pctHtml+'<span class="swr-min">'+rangeLabel+' '+_fmtSubjMin(r.w)+'</span><span class="swr-min">累計 '+_fmtSubjMin(r.a)+'</span></div>'
+      +'<div class="swr-bar-track"><div class="swr-bar-fill '+r.bar+'"></div></div>';
+  }).join('');
+  card.innerHTML=html;
   // 科目名は自由入力なので textContent で安全に流し込む
   const names=card.querySelectorAll('.swr-name');
   rows.forEach((r,i)=>{if(names[i])names[i].textContent=r.label;});
+  // 棒の幅：前回の幅から目標値へCSS transitionで伸縮（初回は0からスッと伸びる）
+  const fills=card.querySelectorAll('.swr-bar-fill');
+  rows.forEach((r,i)=>{
+    const el=fills[i];if(!el)return;
+    const key=cardId+'|'+r.id;
+    const target=maxW>0?Math.round(r.w/maxW*100):0;
+    el.style.width=(_subjBarPrev[key]||0)+'%';
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{el.style.width=target+'%';}));
+    _subjBarPrev[key]=target;
+  });
 }
-function renderSubjectWeekCard(currDates,weekLabel){_renderSubjectRangeCard('subject-week-card',currDates,weekLabel);}
-function renderSubjectMonthCard(year,month,monthLabel){_renderSubjectRangeCard('subject-month-card',monthDates(year,month),monthLabel);}
+function renderSubjectWeekCard(currDates,weekLabel){_renderSubjectRangeCard('subject-week-card',currDates,weekLabel,{stacked:true,pct:true});}
+function renderSubjectMonthCard(year,month,monthLabel){_renderSubjectRangeCard('subject-month-card',monthDates(year,month),monthLabel,{stacked:true,pct:true});}
 // 日ベースのカード（「今日のひとこと」入力欄の下、試験日までの学習予測の上）。日タブを見ている時だけ表示。
 function renderSubjectDayCard(){
   const card=document.getElementById('subject-day-card');if(!card)return;
   if(currentView!=='daily'){card.style.display='none';card.innerHTML='';return;}
-  _renderSubjectRangeCard('subject-day-card',[currentDate],'今日');
+  _renderSubjectRangeCard('subject-day-card',[currentDate],'今日',{stacked:false,pct:false});
 }
 
 // ── ITACHACHA House Crazy10 イベント定義 ──
