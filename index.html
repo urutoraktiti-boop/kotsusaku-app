@@ -110,7 +110,7 @@
 .subject-pop-hint{font-size:.6rem;color:var(--text-muted);margin-top:10px;line-height:1.5}
 .subject-pop-empty{font-size:.68rem;color:var(--text-muted);line-height:1.6;margin-bottom:10px;width:100%}
 /* 週間ビューの科目別内訳カード */
-#subject-week-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin:10px 2px}
+#subject-week-card,#subject-month-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin:10px 2px}
 .subject-week-title{font-size:.68rem;font-weight:800;color:var(--text-muted);margin-bottom:6px}
 .subject-week-row{display:flex;align-items:center;gap:7px;font-size:.7rem;color:var(--text);padding:3px 0}
 .subject-week-row .swr-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
@@ -1277,6 +1277,8 @@
 <div class="legend-box" style="opacity:.9"></div>
 多い
 </div>
+<!-- 科目別の学習時間（科目が1件も未登録なら非表示。renderSubjectMonthCard() が描画） -->
+<div id="subject-month-card" style="display:none"></div>
 <div class="heatmap-section">
 <div class="heatmap-title">
 📅 年間学習マップ（過去365日）
@@ -4787,6 +4789,7 @@ function renderMonthly(){
     cell.appendChild(bg);cell.appendChild(num);cell.appendChild(te);if(partsDiv)cell.appendChild(partsDiv);frag.appendChild(cell);
   }
   cal.appendChild(frag);
+  renderSubjectMonthCard(year,month,mName);
   renderAnnualHeatmap();
   safeRenderForecast();
 }
@@ -6150,26 +6153,29 @@ function _renderSubjectEditList(){
     wrap.appendChild(row);
   });
 }
-// 週間ビュー：科目別の学習時間カード（表示中の週＋累計）
+// 週間・月間ビュー：科目別の学習時間カード（表示中の期間＋累計）
 function subjectRangeTotals(dsList){const t={};dsList.forEach(ds=>{const dt=subjectDayTotals(ds);for(const k in dt)t[k]=(t[k]||0)+dt[k];});return t;}
 function subjectAllTimeTotals(){const t={};for(const ds in data){const dt=subjectDayTotals(ds);for(const k in dt)t[k]=(t[k]||0)+dt[k];}return t;}
-function renderSubjectWeekCard(currDates,weekLabel){
-  const card=document.getElementById('subject-week-card');if(!card)return;
+// 共通描画：cardId のカードに、dsList（対象期間の日付リスト）の科目別合計と累計を出す
+function _renderSubjectRangeCard(cardId,dsList,rangeLabel){
+  const card=document.getElementById(cardId);if(!card)return;
   const subs=getSubjects();
   if(!subs.length){card.style.display='none';card.innerHTML='';return;}
-  const week=subjectRangeTotals(currDates);
+  const range=subjectRangeTotals(dsList);
   const all=subjectAllTimeTotals();
   const rows=[];
-  subs.forEach(s=>{if(s&&s.id)rows.push({dot:'subj-dot-'+s.color,label:s.name||'科目',w:week[s.id]||0,a:all[s.id]||0});});
-  const noneW=week['']||0,noneA=all['']||0;
+  subs.forEach(s=>{if(s&&s.id)rows.push({dot:'subj-dot-'+s.color,label:s.name||'科目',w:range[s.id]||0,a:all[s.id]||0});});
+  const noneW=range['']||0,noneA=all['']||0;
   if(noneW>0||noneA>0)rows.push({dot:'subj-dot-none',label:'指定なし',w:noneW,a:noneA});
   card.style.display='block';
   card.innerHTML='<div class="subject-week-title">📚 科目別の学習時間</div>'+rows.map(r=>
-    '<div class="subject-week-row"><span class="subj-dot '+r.dot+'"></span><span class="swr-name"></span><span class="swr-min">'+weekLabel+' '+_fmtSubjMin(r.w)+'</span><span class="swr-min">累計 '+_fmtSubjMin(r.a)+'</span></div>').join('');
+    '<div class="subject-week-row"><span class="subj-dot '+r.dot+'"></span><span class="swr-name"></span><span class="swr-min">'+rangeLabel+' '+_fmtSubjMin(r.w)+'</span><span class="swr-min">累計 '+_fmtSubjMin(r.a)+'</span></div>').join('');
   // 科目名は自由入力なので textContent で安全に流し込む
   const names=card.querySelectorAll('.swr-name');
   rows.forEach((r,i)=>{if(names[i])names[i].textContent=r.label;});
 }
+function renderSubjectWeekCard(currDates,weekLabel){_renderSubjectRangeCard('subject-week-card',currDates,weekLabel);}
+function renderSubjectMonthCard(year,month,monthLabel){_renderSubjectRangeCard('subject-month-card',monthDates(year,month),monthLabel);}
 
 // ── ITACHACHA House Crazy10 イベント定義 ──
 const CRAZY10_EVENTS=[
