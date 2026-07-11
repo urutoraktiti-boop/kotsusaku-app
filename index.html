@@ -110,7 +110,7 @@
 .subject-pop-hint{font-size:.6rem;color:var(--text-muted);margin-top:10px;line-height:1.5}
 .subject-pop-empty{font-size:.68rem;color:var(--text-muted);line-height:1.6;margin-bottom:10px;width:100%}
 /* 週間ビューの科目別内訳カード */
-#subject-week-card,#subject-month-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin:10px 2px}
+#subject-week-card,#subject-month-card,#subject-day-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin:10px 2px}
 .subject-week-title{font-size:.68rem;font-weight:800;color:var(--text-muted);margin-bottom:6px}
 .subject-week-row{display:flex;align-items:center;gap:7px;font-size:.7rem;color:var(--text);padding:3px 0}
 .subject-week-row .swr-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
@@ -793,6 +793,8 @@
 </div>
 </div>
 <div class="quote-bar" id="quote-bar"></div>
+<!-- 科目別の学習時間（日ベース）：科目が1件も未登録、または日タブ以外では非表示。renderSubjectDayCard() が描画 -->
+<div id="subject-day-card" style="display:none"></div>
 <div class="header-controls">
 <table class="date-header-table"><tbody>
 <tr class="dht-row today-line">
@@ -4475,6 +4477,7 @@ function onBlock(e){
   const res=toggle(currentDate,h,m);
   div.classList.toggle('checked',isChecked(currentDate,h,m));
   setBlockSubjectClass(div,isChecked(currentDate,h,m)?subjOf(currentDate,h+':'+m):'');
+  if(typeof renderSubjectDayCard==='function')renderSubjectDayCard();
   // 塗り替え時：初回だけ説明トーストを出す（コンボ等は wasChecked ガードで発火しない）
   if(res==='recolor'){
     if(typeof trackEvent==='function')trackEvent('subject_recolor');
@@ -4564,6 +4567,7 @@ function refreshGrid(){
     const h=+btn.dataset.h;btn.classList.toggle('full',MINS.every(m=>isChecked(currentDate,h,m)));
   });
   updateNowBlock();
+  if(typeof renderSubjectDayCard==='function')renderSubjectDayCard();
 }
 
 function weekMonday(ds){const dt=parseDate(ds);const day=dt.getDay();const diff=day===0?-6:1-day;const m=new Date(dt);m.setDate(dt.getDate()+diff);return m;}
@@ -4969,6 +4973,7 @@ function updateDateLabel(){
 
 function switchView(view){
   currentView=view;
+  if(typeof renderSubjectDayCard==='function')renderSubjectDayCard();
   resetCombo();
   // dailyビュー以外に切り替えたらストーリー自動周回タイマーを止める
   if(view!=='daily'&&_loopTimer){clearInterval(_loopTimer);_loopTimer=null;}
@@ -6176,6 +6181,12 @@ function _renderSubjectRangeCard(cardId,dsList,rangeLabel){
 }
 function renderSubjectWeekCard(currDates,weekLabel){_renderSubjectRangeCard('subject-week-card',currDates,weekLabel);}
 function renderSubjectMonthCard(year,month,monthLabel){_renderSubjectRangeCard('subject-month-card',monthDates(year,month),monthLabel);}
+// 日ベースのカード（今日の一言のすぐ下）。日タブを見ている時だけ表示。
+function renderSubjectDayCard(){
+  const card=document.getElementById('subject-day-card');if(!card)return;
+  if(currentView!=='daily'){card.style.display='none';card.innerHTML='';return;}
+  _renderSubjectRangeCard('subject-day-card',[currentDate],'今日');
+}
 
 // ── ITACHACHA House Crazy10 イベント定義 ──
 const CRAZY10_EVENTS=[
