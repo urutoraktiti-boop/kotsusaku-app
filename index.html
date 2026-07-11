@@ -793,8 +793,6 @@
 </div>
 </div>
 <div class="quote-bar" id="quote-bar"></div>
-<!-- 科目別の学習時間（日ベース）：科目が1件も未登録、または日タブ以外では非表示。renderSubjectDayCard() が描画 -->
-<div id="subject-day-card" style="display:none"></div>
 <div class="header-controls">
 <table class="date-header-table"><tbody>
 <tr class="dht-row today-line">
@@ -1198,6 +1196,8 @@
 <div class="diary-date-label" id="diary-date-label"></div>
 <input type="text" id="diary-input" class="diary-input" maxlength="100" placeholder="📝 今日のひとこと…">
 </div>
+<!-- 科目別の学習時間（日ベース）：科目が1件も未登録、または日タブ以外では非表示。renderSubjectDayCard() が描画 -->
+<div id="subject-day-card" style="display:none"></div>
 <div class="forecast-section" style="display:none">
 <div class="forecast-title">📈 試験日までの学習予測</div>
 <div class="forecast-cols">
@@ -6181,7 +6181,7 @@ function _renderSubjectRangeCard(cardId,dsList,rangeLabel){
 }
 function renderSubjectWeekCard(currDates,weekLabel){_renderSubjectRangeCard('subject-week-card',currDates,weekLabel);}
 function renderSubjectMonthCard(year,month,monthLabel){_renderSubjectRangeCard('subject-month-card',monthDates(year,month),monthLabel);}
-// 日ベースのカード（今日の一言のすぐ下）。日タブを見ている時だけ表示。
+// 日ベースのカード（「今日のひとこと」入力欄の下、試験日までの学習予測の上）。日タブを見ている時だけ表示。
 function renderSubjectDayCard(){
   const card=document.getElementById('subject-day-card');if(!card)return;
   if(currentView!=='daily'){card.style.display='none';card.innerHTML='';return;}
