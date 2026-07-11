@@ -115,6 +115,21 @@
 .subject-week-row{display:flex;align-items:center;gap:7px;font-size:.7rem;color:var(--text);padding:3px 0}
 .subject-week-row .swr-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
 .subject-week-row .swr-min{font-weight:800;font-variant-numeric:tabular-nums;color:var(--text-muted)}
+/* ── 桜の木（案4フルコンボ：枝が伸びる→一輪ずつ咲く→風揺れ・舞い散り）──
+   花・枝クラスは起動時にJSの _skInit() がSVGへ後付けする。ぼかしフィルタは性能のため不使用 */
+.sk-sway{transform-box:view-box;transform-origin:50% 100%;animation:skSway 6.5s ease-in-out infinite}
+@keyframes skSway{0%,100%{transform:rotate(-.45deg)}50%{transform:rotate(.55deg)}}
+#sakura-tree-bg .gb{transition:stroke-dashoffset .9s ease}
+.fl-in{transform:scale(0);opacity:0;transform-box:fill-box;transform-origin:center;transition:transform .55s cubic-bezier(.34,1.56,.64,1) var(--d,0s),opacity .3s ease var(--d,0s)}
+.fl.open .fl-in{transform:scale(1);opacity:1}
+#sakura-tree-bg.full-bloom .sk-flowers{filter:drop-shadow(0 0 8px rgba(255,150,180,.55))}
+.sk-fly{position:fixed;pointer-events:none;z-index:8000;font-size:15px;animation:skFly .8s cubic-bezier(.3,.7,.4,1) forwards}
+@keyframes skFly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.5) rotate(160deg);opacity:0}}
+.sk-fall{position:absolute;top:-18px;pointer-events:none;font-size:var(--sz,12px);animation:skFall var(--dur,4s) linear forwards}
+@keyframes skFall{0%{transform:translate(0,0) rotate(0)}100%{transform:translate(var(--drift,20px),560px) rotate(var(--spin,200deg));opacity:.1}}
+.sk-burst{position:fixed;pointer-events:none;z-index:8000;font-size:13px;animation:skBurst .9s ease-out forwards}
+@keyframes skBurst{0%{transform:translate(0,0) scale(.6);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(1.1) rotate(220deg);opacity:0}}
+@media (prefers-reduced-motion:reduce){.sk-sway{animation:none}.fl-in,#sakura-tree-bg .gb{transition-duration:.01s}.sk-fly,.sk-fall,.sk-burst{display:none}}
 /* 科目別カードのグラフ（各行の横棒＋週・月の構成比バー）
    ⚠ .subj-bar-cX の色は .block.checked.subj-cX / SUBJECT_PALETTE と同系統。色を変えるときは全部そろえること */
 .swr-bar-track{height:7px;border-radius:99px;background:rgba(127,127,127,.18);overflow:hidden;margin:1px 0 5px 16px}
@@ -1011,10 +1026,6 @@
 <div class="view active" id="view-daily">
 <div id="sakura-tree-bg" aria-hidden="true">
 <svg viewBox="0 0 700 560" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMax meet">
-<defs>
-<filter id="bf" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="9"/></filter>
-<filter id="bf2" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="6"/></filter>
-</defs>
 <g class="tree-branches" fill="none" stroke-linecap="round" stroke-linejoin="round">
 <path d="M350,560 C352,510 347,465 350,415" stroke="#7B4A2A" stroke-width="16"/>
 <path d="M350,460 C325,445 285,425 248,405" stroke="#7B4A2A" stroke-width="10"/>
@@ -1039,72 +1050,7 @@
 <path d="M347,340 C337,318 330,298 326,278" stroke="#B07845" stroke-width="3"/>
 <path d="M350,340 C360,318 367,298 371,278" stroke="#B07845" stroke-width="3"/>
 </g>
-<g class="blossom-group" id="bg1">
-<circle cx="100" cy="328" r="38" fill="var(--blossom1,#ffd6e4)" filter="url(#bf)"/>
-<circle cx="600" cy="328" r="38" fill="var(--blossom1,#ffd6e4)" filter="url(#bf)"/>
-<circle cx="240" cy="408" r="30" fill="var(--blossom2,#ffe0ec)" filter="url(#bf2)"/>
-<circle cx="460" cy="408" r="30" fill="var(--blossom2,#ffe0ec)" filter="url(#bf2)"/>
-</g>
-<g class="blossom-group" id="bg2">
-<circle cx="128" cy="305" r="36" fill="var(--blossom3,#ffcad8)" filter="url(#bf)"/>
-<circle cx="572" cy="305" r="36" fill="var(--blossom3,#ffcad8)" filter="url(#bf)"/>
-<circle cx="152" cy="278" r="28" fill="var(--blossom1,#ffd6e4)" filter="url(#bf2)"/>
-<circle cx="548" cy="278" r="28" fill="var(--blossom1,#ffd6e4)" filter="url(#bf2)"/>
-</g>
-<g class="blossom-group" id="bg3">
-<circle cx="168" cy="258" r="34" fill="var(--blossom4,#ffbdce)" filter="url(#bf)"/>
-<circle cx="532" cy="258" r="34" fill="var(--blossom4,#ffbdce)" filter="url(#bf)"/>
-<circle cx="192" cy="312" r="30" fill="var(--blossom3,#ffcad8)" filter="url(#bf2)"/>
-<circle cx="508" cy="312" r="30" fill="var(--blossom3,#ffcad8)" filter="url(#bf2)"/>
-</g>
-<g class="blossom-group" id="bg4">
-<circle cx="205" cy="272" r="34" fill="var(--blossom5,#ffadc2)" filter="url(#bf)"/>
-<circle cx="495" cy="272" r="34" fill="var(--blossom5,#ffadc2)" filter="url(#bf)"/>
-<circle cx="228" cy="248" r="26" fill="var(--blossom4,#ffbdce)" filter="url(#bf2)"/>
-<circle cx="472" cy="248" r="26" fill="var(--blossom4,#ffbdce)" filter="url(#bf2)"/>
-</g>
-<g class="blossom-group" id="bg5">
-<circle cx="248" cy="298" r="32" fill="var(--blossom6,#ff9fba)" filter="url(#bf)"/>
-<circle cx="452" cy="298" r="32" fill="var(--blossom6,#ff9fba)" filter="url(#bf)"/>
-<circle cx="262" cy="268" r="28" fill="var(--blossom5,#ffadc2)" filter="url(#bf2)"/>
-<circle cx="438" cy="268" r="28" fill="var(--blossom5,#ffadc2)" filter="url(#bf2)"/>
-</g>
-<g class="blossom-group" id="bg6">
-<circle cx="278" cy="252" r="32" fill="var(--blossom7,#ff90b5)" filter="url(#bf)"/>
-<circle cx="422" cy="252" r="32" fill="var(--blossom7,#ff90b5)" filter="url(#bf)"/>
-<circle cx="300" cy="315" r="28" fill="var(--blossom5,#ffadc2)" filter="url(#bf2)"/>
-<circle cx="400" cy="315" r="28" fill="var(--blossom5,#ffadc2)" filter="url(#bf2)"/>
-</g>
-<g class="blossom-group" id="bg7">
-<circle cx="298" cy="268" r="30" fill="var(--blossom8,#ff80aa)" filter="url(#bf)"/>
-<circle cx="402" cy="268" r="30" fill="var(--blossom8,#ff80aa)" filter="url(#bf)"/>
-<circle cx="318" cy="248" r="26" fill="var(--blossom6,#ff9fba)" filter="url(#bf2)"/>
-<circle cx="382" cy="248" r="26" fill="var(--blossom6,#ff9fba)" filter="url(#bf2)"/>
-</g>
-<g class="blossom-group" id="bg8">
-<circle cx="322" cy="285" r="30" fill="var(--blossom9,#ff6fa3)" filter="url(#bf)"/>
-<circle cx="378" cy="285" r="30" fill="var(--blossom9,#ff6fa3)" filter="url(#bf)"/>
-<circle cx="348" cy="338" r="28" fill="var(--blossom7,#ff90b5)" filter="url(#bf2)"/>
-<circle cx="348" cy="302" r="24" fill="var(--blossom3,#ffcad8)" filter="url(#bf2)"/>
-</g>
-<g class="blossom-group" id="bg9">
-<circle cx="332" cy="255" r="28" fill="var(--blossom10,#ff5c9e)" filter="url(#bf)"/>
-<circle cx="368" cy="255" r="28" fill="var(--blossom10,#ff5c9e)" filter="url(#bf)"/>
-<circle cx="350" cy="272" r="26" fill="var(--blossom8,#ff80aa)" filter="url(#bf2)"/>
-<circle cx="310" cy="248" r="22" fill="var(--blossom5,#ffadc2)" filter="url(#bf2)"/>
-<circle cx="390" cy="248" r="22" fill="var(--blossom5,#ffadc2)" filter="url(#bf2)"/>
-</g>
-<g class="blossom-group" id="bg10">
-<circle cx="350" cy="222" r="42" fill="var(--blossom-core,#ff69b4)" filter="url(#bf)"/>
-<circle cx="328" cy="242" r="30" fill="var(--blossom9,#ff6fa3)" filter="url(#bf2)"/>
-<circle cx="372" cy="242" r="30" fill="var(--blossom9,#ff6fa3)" filter="url(#bf2)"/>
-<circle cx="350" cy="258" r="26" fill="var(--blossom3,#ffb7c5)" filter="url(#bf2)"/>
-<circle cx="304" cy="244" r="24" fill="var(--blossom2,#ffc5d8)" filter="url(#bf2)"/>
-<circle cx="396" cy="244" r="24" fill="var(--blossom2,#ffc5d8)" filter="url(#bf2)"/>
-<circle cx="350" cy="208" r="18" fill="var(--blossom-tip,#fff0f5)" filter="url(#bf2)"/>
-<circle cx="332" cy="226" r="13" fill="var(--blossom2,#ffe4ef)" filter="url(#bf2)"/>
-<circle cx="368" cy="226" r="13" fill="var(--blossom2,#ffe4ef)" filter="url(#bf2)"/>
-</g>
+<!-- 花はJS（_skInit）が一輪ずつ生成する（案4フルコンボ）。旧・ぼかし円方式はJS側の _SK_BLOBS 座標として引き継ぎ -->
 </svg>
 </div>
 <div class="grid-wrap">
@@ -4303,13 +4249,146 @@ function applySeasonToTree(){
   r.style.setProperty('--blossom-core',c[10]);r.style.setProperty('--blossom-tip',c[11]);
 }
 
+/* ── 桜の木：案4フルコンボ ──
+   達成率 0〜25% で枝がスルスル伸び（線画アニメ）、20〜100% で約100輪の桜が一輪ずつ開花。
+   常時風で揺れ、50%以降は花びらが舞い、25/50/75%の節目でミニ花吹雪、100%で満開（既存演出）。
+   花・枝への仕込みは初回の updateSakuraTree() 内で _skInit() が行う（HTML側は枝のパスのみ）。 */
+// 花を散らす領域（旧ぼかし円の中心座標と半径。外側→中央上へ咲き進む順に並べてある）
+const _SK_BLOBS=[
+ [100,328,38],[600,328,38],[240,408,30],[460,408,30],
+ [128,305,36],[572,305,36],[152,278,28],[548,278,28],
+ [168,258,34],[532,258,34],[192,312,30],[508,312,30],
+ [205,272,34],[495,272,34],[228,248,26],[472,248,26],
+ [248,298,32],[452,298,32],[262,268,28],[438,268,28],
+ [278,252,32],[422,252,32],[300,315,28],[400,315,28],
+ [298,268,30],[402,268,30],[318,248,26],[382,248,26],
+ [322,285,30],[378,285,30],[348,338,28],[348,302,24],
+ [332,255,28],[368,255,28],[350,272,26],[310,248,22],[390,248,22],
+ [350,222,42],[328,242,30],[372,242,30],[350,258,26],[304,244,24],[396,244,24],[350,208,18],[332,226,13],[368,226,13]
+];
+let _skPaths=null,_skLens=null,_skFlowers=[],_skOpen=0,_skAmbTimer=null,_skFirstPaint=true;
+function _skReducedMotion(){return !!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);}
+function _skInit(){
+  if(_skPaths)return true;
+  const svg=document.querySelector('#sakura-tree-bg svg');if(!svg)return false;
+  try{
+    const NS='http://www.w3.org/2000/svg';
+    const brG=svg.querySelector('.tree-branches');
+    if(!_skReducedMotion())brG.classList.add('sk-sway');
+    _skPaths=Array.from(brG.querySelectorAll('path'));
+    _skLens=_skPaths.map(p=>{
+      const l=(typeof p.getTotalLength==='function')?p.getTotalLength():600;
+      p.classList.add('gb');p.style.strokeDasharray=l;p.style.strokeDashoffset=l;return l;
+    });
+    // 花レイヤー生成（決定的乱数＝毎回同じ配置。約100輪、進むほど濃いピンク）
+    const layer=document.createElementNS(NS,'g');
+    layer.setAttribute('class','sk-flowers'+(_skReducedMotion()?'':' sk-sway'));
+    let seed=42;const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
+    const lerp=(a,b,t)=>{
+      const pa=[1,3,5].map(i=>parseInt(a.slice(i,i+2),16)),pb=[1,3,5].map(i=>parseInt(b.slice(i,i+2),16));
+      return '#'+pa.map((v,i)=>Math.round(v+(pb[i]-v)*t).toString(16).padStart(2,'0')).join('');
+    };
+    const pos=[];
+    _SK_BLOBS.forEach(b=>{
+      const n=Math.max(2,Math.round(b[2]/13));
+      for(let i=0;i<n;i++)pos.push({x:b[0]+(rnd()*2-1)*b[2]*.72,y:b[1]+(rnd()*2-1)*b[2]*.6,s:.62+rnd()*.66,rot:rnd()*70-35});
+    });
+    pos.forEach((p,i)=>{
+      const col=lerp('#ffd6e4','#ff5c9e',i/(pos.length-1));
+      const g=document.createElementNS(NS,'g');g.setAttribute('class','fl');
+      g.setAttribute('transform','translate('+p.x.toFixed(1)+','+p.y.toFixed(1)+') rotate('+p.rot.toFixed(0)+') scale('+p.s.toFixed(2)+')');
+      const inner=document.createElementNS(NS,'g');inner.setAttribute('class','fl-in');
+      for(let k=0;k<5;k++){
+        const e=document.createElementNS(NS,'ellipse');
+        e.setAttribute('rx','4.4');e.setAttribute('ry','7.2');e.setAttribute('cy','-6.2');
+        e.setAttribute('fill',col);e.setAttribute('transform','rotate('+(k*72)+')');
+        inner.appendChild(e);
+      }
+      const cc=document.createElementNS(NS,'circle');cc.setAttribute('r','2.6');cc.setAttribute('fill','#ffe9a8');
+      inner.appendChild(cc);
+      g.appendChild(inner);layer.appendChild(g);_skFlowers.push(g);
+    });
+    svg.appendChild(layer);
+  }catch(e){/* SVG非対応環境（テスト用DOM等）でも本体は動かす */}
+  return true;
+}
+function _skAmbientStart(){
+  if(_skAmbTimer||_skReducedMotion())return;
+  _skAmbTimer=setInterval(()=>{
+    if(document.hidden||currentView!=='daily')return;
+    const bg=$('sakura-tree-bg');if(!bg||bg.style.visibility==='hidden')return;
+    if(bg.querySelectorAll('.sk-fall').length>=5)return;
+    const el=document.createElement('span');el.className='sk-fall';el.textContent='🌸';
+    el.style.left=(Math.random()*90+5)+'%';
+    el.style.setProperty('--sz',(9+Math.random()*6)+'px');
+    el.style.setProperty('--dur',(3.5+Math.random()*2.5)+'s');
+    el.style.setProperty('--drift',(Math.random()*70-35)+'px');
+    el.style.setProperty('--spin',(Math.random()*360-180)+'deg');
+    bg.appendChild(el);el.addEventListener('animationend',()=>el.remove());
+  },800);
+}
+function _skAmbientStop(){
+  if(_skAmbTimer){clearInterval(_skAmbTimer);_skAmbTimer=null;}
+  const bg=$('sakura-tree-bg');if(bg)bg.querySelectorAll('.sk-fall').forEach(e=>e.remove());
+}
+function _skBurst(n){
+  if(_skReducedMotion())return;
+  const svg=document.querySelector('#sakura-tree-bg svg');if(!svg)return;
+  const r=svg.getBoundingClientRect();if(!r.width)return;
+  for(let i=0;i<n;i++){
+    const el=document.createElement('span');el.className='sk-burst';el.textContent='🌸';
+    el.style.left=(r.left+r.width/2)+'px';el.style.top=(r.top+r.height*.4)+'px';
+    const a=Math.random()*Math.PI*2,d=40+Math.random()*80;
+    el.style.setProperty('--dx',Math.cos(a)*d+'px');
+    el.style.setProperty('--dy',(Math.sin(a)*d*.7-20)+'px');
+    el.style.animationDelay=(Math.random()*.25)+'s';
+    document.body.appendChild(el);el.addEventListener('animationend',()=>el.remove());
+  }
+}
+// マスをチェックした瞬間、そのマスから木へ花びらが飛ぶ（塗り替え・解除では呼ばない）
+function _skFlyFromBlock(div){
+  if(_skReducedMotion())return;
+  const svg=document.querySelector('#sakura-tree-bg svg');if(!svg)return;
+  const tr=svg.getBoundingClientRect();
+  if(!tr.width||tr.bottom<0||tr.top>window.innerHeight)return;
+  const br=div.getBoundingClientRect();
+  const el=document.createElement('span');el.className='sk-fly';el.textContent='🌸';
+  el.style.left=(br.left+br.width/2)+'px';el.style.top=(br.top+br.height/2)+'px';
+  el.style.setProperty('--dx',(tr.left+tr.width/2-(br.left+br.width/2)+(Math.random()*60-30))+'px');
+  el.style.setProperty('--dy',(tr.top+tr.height*.42-(br.top+br.height/2))+'px');
+  document.body.appendChild(el);el.addEventListener('animationend',()=>el.remove());
+}
 function updateSakuraTree(pct){
-  [1,2,3,4,5,6,7,8,9,10].forEach(i=>{
-    const g=$('bg'+i);if(!g)return;
-    const threshold=i*10;
-    if(pct>=threshold)g.classList.add('bloom');else g.classList.remove('bloom');
-  });
-  const treeBg=$('sakura-tree-bg');
+  const treeBg=$('sakura-tree-bg');if(!treeBg)return;
+  if(!_skInit())return;
+  // 枝：達成率0→25%でスルスル伸びる（0%でも幹だけは見せる）
+  if(_skPaths&&_skPaths.length){
+    const nPath=Math.max(1,Math.round(Math.min(1,pct/25)*_skPaths.length));
+    _skPaths.forEach((p,i)=>{p.style.strokeDashoffset=(i<nPath)?0:(_skLens[i]||600);});
+  }
+  // 花：20→100%で一輪ずつ開花。減ったとき（解除・日付移動）は閉じる
+  if(_skFlowers.length){
+    const target=Math.round(Math.max(0,Math.min(1,(pct-20)/80))*_skFlowers.length);
+    if(target>_skOpen){
+      let d=0;
+      for(let i=_skOpen;i<target;i++){
+        const inner=_skFlowers[i].querySelector('.fl-in');
+        if(inner)inner.style.setProperty('--d',Math.min(d++,24)*45+'ms');
+        _skFlowers[i].classList.add('open');
+      }
+    }else if(target<_skOpen){
+      for(let i=target;i<_skOpen;i++)_skFlowers[i].classList.remove('open');
+    }
+    _skOpen=target;
+  }
+  // 舞い散り（50%以上・日タブ表示中のみ）
+  if(pct>=50)_skAmbientStart();else _skAmbientStop();
+  // 節目のミニ花吹雪（今日の分をリアルタイムに越えた時だけ。起動直後・日付移動では出さない）
+  if(!_skFirstPaint&&lastBloomPct>=0&&currentDate===toStudyDateStr(new Date())){
+    [25,50,75].forEach(t=>{if(lastBloomPct<t&&pct>=t&&pct<100)_skBurst(6);});
+  }
+  _skFirstPaint=false;
+  // 満開（既存演出：1日1回のバナー＋全画面の花びら）
   if(pct>=100){
     treeBg.classList.add('full-bloom');
     if(lastBloomPct<100&&currentDate===toStudyDateStr(new Date())){
@@ -4494,6 +4573,8 @@ function onBlock(e){
   div.classList.toggle('checked',isChecked(currentDate,h,m));
   setBlockSubjectClass(div,isChecked(currentDate,h,m)?subjOf(currentDate,h+':'+m):'');
   if(typeof renderSubjectDayCard==='function')renderSubjectDayCard();
+  // 新規チェック時：マスから木へ花びらが飛ぶ（塗り替え・解除では飛ばない）
+  if(res==='on')_skFlyFromBlock(div);
   // 塗り替え時：初回だけ説明トーストを出す（コンボ等は wasChecked ガードで発火しない）
   if(res==='recolor'){
     if(typeof trackEvent==='function')trackEvent('subject_recolor');
