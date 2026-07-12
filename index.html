@@ -3809,7 +3809,6 @@ function renderForecast(){
     const targetBtnEl=s.querySelector('.forecast-target-edit-btn');
     const targetDiffEl=s.querySelector('.forecast-target-diff');
     const gaugeWrap=s.querySelector('.forecast-gauge-wrap');
-    const gaugeFill=s.querySelector('.forecast-gauge-fill');
     const gaugePct=s.querySelector('.forecast-gauge-pct');
     const adviceEl=s.querySelector('.forecast-advice');
     if(!targetH||predictedMin==null){
@@ -3834,21 +3833,23 @@ function renderForecast(){
       }
     }
     if(gaugeWrap)gaugeWrap.style.display='block';
-    if(gaugeFill){
+    {
       // A案：1本のバーで予測＋不足を色分け
+      // 初回描画で .forecast-gauge-fill を置き換えるため、2回目以降も必ず
+      // .forecast-gauge-bg 基準で毎回描き直す（fill の有無に依存させない）
       const gaugeBg=s.querySelector('.forecast-gauge-bg');
       if(gaugeBg){
+        gaugeBg.style.overflow='hidden';
+        gaugeBg.style.borderRadius='99px';
+        gaugeBg.style.display='flex';
         if(status==='ok'){
           // 達成：緑100%
-          gaugeBg.innerHTML=`<div style="height:100%;width:100%;border-radius:99px;background:linear-gradient(90deg,#3ecf8e,#7ee8a2);transition:width .5s;"></div>`;
+          gaugeBg.innerHTML=`<div style="flex:100;background:linear-gradient(90deg,#3ecf8e,#7ee8a2);height:100%;transition:flex .5s;"></div>`;
         }else{
           // 未達成：緑（予測分）＋黄/赤（不足分）を1本で表現
           const shortColor=status==='close'?'#f59e0b':'#f87171';
           const okPct=Math.min(pct,100);
           const ngPct=100-okPct;
-          gaugeBg.style.overflow='hidden';
-          gaugeBg.style.borderRadius='99px';
-          gaugeBg.style.display='flex';
           gaugeBg.innerHTML=`<div style="flex:${okPct};background:linear-gradient(90deg,#3ecf8e,#7ee8a2);height:100%;transition:flex .5s;"></div><div style="flex:${ngPct};background:${shortColor};height:100%;opacity:.85;transition:flex .5s;"></div>`;
         }
       }
@@ -3900,7 +3901,9 @@ function renderForecast(){
   }
   const totalMin=allTimeTotal(),studyDays=allTimeDays();
   const avgPerDay=studyDays>0?totalMin/studyDays:0;
-  const predicted=Math.round(avgPerDay*daysLeft);
+  // 予測到達 ＝ これまでの累計 ＋ 今後の見込み（1日平均 × 残り日数）
+  // 累計を足し忘れると「累計1000時間なのに予測300時間」のような矛盾が出る
+  const predicted=Math.round(totalMin+avgPerDay*daysLeft);
   const avgRounded=Math.round(avgPerDay),avgH=Math.floor(avgRounded/60),avgM=avgRounded%60;
   sections.forEach(s=>{
     _setSection(s,predicted,avgH,avgM,`1日平均 ${fmtStudyTimeText(avgRounded)}（累計実績ベース）`);
