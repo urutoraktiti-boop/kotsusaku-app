@@ -6318,6 +6318,8 @@ function renderSubjectDayCard(){
 const CRAZY10_EVENTS=[
   {dateStr:'2026-05-16',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true},
   {dateStr:'2026-05-17',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true},
+  // 2026-08-08：急きょ決定した本日限りの特別回。label があると DAY通し番号ではなくその名前で表示される
+  {dateStr:'2026-08-08',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true,label:'SPECIAL'},
 ];
 const CRAZY10_PREVIEW_DATES=['2026-05-15','2026-05-16'];
 function _toLocalDateStr(d){const y=d.getFullYear(),mo=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');return y+'-'+mo+'-'+dd;}
@@ -6327,7 +6329,10 @@ function _formatEventFinaleDate(ev){
   const p=(ev.dateStr||'').split('-');
   const base=p.length===3?(Number(p[0])+'.'+Number(p[1])+'.'+Number(p[2])):ev.dateStr;
   const official=CRAZY10_EVENTS.findIndex(e=>e.dateStr===ev.dateStr);
-  return base+(official>=0?' DAY '+(official+1):'');
+  if(official<0)return base;
+  // label（例：SPECIAL）を持つイベントは通し番号(DAY n)ではなくその名前で表示する
+  const labeled=CRAZY10_EVENTS[official].label;
+  return base+(labeled?' '+labeled:' DAY '+(official+1));
 }
 function _getCrazy10Event(dateStr){return CRAZY10_EVENTS.find(e=>e.dateStr===dateStr)||null;}
 function _isCrazy10PreviewNight(){const now=new Date();const ds=_toLocalDateStr(now);const h=now.getHours();return _getAllPreviewDates().includes(ds)&&h>=18;}
@@ -7622,7 +7627,7 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v114-subject-colors'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v115-crazy-special'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
   var _latestVersionLabel = null;
@@ -8977,6 +8982,9 @@ function _showCrazy10PopupIfNeeded(){
     popup.innerHTML='<div style="font-size:2rem;margin-bottom:6px;">🥦</div>'
       +'<div style="font-size:1rem;font-weight:800;color:#bbf7d0;letter-spacing:.04em;margin-bottom:4px;">ITACHACHA House Crazy10</div>'
       +'<div style="font-size:.64rem;color:#4ade80;font-weight:800;letter-spacing:.08em;margin-bottom:8px;">本日 '+_formatEventDateShort(ev.dateStr)+'</div>'
+      // label付き（本日限りの特別回）のときだけ出す一言
+      +(ev.label?'<div style="font-size:.66rem;font-weight:800;color:#052e16;background:#4ade80;border-radius:999px;padding:4px 12px;display:inline-block;margin-bottom:10px;">🎉 本日限りの特別開催！</div>':'')
+      // ↓時間の文言はベタ書き。5:00〜16:00・休憩11:30〜12:30以外で開催する回を追加したら必ずここも直すこと
       +'<div style="font-size:.75rem;color:#86efac;margin-bottom:14px;line-height:1.6;">朝5時〜16時、10時間の特別自習室<br>開催中です！参加しますか？</div>'
       +'<div style="display:flex;gap:10px;justify-content:center;margin-bottom:14px;">'
       +'<button id="crazy10-join-btn" style="background:#4ade80;color:#052e16;border:none;border-radius:10px;padding:10px 28px;font-size:.9rem;font-weight:800;cursor:pointer;">参加</button>'
@@ -9377,7 +9385,7 @@ function _renderOfficialEventList(){
     const borderColor=isDone?'rgba(156,163,175,.2)':'rgba(74,222,128,.2)';
     const bgColor=isDone?'rgba(156,163,175,.03)':'rgba(74,222,128,.05)';
     const joined=_isCrazy10Joined(ev.dateStr);
-    const dayNum='DAY'+(idx+1);
+    const dayNum=ev.label?ev.label:('DAY'+(idx+1));
     const togId='crazy10-official-tog-'+ev.dateStr.replace(/-/g,'');
     return '<div style="background:'+bgColor+';border:1px solid '+borderColor+';border-radius:7px;padding:6px 10px;">'
       +'<div style="display:flex;align-items:center;gap:8px;">'
