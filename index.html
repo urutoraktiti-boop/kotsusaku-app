@@ -6315,12 +6315,33 @@ function renderSubjectDayCard(){
 }
 
 // ── ITACHACHA House Crazy10 イベント定義 ──
+// 【イベントの追加方法】1行足すだけで開催できる。詳しくは docs/crazy10-feature.md
+//   dateStr    開催日（'YYYY-MM-DD'）
+//   start/end  開始・終了時刻（小数の時間。11.5 = 11時30分）
+//   breakStart/breakEnd  休憩の開始・終了時刻
+//   finaleAt   フィナーレ（おつかれさま画面）が解禁される時刻
+//   label      任意。付けるとフィナーレや設定一覧で「DAY n」ではなくこの名前で表示される（例：'SPECIAL'）
+//   series     任意。「2日連続開催」など複数日をひとまとまりの回として扱いたいときだけ、
+//              同じ文字列を各日に書く。書かなければ、その日1日だけで1つの回になる。
+//              ★フィナーレは「同じ series の日」だけを合計する（別の回の結果は混ざらない）
 const CRAZY10_EVENTS=[
-  {dateStr:'2026-05-16',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true},
-  {dateStr:'2026-05-17',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true},
-  // 2026-08-08：急きょ決定した本日限りの特別回。label があると DAY通し番号ではなくその名前で表示される
+  {dateStr:'2026-05-16',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true,series:'2026-05-crazy10'},
+  {dateStr:'2026-05-17',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true,series:'2026-05-crazy10'},
+  // 2026-08-08：急きょ決定した本日限りの特別回（series なし＝この日だけで1つの回）
   {dateStr:'2026-08-08',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true,label:'SPECIAL'},
 ];
+// ── 「回（series）」の判定 ──
+// series が無いイベントは、その日1日だけで1つの回として扱う
+function _getEventSeriesId(ev){return (ev&&(ev.series||ev.dateStr))||'';}
+// 同じ回に属する公式イベントを日付順で返す
+function _getSeriesEvents(seriesId){
+  return CRAZY10_EVENTS.filter(e=>_getEventSeriesId(e)===seriesId).sort((a,b)=>a.dateStr.localeCompare(b.dateStr));
+}
+// 回の中での通し番号（0始まり）。見つからなければ -1
+function _getSeriesIndex(ev){
+  if(!ev)return -1;
+  return _getSeriesEvents(_getEventSeriesId(ev)).findIndex(e=>e.dateStr===ev.dateStr);
+}
 const CRAZY10_PREVIEW_DATES=['2026-05-15','2026-05-16'];
 function _toLocalDateStr(d){const y=d.getFullYear(),mo=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');return y+'-'+mo+'-'+dd;}
 function _formatEventDateShort(dateStr){const p=(dateStr||'').split('-');return p.length===3?(Number(p[1])+'/'+Number(p[2])):dateStr;}
@@ -6330,9 +6351,13 @@ function _formatEventFinaleDate(ev){
   const base=p.length===3?(Number(p[0])+'.'+Number(p[1])+'.'+Number(p[2])):ev.dateStr;
   const official=CRAZY10_EVENTS.findIndex(e=>e.dateStr===ev.dateStr);
   if(official<0)return base;
+  const target=CRAZY10_EVENTS[official];
   // label（例：SPECIAL）を持つイベントは通し番号(DAY n)ではなくその名前で表示する
-  const labeled=CRAZY10_EVENTS[official].label;
-  return base+(labeled?' '+labeled:' DAY '+(official+1));
+  if(target.label)return base+' '+target.label;
+  // DAY番号は「回（series）の中」での通し番号。1日だけの回は日付のみ
+  const series=_getSeriesEvents(_getEventSeriesId(target));
+  if(series.length<=1)return base;
+  return base+' DAY '+(_getSeriesIndex(target)+1);
 }
 function _getCrazy10Event(dateStr){return CRAZY10_EVENTS.find(e=>e.dateStr===dateStr)||null;}
 function _isCrazy10PreviewNight(){const now=new Date();const ds=_toLocalDateStr(now);const h=now.getHours();return _getAllPreviewDates().includes(ds)&&h>=18;}
@@ -7627,7 +7652,7 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v115-crazy-special'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v116-finale-per-event'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _pendingWorker = null;
   var _latestVersionLabel = null;
@@ -9168,6 +9193,33 @@ document.addEventListener('click',function(e){
   _closeCrazy10Finale();
 });
 
+// ── フィナーレに出す行を集める（★出どころはこの関数ひとつ）──
+// 表示中の日が属する「回（series）」の中だけを対象にする。別の回の結果は絶対に混ざらない。
+// 戻り値：[{label,sets,maxSets,dateStr}, …]（日付順）
+function _collectFinaleDayRows(dateStr){
+  const ev=_getCrazy10Event(dateStr);
+  if(!ev)return [];
+  const series=_getSeriesEvents(_getEventSeriesId(ev));
+  const rows=[];
+  series.forEach((e,i)=>{
+    if(!_isCrazy10Joined(e.dateStr))return;          // 参加していない日は出さない
+    if(!_isCrazy10FinaleAvailable(e.dateStr))return; // まだ解禁されていない日は出さない
+    rows.push({label:_finaleRowLabel(e,i,series.length),sets:_getCrazy10SetCount(e.dateStr),maxSets:_getCrazy10MaxSetCount(e),dateStr:e.dateStr});
+  });
+  // 参加日が0件のときは、表示中の日だけで作る（従来どおりのフォールバック）
+  if(!rows.length){
+    const idx=_getSeriesIndex(ev);
+    rows.push({label:_finaleRowLabel(ev,idx<0?0:idx,series.length),sets:_getCrazy10SetCount(dateStr),maxSets:_getCrazy10MaxSetCount(ev),dateStr:dateStr});
+  }
+  return rows;
+}
+// 行の見出し。label があればそれ、なければ「回の中での」通し番号
+function _finaleRowLabel(ev,idx,seriesLen){
+  const d='('+_formatEventDateShort(ev.dateStr)+')';
+  if(ev.label)return ev.label+' '+d;
+  return 'DAY'+((seriesLen>1?idx:0)+1)+' '+d;
+}
+
 // バッジエリアに星を描画
 function _buildFinaleStars(sets,maxSets){
   // 旧シグネチャとの互換：引数2個で呼ばれた場合は単日モードとして動く
@@ -9180,19 +9232,8 @@ function _buildFinaleStarsMulti(dayRows){
   const countEl=document.getElementById('crazy10-finale-count');
   if(!badgeEl)return;
 
-  // dayRowsが未指定なら自動構築
-  if(!dayRows){
-    dayRows=[];
-    for(let i=0;i<CRAZY10_EVENTS.length;i++){
-      const ev=CRAZY10_EVENTS[i];
-      if(!_isCrazy10Joined(ev.dateStr))continue;
-      if(!_isCrazy10FinaleAvailable(ev.dateStr))continue;
-      const s=_getCrazy10SetCount(ev.dateStr);
-      const mx=_getCrazy10MaxSetCount(ev);
-      const dayNum=i+1;
-      dayRows.push({label:'DAY'+dayNum+' ('+_formatEventDateShort(ev.dateStr)+')',sets:s,maxSets:mx,dateStr:ev.dateStr});
-    }
-  }
+  // dayRowsが未指定なら、今日の回のぶんを自動構築（集計は _collectFinaleDayRows に一本化）
+  if(!dayRows)dayRows=_collectFinaleDayRows(toStudyDateStr(new Date()));
 
   // 単日のときはシンプル表示
   if(dayRows.length<=1){
@@ -9227,7 +9268,7 @@ function _buildFinaleStarsMulti(dayRows){
   // 合計行
   const totalComplete=totalMax>0&&totalSets>=totalMax;
   html+='<div style="border-top:1px solid rgba(74,222,128,.3);margin-top:6px;padding-top:4px;display:flex;align-items:center;justify-content:space-between;">';
-  html+='<div style="font-size:.6rem;font-weight:800;color:#4ade80;">2日間合計</div>';
+  html+='<div style="font-size:.6rem;font-weight:800;color:#4ade80;">'+dayRows.length+'日間合計</div>';
   html+='<div style="font-size:.65rem;font-weight:800;color:'+(totalComplete?'#BA7517':'#4ade80')+';">'+totalSets+' / '+totalMax+' SET'+(totalComplete?' 🏆':'')+'</div>';
   html+='</div>';
 
@@ -9248,22 +9289,9 @@ function showCrazy10Finale(dateStr){
   // 表示済みとして記録（自動発動の重複防止）
   _markCrazy10FinaleShown(ds);
 
-  // ── 多日対応：参加済みかつフィナーレ解禁済みの全日を収集 ──
-  const dayRows=[];
-  for(let i=0;i<CRAZY10_EVENTS.length;i++){
-    const e=CRAZY10_EVENTS[i];
-    if(!_isCrazy10Joined(e.dateStr))continue;
-    if(!_isCrazy10FinaleAvailable(e.dateStr))continue;
-    const s=_getCrazy10SetCount(e.dateStr);
-    const mx=_getCrazy10MaxSetCount(e);
-    dayRows.push({label:'DAY'+(i+1)+' ('+_formatEventDateShort(e.dateStr)+')',sets:s,maxSets:mx,dateStr:e.dateStr});
-  }
-  // 参加日が0の場合は当日だけで表示
-  if(dayRows.length===0){
-    const s=_getCrazy10SetCount(ds);
-    const mx=_getCrazy10MaxSetCount(ev);
-    dayRows.push({label:'DAY'+(CRAZY10_EVENTS.findIndex(e=>e.dateStr===ds)+1)+' ('+_formatEventDateShort(ds)+')',sets:s,maxSets:mx,dateStr:ds});
-  }
+  // ── この回（series）のぶんだけを収集。別の回の結果は混ざらない ──
+  const dayRows=_collectFinaleDayRows(ds);
+  if(!dayRows.length)return;
 
   // ── 星バッジ描画 ──
   _buildFinaleStarsMulti(dayRows);
@@ -9278,7 +9306,8 @@ function showCrazy10Finale(dateStr){
       const fp=first.split('-'),lp=last.split('-');
       dateEl.textContent=Number(fp[0])+'.'+Number(fp[1])+'.'+Number(fp[2])+' – '+Number(lp[1])+'/'+Number(lp[2])+' DAY1–'+dayRows.length;
     }else{
-      dateEl.textContent=_formatEventFinaleDate(ev);
+      // 1件のときは、その1件の日付で表示する（表示中の日と違う場合もあるため）
+      dateEl.textContent=_formatEventFinaleDate(_getCrazy10Event(dayRows[0].dateStr)||ev);
     }
   }
 
@@ -9290,11 +9319,11 @@ function showCrazy10Finale(dateStr){
     const allDone=totalMax>0&&totalSets>=totalMax;
     const multiDay=dayRows.length>=2;
     if(allDone&&multiDay){
-      msgEl.innerHTML='2日間の10分の積み重ねが<br>未来を動かす。';
+      msgEl.innerHTML=dayRows.length+'日間の10分の積み重ねが<br>未来を動かす。';
     }else if(allDone){
       msgEl.innerHTML='今日の10分の積み重ねが<br>未来を動かす。';
     }else if(multiDay){
-      msgEl.innerHTML='2日間お疲れ様でした！<br>頑張ったね。';
+      msgEl.innerHTML=dayRows.length+'日間お疲れ様でした！<br>頑張ったね。';
     }else{
       msgEl.innerHTML='今日のコツコツが<br>未来につながる。';
     }
@@ -9385,7 +9414,8 @@ function _renderOfficialEventList(){
     const borderColor=isDone?'rgba(156,163,175,.2)':'rgba(74,222,128,.2)';
     const bgColor=isDone?'rgba(156,163,175,.03)':'rgba(74,222,128,.05)';
     const joined=_isCrazy10Joined(ev.dateStr);
-    const dayNum=ev.label?ev.label:('DAY'+(idx+1));
+    // label があればその名前。なければ「回（series）の中」での通し番号
+    const dayNum=ev.label?ev.label:('DAY'+(_getSeriesIndex(ev)+1));
     const togId='crazy10-official-tog-'+ev.dateStr.replace(/-/g,'');
     return '<div style="background:'+bgColor+';border:1px solid '+borderColor+';border-radius:7px;padding:6px 10px;">'
       +'<div style="display:flex;align-items:center;gap:8px;">'
