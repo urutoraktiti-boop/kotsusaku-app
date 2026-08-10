@@ -7654,6 +7654,7 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
   // ── バージョン管理：version.json が唯一のソース ──
   var CURRENT_VERSION = 'kotsusaku-v116-finale-per-event'; // フォールバック（オフライン時）
   var _bannerShown = false;
+  var _updateBtnLabel = null; // 更新ボタンの元の文言（再表示時に戻すため）
   var _pendingWorker = null;
   var _latestVersionLabel = null;
   var UPDATE_PROMPT_SEEN_KEY = '_kotsusakuUpdatePromptSeenVersion';
@@ -7665,6 +7666,11 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
   }
   function _updPromptSet(key, val) {
     try { localStorage.setItem(key, val); } catch(e) {}
+  }
+  // 「今このセッションで更新ボタンを押した」記録。更新が失敗して古い版のままでも
+  // 記録が残り続けないよう、あえて sessionStorage（アプリを閉じると消える）に置く。
+  function _updAppliedGet() {
+    try { return sessionStorage.getItem(UPDATE_PROMPT_APPLIED_KEY); } catch(e) { return null; }
   }
   function _updPromptClear(key) {
     try { localStorage.removeItem(key); } catch(e) {}
@@ -7690,12 +7696,16 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
   }
 
   // バナーを1回だけ表示し、ボタンに単一のリスナーをセット
-  function showUpdateBanner(latestLabel, workerToSkip) {
-    if (_bannerShown) return;
+  // force=true（設定の「更新」ボタンなど、利用者が自分で押したとき）は既読記録を無視して必ず出す。
+  // これがないと、一度案内を閉じた後に更新が失敗した端末が、手動でも更新できなくなる。
+  function showUpdateBanner(latestLabel, workerToSkip, force) {
+    if (_bannerShown && !force) return;
     var promptVersion = latestLabel || _latestVersionLabel || 'latest-update';
-    // 同じ版の案内はもう出さない（アプリを閉じても記録が残る）
-    if (_updPromptGet(UPDATE_PROMPT_SEEN_KEY) === promptVersion ||
-        _updPromptGet(UPDATE_PROMPT_APPLIED_KEY) === promptVersion) {
+    // 同じ版の案内は自動では出さない（アプリを閉じても記録が残る）
+    // SEEN は localStorage（閉じても残る）、APPLIED は sessionStorage（セッション限り）
+    if (!force &&
+        (_updPromptGet(UPDATE_PROMPT_SEEN_KEY) === promptVersion ||
+         _updAppliedGet() === promptVersion)) {
       return;
     }
     _updPromptSet(UPDATE_PROMPT_SEEN_KEY, promptVersion);
@@ -7714,12 +7724,19 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
 
     var btn = document.getElementById('update-reload-btn');
     if (!btn) return;
-    btn.addEventListener('click', function() {
+    // 再表示に備えてボタンの元の文言を覚えておき、押せる状態に戻す
+    if (_updateBtnLabel === null) _updateBtnLabel = btn.textContent;
+    btn.textContent = _updateBtnLabel;
+    btn.disabled = false;
+    // onclick で上書きする（addEventListenerだと再表示のたびにリスナーが積み重なる）
+    btn.onclick = function() {
       btn.textContent = '⏳ 更新中...';
       btn.disabled = true;
-      // リロード後に再度バナーが出ないよう「更新済み」フラグを立てる
+      // リロード後に再度バナーが出ないよう「更新済み」フラグを立てる。
+      // この2つはどちらもセッション限り。更新が失敗して古い版のままでも、
+      // 記録が残り続けて更新できなくなることがないようにするため。
       try { sessionStorage.setItem('_swJustUpdated','1'); } catch(e){}
-      _updPromptSet(UPDATE_PROMPT_APPLIED_KEY, promptVersion);
+      try { sessionStorage.setItem(UPDATE_PROMPT_APPLIED_KEY, promptVersion); } catch(e){}
       if (_pendingWorker) {
         _pendingWorker.postMessage('SKIP_WAITING');
         setTimeout(function(){ window.location.reload(true); }, 1500);
@@ -7729,16 +7746,16 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
       } else {
         window.location.reload(true);
       }
-    });
+    };
 
     var toggle = document.getElementById('update-manual-toggle');
     var steps  = document.getElementById('update-manual-steps');
     if (toggle && steps) {
-      toggle.addEventListener('click', function() {
+      toggle.onclick = function() {
         var isOpen = steps.style.display !== 'none';
         steps.style.display = isOpen ? 'none' : 'block';
         toggle.textContent  = isOpen ? '更新されない場合はこちら' : '▲ 閉じる';
-      });
+      };
     }
   }
 
@@ -7797,8 +7814,9 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
         var latest = data && data.version;
         if (latest && latest !== CURRENT_VERSION) {
           // 新バージョンあり → 更新バナーを表示
+          // 利用者が自分で押したので、既読記録は無視して必ず出す（第3引数 force=true）
           setRefreshState('更新あり', false, 2000);
-          showUpdateBanner(latest, null);
+          showUpdateBanner(latest, null, true);
         } else {
           // 最新版 → 状態だけ表示してリロードしない
           setRefreshState('最新版です', false, 1800);
