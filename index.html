@@ -7658,6 +7658,19 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
   var _latestVersionLabel = null;
   var UPDATE_PROMPT_SEEN_KEY = '_kotsusakuUpdatePromptSeenVersion';
   var UPDATE_PROMPT_APPLIED_KEY = '_kotsusakuUpdatePromptAppliedVersion';
+  // 「この版の更新案内はもう見た」という記録。localStorage に置くのでアプリを閉じても消えない
+  // （以前は sessionStorage だったため、閉じるたびに記録が消えて同じ案内が何度も出ていた）
+  function _updPromptGet(key) {
+    try { return localStorage.getItem(key); } catch(e) { return null; }
+  }
+  function _updPromptSet(key, val) {
+    try { localStorage.setItem(key, val); } catch(e) {}
+  }
+  function _updPromptClear(key) {
+    try { localStorage.removeItem(key); } catch(e) {}
+    // 旧版が sessionStorage に残した記録も掃除しておく
+    try { sessionStorage.removeItem(key); } catch(e) {}
+  }
   var UPDATE_COPY = {
     title: 'v113 「桜」……それは、お前の“咲くまで”を見届ける道しるべだピヨッ！ ゴゴゴゴ…',
     body: 'コツを重ねる者よ、気づいていたかピヨ。ストップウォッチの隣に、いつの間にか桜が咲いていたことに——。タップすれば、開花日までの道のりに寄り添う言葉が届くッ。そして今宵から、そのカードは“めくれる”ようになったピヨ。積み上げてきた日々の言葉を、何度でも読み返せるんだッ…お前の記録は、風化などしないピヨォッ！？',
@@ -7680,13 +7693,12 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
   function showUpdateBanner(latestLabel, workerToSkip) {
     if (_bannerShown) return;
     var promptVersion = latestLabel || _latestVersionLabel || 'latest-update';
-    try {
-      if (sessionStorage.getItem(UPDATE_PROMPT_SEEN_KEY) === promptVersion ||
-          sessionStorage.getItem(UPDATE_PROMPT_APPLIED_KEY) === promptVersion) {
-        return;
-      }
-      sessionStorage.setItem(UPDATE_PROMPT_SEEN_KEY, promptVersion);
-    } catch(e){}
+    // 同じ版の案内はもう出さない（アプリを閉じても記録が残る）
+    if (_updPromptGet(UPDATE_PROMPT_SEEN_KEY) === promptVersion ||
+        _updPromptGet(UPDATE_PROMPT_APPLIED_KEY) === promptVersion) {
+      return;
+    }
+    _updPromptSet(UPDATE_PROMPT_SEEN_KEY, promptVersion);
     _bannerShown = true;
     if (workerToSkip) _pendingWorker = workerToSkip;
 
@@ -7706,10 +7718,8 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
       btn.textContent = '⏳ 更新中...';
       btn.disabled = true;
       // リロード後に再度バナーが出ないよう「更新済み」フラグを立てる
-      try {
-        sessionStorage.setItem('_swJustUpdated','1');
-        sessionStorage.setItem(UPDATE_PROMPT_APPLIED_KEY, promptVersion);
-      } catch(e){}
+      try { sessionStorage.setItem('_swJustUpdated','1'); } catch(e){}
+      _updPromptSet(UPDATE_PROMPT_APPLIED_KEY, promptVersion);
       if (_pendingWorker) {
         _pendingWorker.postMessage('SKIP_WAITING');
         setTimeout(function(){ window.location.reload(true); }, 1500);
@@ -7753,10 +7763,9 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
         var badge = document.getElementById('ver-badge');
         if (badge) badge.textContent = formatVersionBadge(latest);
         if (latest === CURRENT_VERSION) {
-          try {
-            sessionStorage.removeItem(UPDATE_PROMPT_SEEN_KEY);
-            sessionStorage.removeItem(UPDATE_PROMPT_APPLIED_KEY);
-          } catch(e){}
+          // すでに最新版で動いている＝記録は不要なので掃除する
+          _updPromptClear(UPDATE_PROMPT_SEEN_KEY);
+          _updPromptClear(UPDATE_PROMPT_APPLIED_KEY);
           return;
         }
         // CURRENT_VERSION（このファイルが持つバージョン）と比較して更新バナーを出す
@@ -8720,6 +8729,7 @@ function _syncCrazy10SettingsSec(){
   tog.onchange=function(){
     _setCrazy10Joined(ds,this.checked);
     buildGrid();
+    refreshGrid(); // ★buildGridは表を作り直すだけ。入力済みのマスを塗り直すのはrefreshGrid
     renderCrazy10Stars();
     if(typeof _syncCrazy10FinaleButtonVisibility==='function')_syncCrazy10FinaleButtonVisibility();
   };
@@ -8775,7 +8785,8 @@ function _renderAsajukuJoinPopup(ds,key){
   function close(){_closeAsajukuOverlay();localStorage.setItem(key,'1');}
   if(skipBtn)skipBtn.onclick=function(){_setAsajukuJoined(ds,false);close();};
   if(joinBtn)joinBtn.onclick=function(){
-    _setAsajukuJoined(ds,true);buildGrid();renderAsajukuStars();
+    // ★buildGridは表を作り直すだけ。入力済みのマスを塗り直すのはrefreshGrid（省くと入力が消えて見える）
+    _setAsajukuJoined(ds,true);buildGrid();refreshGrid();renderAsajukuStars();
     if(typeof trackEvent==='function')trackEvent('asajuku_join');
     localStorage.setItem(key,'1');
     popup.innerHTML='<div style="font-size:2rem;margin-bottom:8px;">⚡</div>'
@@ -9022,7 +9033,8 @@ function _showCrazy10PopupIfNeeded(){
   const skipBtn=document.getElementById('crazy10-skip-btn');
   function close(){overlay.style.display='none';localStorage.setItem(key,'1');if(typeof _popCloseHandler!=='undefined'&&_popCloseHandler){document.removeEventListener('click',_popCloseHandler);_popCloseHandler=null;}}
   if(joinBtn)joinBtn.onclick=function(){
-    _setCrazy10Joined(ev.dateStr,true);buildGrid();renderCrazy10Stars();_syncCrazy10SettingsSec();if(typeof _syncCrazy10FinaleButtonVisibility==='function')_syncCrazy10FinaleButtonVisibility();
+    // ★buildGridは表を作り直すだけ。入力済みのマスを塗り直すのはrefreshGrid（省くと入力が消えて見える）
+    _setCrazy10Joined(ev.dateStr,true);buildGrid();refreshGrid();renderCrazy10Stars();_syncCrazy10SettingsSec();if(typeof _syncCrazy10FinaleButtonVisibility==='function')_syncCrazy10FinaleButtonVisibility();
     var popup=document.getElementById('crazy10-popup');
     if(popup){popup.innerHTML='<div style="font-size:2rem;margin-bottom:8px;">🥦</div>'
       +'<div style="font-size:.64rem;color:#4ade80;font-weight:800;letter-spacing:.08em;margin-bottom:8px;">'+_formatEventDateShort(ev.dateStr)+'</div>'
@@ -9441,6 +9453,7 @@ function _renderOfficialEventList(){
       lbl.textContent=this.checked?'参加':'不参加';
       lbl.style.color=this.checked?'#4ade80':'var(--text-muted)';
       buildGrid();
+      refreshGrid(); // ★buildGridは表を作り直すだけ。入力済みのマスを塗り直すのはrefreshGrid
       if(typeof renderCrazy10Stars==='function')renderCrazy10Stars();
       if(typeof renderWeekly==='function'&&currentView==='weekly')renderWeekly();
       if(typeof renderMonthly==='function'&&currentView==='monthly')renderMonthly();
