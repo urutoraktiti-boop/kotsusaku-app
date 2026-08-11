@@ -8772,6 +8772,7 @@ function _syncCrazy10FinaleButtonVisibility(dateStr){
 }
 function checkCrazy10EventDisplay(){
   if(typeof _showCrazy10PopupIfNeeded==='function')_showCrazy10PopupIfNeeded();
+  if(typeof _showCrazy10PrejoinPopupIfNeeded==='function')_showCrazy10PrejoinPopupIfNeeded();
   if(typeof renderCrazy10Stars==='function')renderCrazy10Stars();
   if(typeof _syncCrazy10SettingsSec==='function')_syncCrazy10SettingsSec();
   _syncCrazy10FinaleButtonVisibility();
@@ -9149,6 +9150,70 @@ function _showCrazy10PreviewToastIfNeeded(){
   setTimeout(()=>showEasterToast(msg),1200);
 }
 
+// ══════════════════════════════════════════════
+// 前日の「参加予約」ポップアップ
+// ══════════════════════════════════════════════
+// お知らせで開催を知った人が、当日を待たずにその場で参加を決められるようにする。
+// これが無いと「告知は見たのに参加を選ぶ場所が無い」状態になり、直後に出る
+// 早朝自習室（別機能）の「参加」を押してしまう取り違えが起きる。
+// 当日ポップアップ（_showCrazy10PopupIfNeeded）と同じ crazy10-overlay を使うが、
+// 「今日が開催日なら何もしない」ので両方が同時に出ることはない。
+
+// 「明日」の公式イベントを返す。基準は暦の日付ではなく学習日（toStudyDateStr）。
+// 深夜0〜4時はまだ前日扱いなので、8/13の午前2時でも「明日＝8/13」として予約できる。
+function _getCrazy10TomorrowEvent(){
+  const base=toStudyDateStr(new Date());
+  const d=new Date(base+'T00:00:00');
+  d.setDate(d.getDate()+1);
+  const ev=_getCrazy10Event(_toLocalDateStr(d));
+  return ev&&ev.isOfficial?ev:null;
+}
+function _crazy10PrejoinKey(dateStr){return 'crazy10-prejoin-'+dateStr;}
+function _showCrazy10PrejoinPopupIfNeeded(){
+  if(_getCrazy10EventNow())return;               // 今日が開催日 → 当日ポップアップに任せる
+  const ev=_getCrazy10TomorrowEvent();
+  if(!ev)return;
+  if(_hasCrazy10JoinChoice(ev.dateStr))return;   // すでに参加/不参加を選んである
+  const key=_crazy10PrejoinKey(ev.dateStr);
+  if(localStorage.getItem(key)==='1')return;     // この端末では一度出した
+  const overlay=document.getElementById('crazy10-overlay');
+  const popup=document.getElementById('crazy10-popup');
+  if(!overlay||!popup)return;
+  if(_isOverlayVisible(overlay))return;          // 他のCrazy10ポップアップと重ねない
+  // ↓時間の文言はイベント定義から組み立てる（ベタ書きしないので開催時間が変わっても直す必要がない）
+  const breaks=_normalizeBreaks(ev);
+  const timeTxt=_hToTimeStr(ev.start)+'〜'+_hToTimeStr(ev.end);
+  const brkTxt=breaks.length?breaks.map(b=>_hToTimeStr(b.s)+'〜'+_hToTimeStr(b.e)).join('、'):'なし';
+  const studyTxt=_hDiffStr((ev.end-ev.start)-_calcTotalBreak(breaks));
+  popup.innerHTML='<div style="font-size:2rem;margin-bottom:6px;">🥦</div>'
+    +'<div style="font-size:1rem;font-weight:800;color:#bbf7d0;letter-spacing:.04em;margin-bottom:4px;">ITACHACHA House Crazy10</div>'
+    +'<div style="font-size:.64rem;color:#4ade80;font-weight:800;letter-spacing:.08em;margin-bottom:8px;">明日 '+_formatEventDateShort(ev.dateStr)+'</div>'
+    +(ev.label?'<div style="font-size:.66rem;font-weight:800;color:#052e16;background:#4ade80;border-radius:999px;padding:4px 12px;display:inline-block;margin-bottom:10px;">🎉 一日限りの特別開催！</div>':'')
+    +'<div style="font-size:.75rem;color:#86efac;margin-bottom:6px;line-height:1.6;">'+timeTxt+'（休憩 '+brkTxt+'）<br>実質'+studyTxt+'の特別自習室だよ。</div>'
+    +'<div style="font-size:.8rem;font-weight:800;color:#bbf7d0;margin-bottom:14px;">明日、参加しますか？</div>'
+    +'<div style="display:flex;gap:10px;justify-content:center;margin-bottom:14px;">'
+    +'<button id="crazy10-prejoin-btn" style="background:#4ade80;color:#052e16;border:none;border-radius:10px;padding:10px 24px;font-size:.9rem;font-weight:800;cursor:pointer;">参加する</button>'
+    +'<button id="crazy10-prelater-btn" style="background:transparent;color:#6ee7b7;border:1.5px solid #4ade80;border-radius:10px;padding:10px 24px;font-size:.9rem;font-weight:800;cursor:pointer;">あとで決める</button>'
+    +'</div>'
+    +'<div style="font-size:.62rem;color:#4ade80;opacity:.7;line-height:1.7;">設定（⚙）→「🎯 Crazy設定」から<br>いつでも変更できます</div>';
+  overlay.style.display='flex';
+  const joinBtn=document.getElementById('crazy10-prejoin-btn');
+  const laterBtn=document.getElementById('crazy10-prelater-btn');
+  // 「あとで決める」は参加/不参加を記録しない。記録すると当日ポップアップが出なくなるため。
+  if(laterBtn)laterBtn.onclick=function(){localStorage.setItem(key,'1');_closeCrazy10Overlay();};
+  if(joinBtn)joinBtn.onclick=function(){
+    localStorage.setItem(key,'1');
+    _setCrazy10Joined(ev.dateStr,true);
+    _syncCrazy10SettingsSec();
+    if(typeof _syncCrazy10FinaleButtonVisibility==='function')_syncCrazy10FinaleButtonVisibility();
+    popup.innerHTML='<div style="font-size:2rem;margin-bottom:8px;">🥦</div>'
+      +'<div style="font-size:.64rem;color:#4ade80;font-weight:800;letter-spacing:.08em;margin-bottom:8px;">明日 '+_formatEventDateShort(ev.dateStr)+'</div>'
+      +'<div style="font-size:.9rem;font-weight:800;color:#4ade80;margin-bottom:8px;">参加、受け付けたピヨ。</div>'
+      +'<div style="font-size:.7rem;color:#86efac;margin-bottom:14px;line-height:1.8;">明日'+_hToTimeStr(ev.start)+'、あの場所で。<br>今夜はゆっくり休んでね。</div>'
+      +'<button onclick="_closeCrazy10Overlay()" style="background:#4ade80;color:#052e16;border:none;border-radius:10px;padding:9px 28px;font-size:.85rem;font-weight:800;cursor:pointer;">OK</button>';
+  };
+}
+
 // CSSアニメ（星のパルス）をdocumentに追加
 (function(){
   if(document.getElementById('c10-anim-style'))return;
@@ -9164,6 +9229,8 @@ function _showCrazy10PreviewToastIfNeeded(){
   _showCrazy10PreviewToastIfNeeded();
 	  // 参加確認ポップアップ（少し遅延して表示）
 	  setTimeout(_showCrazy10PopupIfNeeded, 1500);
+	  // 前日の参加予約ポップアップ（当日ポップアップが出ない日だけ動く）
+	  setTimeout(_showCrazy10PrejoinPopupIfNeeded, 1700);
 	  setTimeout(_showAsajukuPopupIfNeeded, 1900);
 	  // 星バッジ初期描画（Androidでも確実に表示されるよう少し遅延）
 	  setTimeout(renderCrazy10Stars, 1200);
