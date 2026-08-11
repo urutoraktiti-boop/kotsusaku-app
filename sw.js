@@ -5,7 +5,7 @@
 //   2. index.html の CURRENT_VERSION（フォールバック値）
 //   3. version.json の version
 // ============================================================
-const CACHE_VERSION = 'kotsusaku-v116-finale-per-event';
+const CACHE_VERSION = 'kotsusaku-v117-crazy-0813';
 const CACHE_FILES = [
   './',
   './index.html',

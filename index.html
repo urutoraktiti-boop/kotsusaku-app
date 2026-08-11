@@ -6375,6 +6375,8 @@ const CRAZY10_EVENTS=[
   {dateStr:'2026-05-17',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true,series:'2026-05-crazy10'},
   // 2026-08-08：急きょ決定した本日限りの特別回（series なし＝この日だけで1つの回）
   {dateStr:'2026-08-08',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true,label:'SPECIAL'},
+  // 2026-08-13：急きょ決定した一日限りの特別回（series なし＝この日だけで1つの回。8/8とは別々に集計される）
+  {dateStr:'2026-08-13',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true,label:'SPECIAL'},
 ];
 // ── 「回（series）」の判定 ──
 // series が無いイベントは、その日1日だけで1つの回として扱う
@@ -6388,7 +6390,8 @@ function _getSeriesIndex(ev){
   if(!ev)return -1;
   return _getSeriesEvents(_getEventSeriesId(ev)).findIndex(e=>e.dateStr===ev.dateStr);
 }
-const CRAZY10_PREVIEW_DATES=['2026-05-15','2026-05-16'];
+// 前夜告知トーストを出す日（＝開催日の「前日」を書く）。'2026-08-12' は 8/13 開催の前夜
+const CRAZY10_PREVIEW_DATES=['2026-05-15','2026-05-16','2026-08-12'];
 function _toLocalDateStr(d){const y=d.getFullYear(),mo=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');return y+'-'+mo+'-'+dd;}
 function _formatEventDateShort(dateStr){const p=(dateStr||'').split('-');return p.length===3?(Number(p[1])+'/'+Number(p[2])):dateStr;}
 function _formatEventFinaleDate(ev){
@@ -7698,7 +7701,7 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v116-finale-per-event'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v117-crazy-0813'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _updateBtnLabel = null; // 更新ボタンの元の文言（再表示時に戻すため）
   var _pendingWorker = null;

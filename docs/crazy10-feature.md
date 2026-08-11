@@ -23,8 +23,12 @@ const CRAZY10_EVENTS=[
   {dateStr:'2026-05-16',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true,series:'2026-05-crazy10'},
   {dateStr:'2026-05-17',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true,series:'2026-05-crazy10'},
   {dateStr:'2026-08-08',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true,label:'SPECIAL'},
+  {dateStr:'2026-08-13',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true,label:'SPECIAL'},
 ];
 ```
+
+`label:'SPECIAL'` の単発回が複数あっても問題ない。`series` を書かなければ**日付ごとに別々の回**として
+扱われるので、フィナーレの集計が混ざることはない（設定パネルの一覧では日付が併記される）。
 
 | 項目 | 意味 |
 |---|---|
@@ -39,6 +43,15 @@ const CRAZY10_EVENTS=[
 休憩が2回以上あるときは `breaks:[{s:11.5,e:12.5},{s:14,e:14.5}]` の形も使える。
 
 ### 2. 前夜告知を出すなら `CRAZY10_PREVIEW_DATES` に前日を足す
+
+```js
+const CRAZY10_PREVIEW_DATES=['2026-05-15','2026-05-16','2026-08-12']; // '2026-08-12' は 8/13 開催の前夜
+```
+
+**書くのは「開催日」ではなく「その前日」**。その日の18時以降にアプリを開くと、
+「🥦 明日、朝5時から！…」というトースト（画面に一瞬出るミニ通知）が1回だけ出る。
+※このトーストの文言は**朝5時開始で固定のベタ書き**（`_showCrazy10PreviewToastIfNeeded()` 内）。
+開始時刻が5時以外の回で前夜告知を出すなら、ここも直すこと。
 
 当日決定など前夜告知が不要なら触らなくてよい。
 
