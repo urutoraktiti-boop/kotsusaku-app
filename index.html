@@ -4969,8 +4969,34 @@ function _isIOSLike(){
   const ua=navigator.userAgent||'';
   return /iPad|iPhone|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 }
+// マウス操作の環境（パソコン）かどうか。
+// パソコンのブラウザはカレンダーを「その入力欄がある位置」にぶら下げて表示する。
+// スマホ／タブレットは画面中央や下からせり上がる別画面で出すので位置に影響されない。
+function _isDesktopPointer(){
+  try{return !!(window.matchMedia&&window.matchMedia('(pointer: fine)').matches);}catch(e){return false;}
+}
+// 要素が実際に画面の中に見えているか（画面外に隠した入力欄でないか）
+function _isElementOnScreen(el){
+  if(!el)return false;
+  let r;
+  try{r=el.getBoundingClientRect();}catch(e){return false;}
+  if(!r||r.width<8||r.height<8)return false;
+  const vw=window.innerWidth||document.documentElement.clientWidth||0;
+  const vh=window.innerHeight||document.documentElement.clientHeight||0;
+  if(r.right<=0||r.bottom<=0||r.left>=vw||r.top>=vh)return false;
+  return true;
+}
+// 日付選択を開く。
+// ★パソコン版の不具合対策（重要）
+//   ヘッダーの「今日の日付」「開花日」は、見た目のボタンとは別に
+//   画面外（left:-9999px）へ隠した <input type="date"> を持っている。
+//   パソコンのブラウザは showPicker() のカレンダーをその入力欄の位置に出すため、
+//   カレンダーごと画面外に描画されてしまい「押しても何も出ない」状態になっていた。
+//   → マウス操作の環境で入力欄が画面外にある場合は、必ず画面中央のポップアップを使う。
 function _openSmartDatePicker(input,opts){
-  if(input&&!_isIOSLike()&&typeof input.showPicker==='function'&&_openNativeDatePicker(input))return;
+  const canUseNative=input&&!_isIOSLike()&&typeof input.showPicker==='function'
+    &&!(_isDesktopPointer()&&!_isElementOnScreen(input));
+  if(canUseNative&&_openNativeDatePicker(input))return;
   _openDateEditPopup(opts);
 }
 function _openDateEditPopup(opts){
@@ -4987,7 +5013,20 @@ function _openDateEditPopup(opts){
   const input=document.createElement('input');
   input.type='date';
   input.value=opts.value||'';
-  input.style.cssText='width:100%;background:var(--surface2);border:1.5px solid var(--accent);color:var(--text);font-size:1.05rem;padding:11px 12px;border-radius:10px;outline:none;margin-bottom:12px;';
+  input.style.cssText='width:100%;background:var(--surface2);border:1.5px solid var(--accent);color:var(--text);font-size:1.05rem;padding:11px 12px;border-radius:10px;outline:none;margin-bottom:8px;';
+  // パソコンでカレンダーが閉じてしまったときに、もう一度開くためのボタン。
+  // （日付欄の小さなカレンダーアイコンを狙って押さなくてよいようにする）
+  const calBtn=document.createElement('button');
+  calBtn.type='button';
+  calBtn.textContent='📅 カレンダーを開く';
+  calBtn.style.cssText='width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:9px 12px;font-weight:800;cursor:pointer;margin-bottom:8px;';
+  calBtn.addEventListener('click',()=>{
+    input.focus();
+    try{if(input.showPicker)input.showPicker();}catch(e){}
+  });
+  const hint=document.createElement('div');
+  hint.style.cssText='font-size:.72rem;color:var(--text-muted);margin-bottom:12px;line-height:1.5;';
+  hint.textContent='日付を選んだら「決定」を押してね。直接入力してもOKだよ。';
   const btnRow=document.createElement('div');
   btnRow.style.cssText='display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;';
   function mkBtn(label,primary){
@@ -5012,8 +5051,15 @@ function _openDateEditPopup(opts){
     btnRow.appendChild(clear);
   }
   btnRow.appendChild(cancel);btnRow.appendChild(save);
-  card.appendChild(title);card.appendChild(input);card.appendChild(btnRow);ov.appendChild(card);
+  card.appendChild(title);card.appendChild(input);
+  if(typeof input.showPicker==='function')card.appendChild(calBtn);
+  card.appendChild(hint);card.appendChild(btnRow);ov.appendChild(card);
   ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
+  // Enterで決定、Escapeで閉じる（パソコンのキーボード操作用）
+  ov.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){e.preventDefault();ov.remove();}
+    else if(e.key==='Enter'&&e.target===input){e.preventDefault();save.click();}
+  });
   document.body.appendChild(ov);
   setTimeout(()=>{input.focus();try{if(input.showPicker)input.showPicker();}catch(e){}},80);
 }
