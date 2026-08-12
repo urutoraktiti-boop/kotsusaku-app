@@ -9195,7 +9195,7 @@ function _showCrazy10PrejoinPopupIfNeeded(){
     +'<button id="crazy10-prejoin-btn" style="background:#4ade80;color:#052e16;border:none;border-radius:10px;padding:10px 24px;font-size:.9rem;font-weight:800;cursor:pointer;">参加する</button>'
     +'<button id="crazy10-prelater-btn" style="background:transparent;color:#6ee7b7;border:1.5px solid #4ade80;border-radius:10px;padding:10px 24px;font-size:.9rem;font-weight:800;cursor:pointer;">あとで決める</button>'
     +'</div>'
-    +'<div style="font-size:.62rem;color:#4ade80;opacity:.7;line-height:1.7;">設定（⚙）→「🎯 Crazy設定」から<br>いつでも変更できます</div>';
+    +'<div style="font-size:.62rem;color:#4ade80;opacity:.7;line-height:1.7;">設定からいつでも変更できます</div>';
   overlay.style.display='flex';
   const joinBtn=document.getElementById('crazy10-prejoin-btn');
   const laterBtn=document.getElementById('crazy10-prelater-btn');
@@ -9209,7 +9209,7 @@ function _showCrazy10PrejoinPopupIfNeeded(){
     popup.innerHTML='<div style="font-size:2rem;margin-bottom:8px;">🥦</div>'
       +'<div style="font-size:.64rem;color:#4ade80;font-weight:800;letter-spacing:.08em;margin-bottom:8px;">明日 '+_formatEventDateShort(ev.dateStr)+'</div>'
       +'<div style="font-size:.9rem;font-weight:800;color:#4ade80;margin-bottom:8px;">参加、受け付けたピヨ。</div>'
-      +'<div style="font-size:.7rem;color:#86efac;margin-bottom:14px;line-height:1.8;">明日'+_hToTimeStr(ev.start)+'、あの場所で。<br>今夜はゆっくり休んでね。</div>'
+      +'<div style="font-size:.7rem;color:#86efac;margin-bottom:14px;line-height:1.8;">明日'+_hToTimeStr(ev.start)+'、あの場所で。</div>'
       +'<button onclick="_closeCrazy10Overlay()" style="background:#4ade80;color:#052e16;border:none;border-radius:10px;padding:9px 28px;font-size:.85rem;font-weight:800;cursor:pointer;">OK</button>';
   };
 }
