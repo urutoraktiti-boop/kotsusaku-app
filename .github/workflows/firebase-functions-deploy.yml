@@ -52,9 +52,32 @@ jobs:
         with:
           node-version: 20
 
+      - name: サーバー側プログラムの部品を入れる
+        # functions/node_modules はGitHubに置かない決まりなので、取得直後は空。
+        # 部品が無いと firebase-tools がプログラムを解析できず、
+        # 「Couldn't find firebase-functions package in your source code」で失敗する。
+        # functions/package-lock.json は無いため npm ci ではなく npm install を使う。
+        run: npm install --prefix functions
+
       - name: 送り込む前に文法をチェック
         # 文法が壊れたまま本番へ送らないための確認。ここで止まれば本番は無傷。
         run: node --check functions/index.js
+
+      - name: プログラムが読み込めるか確認
+        # 文法チェックだけでは、部品の不足や読み込み時のエラーを検出できない（教訓#004）。
+        # 実際に読み込んで、公開すべき関数がそろっているかまで確かめる。
+        run: |
+          node -e "
+          const m = require('./functions/index.js');
+          const names = Object.keys(m);
+          console.log('公開されている関数:', names.join(', '));
+          for (const need of ['runAggregateNow', 'snapshotTaskTrend']) {
+            if (!names.includes(need)) {
+              console.error('関数が見つかりません: ' + need);
+              process.exit(1);
+            }
+          }
+          "
 
       - name: Functions へデプロイ（失敗時は自動で最大3回リトライ）
         uses: nick-fields/retry@v3
