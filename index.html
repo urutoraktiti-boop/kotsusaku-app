@@ -747,6 +747,7 @@
 </div>
 </div>
 </div>
+<div id="kiseki-updated" style="font-size:.5rem;color:var(--text-muted);text-align:center;margin-top:9px;opacity:.85;"></div>
 </div>
 <div style="height:10px;"></div>
 <div style="border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:var(--surface2);">
@@ -2054,13 +2055,28 @@ async function maybeWriteTaskTrendSnapshot() {
 }
 
 const KISEKI_CACHE_KEY = 'kotsusaku-kiseki-cache';
-const KISEKI_CACHE_VERSION = 3;
-const KISEKI_CACHE_TTL_MS = 60 * 60 * 1000;
+// v4: キャッシュの中身に updatedAtIso（集計の時刻）を持たせたので版を上げる
+const KISEKI_CACHE_VERSION = 4;
+// 24h推移のグラフだけは、最大でも1時間に1回しか読み直さない
+const KISEKI_TREND_TTL_MS = 60 * 60 * 1000;
 
 function normalizeKisekiSparklineValues(values) {
   if (!Array.isArray(values)) return [];
   const nums = values.map(v => Number(v)).filter(v => Number.isFinite(v));
   return nums.length === 1 ? [nums[0], nums[0]] : nums;
+}
+
+// 「最終更新 15:45」の形にする。日をまたいでいたら「8/13 19:45」と月日も出す。
+function formatKisekiUpdatedAt(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const hm = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  const now = new Date();
+  const sameDay = d.getFullYear() === now.getFullYear()
+    && d.getMonth() === now.getMonth()
+    && d.getDate() === now.getDate();
+  return sameDay ? hm : (d.getMonth() + 1) + '/' + d.getDate() + ' ' + hm;
 }
 
 function applyKisekiStats(summary, trend) {
@@ -2070,6 +2086,12 @@ function applyKisekiStats(summary, trend) {
   const countEl = document.getElementById('kiseki-count-value');
   if (timeEl) timeEl.textContent = Math.round(totalStudyMin / 60).toLocaleString();
   if (countEl) countEl.textContent = completed.toLocaleString();
+
+  const updatedEl = document.getElementById('kiseki-updated');
+  if (updatedEl) {
+    const label = formatKisekiUpdatedAt(summary && summary.updatedAtIso);
+    updatedEl.textContent = label ? '最終更新 ' + label + '（1時間ごとに集計）' : '';
+  }
 
   const timeSvg = document.getElementById('kiseki-time-svg');
   const countSvg = document.getElementById('kiseki-count-svg');
@@ -2098,45 +2120,79 @@ function readKisekiCache() {
   }
 }
 
+// 集計ドキュメントの「いつ集計されたか」を取り出す。
+// 注意: aggregatedAt は古い仕組みが書いた項目で更新が止まっているため使わない。
+function readKisekiUpdatedAtIso(d) {
+  try {
+    if (d && d.updatedAt && typeof d.updatedAt.toDate === 'function') {
+      return d.updatedAt.toDate().toISOString();
+    }
+  } catch(e) {}
+  if (d && typeof d.aggregatedAtIso === 'string') return d.aggregatedAtIso;
+  return '';
+}
+
 async function loadTaskTrend() {
   await maybeWriteTaskTrendSnapshot();
 
   const cache = readKisekiCache();
-  if (cache && Date.now() - cache.fetchedAt < KISEKI_CACHE_TTL_MS) {
-    applyKisekiStats(cache.summary, cache.trend);
-    return;
-  }
+  // 先に手元の値を描いておく（読み込み中に「…」のままにしないため）
+  if (cache) applyKisekiStats(cache.summary, cache.trend);
+
+  // オフラインなどでFirestoreが使えないときは、手元の値のままにする
+  if (!db) return;
 
   try {
+    // 数字そのものは毎回読み直す（1件だけなので読み取り回数はほぼ増えない）
     const summarySnap = await db.collection('analytics_summary').doc('summary').get();
-    let summary = {};
+    let summary = { totalStudyMin: 0, completedTasks: 0, updatedAtIso: '' };
     if (summarySnap.exists) {
       const d = summarySnap.data();
       summary = {
         totalStudyMin: Number(d.totalStudyMin || d.totalStudyMinutes || d.totalMinutes || 0),
         completedTasks: Number(d.completedTasks || 0),
+        updatedAtIso: readKisekiUpdatedAtIso(d),
       };
     }
 
-    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const trendSnap = await db.collection('analytics_task_trend')
-      .where('timestamp', '>', cutoff)
-      .orderBy('timestamp', 'asc')
-      .get();
+    // 24h推移のグラフは、集計が新しくなったときだけ読み直す。
+    // サーバー側の集計は1時間ごとなので、同じ集計のままなら読んでも中身は変わらない。
+    // trendFetchedAt は「グラフを実際に読み直した時刻」。数字だけ読み直しても更新しない。
+    const prevTrendFetchedAt = Number(cache && (cache.trendFetchedAt || cache.fetchedAt)) || 0;
+    const withinTrendTtl = !!(cache && cache.trend)
+      && Date.now() - prevTrendFetchedAt < KISEKI_TREND_TTL_MS;
+    // 集計が新しくなっていたら、1時間たっていなくても読み直す
+    const stampChanged = !!(summary.updatedAtIso && cache && cache.summary
+      && cache.summary.updatedAtIso !== summary.updatedAtIso);
+    const canReuseTrend = withinTrendTtl && !stampChanged;
 
-    const trendDocs = trendSnap.docs.map(doc => doc.data() || {});
-    const timeTrendDocs = trendDocs.filter(d =>
-      Object.prototype.hasOwnProperty.call(d, 'totalStudyMin') &&
-      Number.isFinite(Number(d.totalStudyMin))
-    );
-    const trend = {
-      totalStudyMin: timeTrendDocs.map(d => Number(d.totalStudyMin || 0)),
-      completedTasks: trendDocs.map(d => Number(d.completedTasks || 0)),
-    };
+    let trend;
+    let trendFetchedAt = prevTrendFetchedAt;
+    if (canReuseTrend) {
+      trend = cache.trend;
+    } else {
+      const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const trendSnap = await db.collection('analytics_task_trend')
+        .where('timestamp', '>', cutoff)
+        .orderBy('timestamp', 'asc')
+        .get();
+
+      const trendDocs = trendSnap.docs.map(doc => doc.data() || {});
+      const timeTrendDocs = trendDocs.filter(d =>
+        Object.prototype.hasOwnProperty.call(d, 'totalStudyMin') &&
+        Number.isFinite(Number(d.totalStudyMin))
+      );
+      trend = {
+        totalStudyMin: timeTrendDocs.map(d => Number(d.totalStudyMin || 0)),
+        completedTasks: trendDocs.map(d => Number(d.completedTasks || 0)),
+      };
+      trendFetchedAt = Date.now();
+    }
     if (summary.totalStudyMin > 0 || summary.completedTasks === 0) {
       localStorage.setItem(KISEKI_CACHE_KEY, JSON.stringify({
         version: KISEKI_CACHE_VERSION,
         fetchedAt: Date.now(),
+        trendFetchedAt,
         summary,
         trend,
       }));
