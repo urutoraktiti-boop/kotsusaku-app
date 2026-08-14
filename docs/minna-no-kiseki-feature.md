@@ -107,6 +107,55 @@ for r in sorted(rows)[-24:]: print(r[0][:16],'study=',r[1],'done=',r[2])"
 「特定の端末の値が急に下がっている」のか「ドキュメントごと消えている」のか
 （`after` が `null` なら消失）が分かる。
 
+### 診断結果の見かた
+
+`analytics_diagnostics` は端末の識別番号を含むため、外部からは読めない設定になっている。
+確認は [Firebase Console](https://console.firebase.google.com/project/kotsusaku-app/firestore) から行う。
+
+- `analytics_diagnostics/studyTotal` … 毎時上書き。`topDrops` が空なら、その回は減少なし
+- `analytics_diagnostics_log/*` … **減った回だけ**作られる。ずっと空なら減少は起きていない
+
+`topDrops` の各項目の意味：
+
+| 項目 | 意味 |
+|---|---|
+| `before` / `after` | その端末の累計学習時間（分）。前回 → 今回 |
+| `after` が `null` | `analytics/{userId}` のドキュメント**ごと消えた** |
+| `lostMin` | 減った分数 |
+
+デプロイ直後の1回目は比較相手がないため何も検出されない。**2回目（約1時間後）から判定が始まる。**
+
+## サーバー側（Functions）のデプロイ方法
+
+アプリ本体（`index.html` など）は main にマージすると自動で反映されるが、
+**サーバー側は自動では反映されない**。意図せず本番のプログラムが入れ替わるのを防ぐため。
+
+### 方法A：GitHubの画面から（ターミナル不要・おすすめ）
+
+1. リポジトリの **Actions** タブを開く
+2. 左の一覧から **「サーバー側（Functions）をデプロイ」** を選ぶ
+3. 右の **Run workflow** → 緑の **Run workflow** を押す
+4. 2〜5分待つ。緑のチェックが付けば成功
+
+設定ファイルは `.github/workflows/firebase-functions-deploy.yml`。
+
+### 方法B：ターミナルから
+
+```bash
+cd /該当フォルダのパス
+git pull origin main
+npx firebase-tools@latest login          # 初回だけ
+npx firebase-tools@latest deploy --only functions --project kotsusaku-app
+```
+
+`✔  Deploy complete!` と出れば成功。
+
+### 権限が足りずに失敗する場合
+
+方法Aで `HTTP Error: 403, Permission ... denied` が出たら、`FIREBASE_SERVICE_ACCOUNT` に
+登録したサービスアカウントの権限不足。Functionsのデプロイはホスティングより強い権限が要る。
+必要な役割はワークフローファイルの先頭のコメントに列挙してある。
+
 ## 変更するときの注意
 
 - 画面の数字は `applyKisekiStats()` が唯一の出どころ。固定HTMLの `…` は初期値でしかない（教訓#005）
