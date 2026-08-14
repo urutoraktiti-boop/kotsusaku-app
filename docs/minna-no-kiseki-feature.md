@@ -144,11 +144,23 @@ for r in sorted(rows)[-24:]: print(r[0][:16],'study=',r[1],'done=',r[2])"
 ```bash
 cd /該当フォルダのパス
 git pull origin main
+npm install --prefix functions           # 部品を入れる。取得直後は必須
 npx firebase-tools@latest login          # 初回だけ
 npx firebase-tools@latest deploy --only functions --project kotsusaku-app
 ```
 
 `✔  Deploy complete!` と出れば成功。
+
+**`npm install --prefix functions` を省くと失敗する。** `functions/node_modules` は
+GitHubに置かない決まりなので、クローン直後や `git pull` 直後は空になっている。
+部品が無いと firebase-tools がプログラムを解析できず、こう出て止まる。
+
+```
+⚠ functions: Couldn't find firebase-functions package in your source code. Have you run 'npm install'?
+Error: An unexpected error has occurred.
+```
+
+一度入れれば、そのフォルダでは次回以降は不要（`package.json` を変えたときだけ再実行）。
 
 ### 権限が足りずに失敗する場合
 
