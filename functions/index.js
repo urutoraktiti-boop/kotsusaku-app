@@ -7,6 +7,11 @@ initializeApp();
 
 const MANUAL_AGGREGATE_COOLDOWN_MS = 10 * 60 * 1000;
 const MANUAL_AGGREGATE_CONTROL_REF = 'dashboard_control/manualAggregate';
+// 総学習時間が「減る」原因を突き止めるための記録先
+const STUDY_DIAG_REF = 'analytics_diagnostics/studyTotal';
+const STUDY_DIAG_LOG = 'analytics_diagnostics_log';
+const STUDY_DIAG_LOG_KEEP_DAYS = 14;
+const STUDY_DIAG_MAX_LISTED = 20;
 const ALLOWED_ORIGINS = new Set([
   'https://urutoraktiti-boop.github.io',
   'https://urutoraktiti-boop.github.io/kotsusaku-dashboard',
@@ -128,10 +133,13 @@ async function aggregateAnalyticsSummaryCore() {
   let avgDailyCount = 0;
   let streakSum = 0;
   let streakCount = 0;
+  // 端末ごとの累計学習時間。前回の集計と比べて「減った端末」を見つけるために使う。
+  const deviceStudyTotals = {};
 
   snap.forEach((doc) => {
     const data = doc.data() || {};
     const totalStudyMin = positiveNumber(data.totalStudyMin);
+    if (totalStudyMin > 0) deviceStudyTotals[doc.id] = Math.round(totalStudyMin);
     const avgDailyMinutes = positiveNumber(data.avgDailyMinutes);
     const streakDays = positiveNumber(data.streakDays);
     const level = Math.max(1, Math.round(positiveNumber(data.level) || 1));
@@ -207,8 +215,96 @@ async function aggregateAnalyticsSummaryCore() {
 
   await db.collection('analytics_summary').doc('summary').set(summary, { merge: true });
 
+  try {
+    await recordStudyTotalDiagnostics(db, summary.totalStudyMin, deviceStudyTotals, now);
+  } catch (error) {
+    // 診断の失敗で集計本体を止めない
+    console.error('recordStudyTotalDiagnostics failed:', error);
+  }
+
   console.log(`Aggregated analytics summary: users=${summary.userCount}, totalStudyMin=${summary.totalStudyMin}, taskUsers=${summary.taskUsers}, totalTasks=${summary.totalTasks}`);
   return summary;
+}
+
+// 総学習時間は積み上がる値なので、本来は減らない。
+// それでも減った回があるため、「どの端末の値が下がったのか」を毎回記録して原因を追えるようにする。
+// 追加コストは 1時間あたり 読み取り1回・書き込み1〜2回だけ。
+async function recordStudyTotalDiagnostics(db, currentTotal, deviceStudyTotals, now) {
+  const diagRef = db.doc(STUDY_DIAG_REF);
+  const prevSnap = await diagRef.get();
+  const prev = prevSnap.exists ? (prevSnap.data() || {}) : {};
+  const prevDevices = prev.deviceStudyTotals || {};
+  const prevTotal = numberValue(prev.totalStudyMin, 0);
+  const hasPrev = prevSnap.exists && Object.keys(prevDevices).length > 0;
+
+  const drops = [];
+  let droppedMin = 0;
+  let disappearedMin = 0;
+  if (hasPrev) {
+    Object.entries(prevDevices).forEach(([id, beforeRaw]) => {
+      const before = numberValue(beforeRaw, 0);
+      if (before <= 0) return;
+      // 端末のドキュメント自体が消えた場合は after = null として区別する
+      const present = Object.prototype.hasOwnProperty.call(deviceStudyTotals, id);
+      const after = present ? numberValue(deviceStudyTotals[id], 0) : 0;
+      if (after >= before) return;
+      const lost = before - after;
+      droppedMin += lost;
+      if (!present) disappearedMin += lost;
+      drops.push({ id, before, after: present ? after : null, lostMin: lost });
+    });
+    drops.sort((a, b) => b.lostMin - a.lostMin);
+  }
+
+  const deltaTotal = hasPrev ? currentTotal - prevTotal : 0;
+  const topDrops = drops.slice(0, STUDY_DIAG_MAX_LISTED);
+
+  await diagRef.set({
+    totalStudyMin: currentTotal,
+    prevTotalStudyMin: hasPrev ? prevTotal : null,
+    deltaTotalStudyMin: hasPrev ? deltaTotal : null,
+    droppedDeviceCount: drops.length,
+    droppedMin,
+    disappearedMin,
+    topDrops,
+    deviceCount: Object.keys(deviceStudyTotals).length,
+    deviceStudyTotals,
+    checkedAtIso: now.toISOString(),
+    updatedAt: FieldValue.serverTimestamp(),
+  });
+
+  if (drops.length === 0) {
+    console.log(`Study total diagnostics: no drops. total=${currentTotal} delta=${hasPrev ? deltaTotal : 'n/a'}`);
+    return;
+  }
+
+  // 減った回だけ記録を残す（毎回残すと増えすぎるため）
+  const logRef = db.collection(STUDY_DIAG_LOG);
+  await logRef.add({
+    timestamp: FieldValue.serverTimestamp(),
+    checkedAtIso: now.toISOString(),
+    totalStudyMin: currentTotal,
+    prevTotalStudyMin: prevTotal,
+    deltaTotalStudyMin: deltaTotal,
+    droppedDeviceCount: drops.length,
+    droppedMin,
+    disappearedMin,
+    topDrops,
+  });
+
+  console.warn(
+    `Study total DROP detected: ${drops.length} device(s), -${droppedMin} min ` +
+    `(disappeared docs: ${disappearedMin} min), total ${prevTotal} -> ${currentTotal}`
+  );
+
+  const cutoff = new Date(now.getTime() - STUDY_DIAG_LOG_KEEP_DAYS * 86400000);
+  const oldLogs = await logRef.where('timestamp', '<', cutoff).get();
+  if (!oldLogs.empty) {
+    const batch = db.batch();
+    oldLogs.forEach((doc) => batch.delete(doc.ref));
+    await batch.commit();
+    console.log(`Pruned ${oldLogs.size} old study diagnostics logs`);
+  }
 }
 
 function setCorsHeaders(req, res) {
