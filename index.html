@@ -6538,7 +6538,16 @@ function _renderSubjectEditList(){
 }
 // 週間・月間ビュー：科目別の学習時間カード（表示中の期間＋累計）
 function subjectRangeTotals(dsList){const t={};dsList.forEach(ds=>{const dt=subjectDayTotals(ds);for(const k in dt)t[k]=(t[k]||0)+dt[k];});return t;}
-function subjectAllTimeTotals(){const t={};for(const ds in data){const dt=subjectDayTotals(ds);for(const k in dt)t[k]=(t[k]||0)+dt[k];}return t;}
+// 科目ごとの累計（分）。軌跡のしおりを挟んでいれば、その日以降だけを数える。
+// 上の累計カード（seasonTotal）と同じ区切りにそろえるため（しおりなしなら全期間）。
+function subjectSeasonTotals(){
+  const st=getSeasonStart(),t={};
+  for(const ds in data){
+    if(st&&ds<st)continue;
+    const dt=subjectDayTotals(ds);for(const k in dt)t[k]=(t[k]||0)+dt[k];
+  }
+  return t;
+}
 // 前回の棒グラフ幅（cardId|科目id → %）。再描画のたびに0から伸び直すチラつきを防ぎ、差分だけ動かす
 let _subjBarPrev={};
 // 共通描画：cardId のカードに、dsList（対象期間の日付リスト）の科目別合計と累計を出す
@@ -6549,7 +6558,10 @@ function _renderSubjectRangeCard(cardId,dsList,rangeLabel,opts){
   const subs=getSubjects();
   if(!subs.length){card.style.display='none';card.innerHTML='';return;}
   const range=subjectRangeTotals(dsList);
-  const all=subjectAllTimeTotals();
+  const all=subjectSeasonTotals();
+  // しおりを挟んでいるときは「累計」ではなく期間が分かる見出しにする
+  const _ss=getSeasonStart();
+  const allLabel=_ss?(_fmtSeasonMD(_ss)+'〜'):'累計';
   const rows=[];
   subs.forEach(s=>{if(s&&s.id)rows.push({id:s.id,bar:'subj-bar-'+s.color,dot:'subj-dot-'+s.color,label:s.name||'科目',w:range[s.id]||0,a:all[s.id]||0});});
   const noneW=range['']||0,noneA=all['']||0;
@@ -6565,7 +6577,7 @@ function _renderSubjectRangeCard(cardId,dsList,rangeLabel,opts){
   }
   html+=rows.map(r=>{
     const pctHtml=(opts.pct&&totalW>0)?'<span class="swr-pct">'+Math.round(r.w/totalW*100)+'%</span>':'';
-    return '<div class="subject-week-row"><span class="subj-dot '+r.dot+'"></span><span class="swr-name"></span>'+pctHtml+'<span class="swr-min">'+rangeLabel+' '+_fmtSubjMin(r.w)+'</span><span class="swr-min">累計 '+_fmtSubjMin(r.a)+'</span></div>'
+    return '<div class="subject-week-row"><span class="subj-dot '+r.dot+'"></span><span class="swr-name"></span>'+pctHtml+'<span class="swr-min">'+rangeLabel+' '+_fmtSubjMin(r.w)+'</span><span class="swr-min">'+allLabel+' '+_fmtSubjMin(r.a)+'</span></div>'
       +'<div class="swr-bar-track"><div class="swr-bar-fill '+r.bar+'"></div></div>';
   }).join('');
   card.innerHTML=html;
