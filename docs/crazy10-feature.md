@@ -24,6 +24,9 @@ const CRAZY10_EVENTS=[
   {dateStr:'2026-05-17',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true,series:'2026-05-crazy10'},
   {dateStr:'2026-08-08',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true,label:'SPECIAL'},
   {dateStr:'2026-08-13',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true,label:'SPECIAL'},
+  // 2日連続開催（2DAYS）は、両日に同じ series を書く
+  {dateStr:'2026-08-21',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true,series:'2026-08-crazy10-2days'},
+  {dateStr:'2026-08-22',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true,series:'2026-08-crazy10-2days'},
 ];
 ```
 
@@ -45,7 +48,8 @@ const CRAZY10_EVENTS=[
 ### 2. 前夜告知を出すなら `CRAZY10_PREVIEW_DATES` に前日を足す
 
 ```js
-const CRAZY10_PREVIEW_DATES=['2026-05-15','2026-05-16','2026-08-12']; // '2026-08-12' は 8/13 開催の前夜
+const CRAZY10_PREVIEW_DATES=['2026-05-15','2026-05-16','2026-08-12','2026-08-20','2026-08-21'];
+// '2026-08-12' は 8/13 開催の前夜／'2026-08-20'・'2026-08-21' は 8/21・8/22（2日連続）それぞれの前夜
 ```
 
 **書くのは「開催日」ではなく「その前日」**。その日の18時以降にアプリを開くと、
@@ -57,6 +61,11 @@ const CRAZY10_PREVIEW_DATES=['2026-05-15','2026-05-16','2026-08-12']; // '2026-0
 
 なお**前日の「参加予約」ポップアップは `CRAZY10_PREVIEW_DATES` とは無関係**に、
 イベントを1行足しただけで自動的に出る（下記参照）。
+
+**2日連続開催（2DAYS）のときは「初日の前日」と「初日」の両方を書く**（＝各日の前夜がそろう）。
+ただし2日目の前夜は初日そのものなので、その日は前夜告知トーストだけが出て、
+参加予約ポップアップは出ない（`_getCrazy10EventNow()` があると予約側は何もしない）。
+**2日目の参加確認は当日の朝4時以降のポップアップで行われる**ので、これで抜けはない。
 
 ### 3. お知らせを出す
 
