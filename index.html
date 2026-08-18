@@ -480,12 +480,12 @@
 </div>
 </div>
 <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
-<div style="font-size:.62rem;font-weight:800;color:var(--accent);margin-bottom:5px;">数え直しの区切り日</div>
+<div style="font-size:.62rem;font-weight:800;color:var(--accent);margin-bottom:5px;">軌跡のしおり</div>
 <div style="display:flex;align-items:center;gap:6px;">
 <input type="date" class="countdown-input" id="cust-season-input" style="width:100%;font-size:.75rem;">
 <button class="countdown-clear" id="cust-season-clear" title="クリア">✕</button>
 </div>
-<div id="cust-season-note" style="font-size:.56rem;color:var(--text-muted);margin-top:5px;line-height:1.7;">この日から学習時間を数え直します。前の記録は消えません</div>
+<div id="cust-season-note" style="font-size:.56rem;color:var(--text-muted);margin-top:5px;line-height:1.7;">新たな旅の始まり。この日から数え直します（前の軌跡は消えません）</div>
 </div>
 </div>
 </div>
@@ -2490,7 +2490,7 @@ async function loadFromCloud(code) {
       }
       if (d.studyNotes) { notes = JSON.parse(d.studyNotes); LS.set('study-notes', d.studyNotes); }
       if (d.studyCust) { LS.set('study-cust', d.studyCust); loadCust(); applyAllCust();
-        // 数え直しの区切り日（CUST.seasonStart）など、設定の変更を累計カード・予測にも反映する
+        // 軌跡のしおり（CUST.seasonStart）など、設定の変更を累計カード・予測にも反映する
         if (typeof safeRenderAllTimeCard === 'function') safeRenderAllTimeCard();
         if (typeof safeRenderForecast === 'function') safeRenderForecast();
       }
@@ -2896,8 +2896,9 @@ function dayPartMinutes(ds){
 function allTimeTotal(){return _memoStat('allTimeTotal',()=>Object.values(data).reduce((sum,day)=>sum+Object.values(day).filter(Boolean).length*10,0));}
 function allTimeDays(){return _memoStat('allTimeDays',()=>Object.keys(data).filter(ds=>dayTotal(ds)>0).length);}
 
-// === 章の区切り（数え直しの開始日）===
-// CUST.seasonStart（'YYYY-MM-DD'）を境に「これまでの記録」と「今の記録」を分けて見せる。
+// === 軌跡のしおり（数え直しの開始日）===
+// 画面上の呼び名は「軌跡のしおり（新たな旅の始まり。）」。
+// CUST.seasonStart（'YYYY-MM-DD'）を境に「しおりまでの軌跡」と「いまの軌跡」を分けて見せる。
 // study-data（学習記録の本体）は一切変えない＝記録は消えない。変えるのは
 // 「累計カード」と「開花予測」が数える範囲だけ。レベル・バッジ・スピリットは
 // 今まで通り全期間で判定する（数え直しでレベルが下がらないようにするため）。
@@ -2910,7 +2911,7 @@ function getSeasonStart(){
   }catch(e){return '';}
 }
 // 集計キャッシュ(_statMemo)はデータ変更時にしか消えないので、
-// 区切り日を変えても古い値を返さないよう、キーに区切り日を含める
+// しおりの日付を変えても古い値を返さないよう、キーにその日付を含める
 function seasonTotal(){
   const s=getSeasonStart();if(!s)return allTimeTotal();
   return _memoStat('seasonTotal|'+s,()=>Object.keys(data).reduce((sum,ds)=>ds>=s?sum+dayTotal(ds):sum,0));
@@ -2919,15 +2920,15 @@ function seasonDays(){
   const s=getSeasonStart();if(!s)return allTimeDays();
   return _memoStat('seasonDays|'+s,()=>Object.keys(data).filter(ds=>ds>=s&&dayTotal(ds)>0).length);
 }
-// 区切り日より前（＝これまでの積み上げ）の合計（分）
+// しおりより前（＝しおりまでの軌跡）の合計（分）
 function beforeSeasonTotal(){
   const s=getSeasonStart();if(!s)return 0;
   return Math.max(0,allTimeTotal()-seasonTotal());
 }
 // '2026-09-01' → '9/1'
 function _fmtSeasonMD(ds){const d=parseDate(ds);return (d.getMonth()+1)+'/'+d.getDate();}
-// '2026-09-01' → '〜8/31の記録'（区切り日の前日まで）
-function _fmtSeasonPrevLabel(ds){const d=parseDate(ds);d.setDate(d.getDate()-1);return '〜'+(d.getMonth()+1)+'/'+d.getDate()+'の記録';}
+// '2026-09-01' → '〜8/31'（しおりを挟んだ日の前日まで）
+function _fmtSeasonPrevLabel(ds){const d=parseDate(ds);d.setDate(d.getDate()-1);return '〜'+(d.getMonth()+1)+'/'+d.getDate();}
 function currentStreak(){return _memoStat('currentStreak',()=>_computeCurrentStreak());}
 function _computeCurrentStreak(){
   const todayStudyStr=toStudyDateStr(new Date());const todayDt=parseDate(todayStudyStr);
@@ -4000,7 +4001,7 @@ function renderForecast(){
     });
     return;
   }
-  // 区切り日を設定しているときは、その日以降の実績だけで予測する。
+  // しおりを挟んでいるときは、その日以降の実績だけで予測する。
   // （新しい試験・科目に向けた予測に、前の期の時間が混ざらないようにするため）
   const _seasonS=getSeasonStart();
   const _baseLbl=_seasonS?_fmtSeasonMD(_seasonS)+'〜の実績ベース':'累計実績ベース';
@@ -4784,7 +4785,7 @@ function monthTotal(y,m){return monthDates(y,m).reduce((s,d)=>s+dayTotal(d),0);}
 
 function renderAllTimeCard(){
   const el=$('all-time-card');if(!el)return;
-  // 区切り日（CUST.seasonStart）があれば、その日以降だけを「いまの記録」として数え、
+  // しおり（CUST.seasonStart）を挟んでいれば、その日以降だけを「いまの軌跡」として数え、
   // それより前の分は下に1行で残す。区切りなしのときは今まで通り全期間。
   const season=getSeasonStart();
   const total=seasonTotal(),days=seasonDays(),avgMin=days>0?Math.round(total/days):0;
@@ -4793,7 +4794,7 @@ function renderAllTimeCard(){
   const baseDs=season||studiedKeys[0]||'';
   if(baseDs){
     const first=parseDate(baseDs);const today=new Date();today.setHours(0,0,0,0);first.setHours(0,0,0,0);
-    // 区切り日を未来にした場合はマイナスになるので0で止める
+    // しおりを未来の日付にした場合はマイナスになるので0で止める
     elapsedDays=Math.max(0,Math.round((today-first)/86400000)+1);startStr=(first.getMonth()+1)+'/'+first.getDate()+'〜';
   }
   const daysLabel=elapsedDays>0?`${days}日 <span class="atc-days-total">/ ${elapsedDays}日</span>`:`${days}日`;
@@ -4803,9 +4804,9 @@ function renderAllTimeCard(){
   else if(streak===1)streakContent=`<div class="atc-streak-val">✨ 1日</div><div class="atc-elapsed-lbl">今日も学習中！</div>`;
   else streakContent=`<div class="atc-streak-val atc-streak-zero">─</div><div class="atc-elapsed-lbl">今日から再スタート</div>`;
   const seasonFuture=season&&season>toStudyDateStr(new Date());
-  const cardLabel=season?`${startStr}の記録`:'累計学習時間';
-  const subText=seasonFuture?`${_fmtSeasonMD(season)}から数え始めます`:`1日平均 ${fmtStudyTimeText(avgMin)}`;
-  const prevHtml=season?`<div class="atc-prev">＋ ${_fmtSeasonPrevLabel(season)} ${fmtStudyTimeText(beforeSeasonTotal())}</div>`:'';
+  const cardLabel=season?`${startStr}の軌跡`:'累計学習時間';
+  const subText=seasonFuture?`${_fmtSeasonMD(season)}から新たな旅がはじまります`:`1日平均 ${fmtStudyTimeText(avgMin)}`;
+  const prevHtml=season?`<div class="atc-prev">🔖 しおりまでの軌跡（${_fmtSeasonPrevLabel(season)}） ${fmtStudyTimeText(beforeSeasonTotal())}</div>`:'';
   el.innerHTML=`
     <div class="atc-icon">📚</div>
     <div class="atc-body">
@@ -5340,13 +5341,13 @@ if(_custCdClear){
   });
 }
 
-// ── 数え直しの区切り日（CUST.seasonStart）──
+// ── 軌跡のしおり（CUST.seasonStart）──
 // 記録そのもの（study-data）には一切触らない。「どこから数えるか」を1つ覚えるだけ。
 function _refreshSeasonNote(){
   const el=$('cust-season-note');if(!el)return;
   const s=getSeasonStart();
-  if(!s){el.textContent='この日から学習時間を数え直します。前の記録は消えません';return;}
-  el.textContent=_fmtSeasonPrevLabel(s)+' '+fmtStudyTimeText(beforeSeasonTotal())
+  if(!s){el.textContent='新たな旅の始まり。この日から数え直します（前の軌跡は消えません）';return;}
+  el.textContent='🔖 しおりまでの軌跡 '+fmtStudyTimeText(beforeSeasonTotal())
     +' ／ '+_fmtSeasonMD(s)+'〜 '+fmtStudyTimeText(seasonTotal());
 }
 function _setSeasonStartValue(v){
