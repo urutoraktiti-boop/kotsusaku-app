@@ -7970,6 +7970,24 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
   function _updPromptSet(key, val) {
     try { localStorage.setItem(key, val); } catch(e) {}
   }
+  // 入れ替え待ちのService Workerがあるかを調べて渡す（無い・使えない環境なら null）
+  function _withWaitingWorker(cb) {
+    try {
+      if (!('serviceWorker' in navigator) || !navigator.serviceWorker.getRegistration) { cb(null); return; }
+      navigator.serviceWorker.getRegistration().then(function(reg){
+        cb(reg && reg.waiting ? reg.waiting : null);
+      }).catch(function(){ cb(null); });
+    } catch(e) { cb(null); }
+  }
+  // 「もう案内を出さなくてよい」状態か判定してから既読記録を消す。
+  // 入れ替え待ちのService Workerが残っている間は消さない（毎回出るのを防ぐ）。
+  function _clearUpdatePromptIfNoWaitingWorker() {
+    _withWaitingWorker(function(waiting){
+      if (waiting) return; // まだ入れ替え待ち＝記録を残す
+      _updPromptClear(UPDATE_PROMPT_SEEN_KEY);
+      _updPromptClear(UPDATE_PROMPT_APPLIED_KEY);
+    });
+  }
   // 「今このセッションで更新ボタンを押した」記録。更新が失敗して古い版のままでも
   // 記録が残り続けないよう、あえて sessionStorage（アプリを閉じると消える）に置く。
   function _updAppliedGet() {
@@ -8008,7 +8026,10 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
   // これがないと、一度案内を閉じた後に更新が失敗した端末が、手動でも更新できなくなる。
   function showUpdateBanner(latestLabel, workerToSkip, force) {
     if (_bannerShown && !force) return;
-    var promptVersion = latestLabel || _latestVersionLabel || 'latest-update';
+    // 記録のキー。version.json の取得より先に Service Worker 側から呼ばれることが
+    // あるため、その場合は今動いている版（CURRENT_VERSION）を使う。
+    // ここが場面ごとにブレると「同じ版なのに別物」と見なされ、案内が何度も出る。
+    var promptVersion = latestLabel || _latestVersionLabel || CURRENT_VERSION || 'latest-update';
     // 同じ版の案内は自動では出さない（アプリを閉じても記録が残る）
     // SEEN は localStorage（閉じても残る）、APPLIED は sessionStorage（セッション限り）
     if (!force &&
@@ -8088,9 +8109,10 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
         var badge = document.getElementById('ver-badge');
         if (badge) badge.textContent = formatVersionBadge(latest);
         if (latest === CURRENT_VERSION) {
-          // すでに最新版で動いている＝記録は不要なので掃除する
-          _updPromptClear(UPDATE_PROMPT_SEEN_KEY);
-          _updPromptClear(UPDATE_PROMPT_APPLIED_KEY);
+          // 画面のファイルが最新でも、裏の配達係（Service Worker）がまだ
+          // 入れ替え待ちのことがある。そこで既読記録を消すと、待機中の案内が
+          // 開くたびに毎回出てしまう（教訓#009）。待機が無いときだけ掃除する。
+          _clearUpdatePromptIfNoWaitingWorker();
           return;
         }
         // CURRENT_VERSION（このファイルが持つバージョン）と比較して更新バナーを出す
@@ -8126,8 +8148,18 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
           setRefreshState('更新あり', false, 2000);
           showUpdateBanner(latest, null, true);
         } else {
-          // 最新版 → 状態だけ表示してリロードしない
-          setRefreshState('最新版です', false, 1800);
+          // 版は同じでも、裏の配達係（Service Worker）が入れ替え待ちのことがある。
+          // 自動の案内は1つの版につき1回しか出さないため（教訓#009）、
+          // 見逃した人がここから入れ替えを完了できるようにする。
+          _withWaitingWorker(function(waiting){
+            if (waiting) {
+              setRefreshState('更新あり', false, 2000);
+              showUpdateBanner(latest, waiting, true);
+            } else {
+              // 本当に最新版 → 状態だけ表示してリロードしない
+              setRefreshState('最新版です', false, 1800);
+            }
+          });
         }
       })
       .catch(function(){
