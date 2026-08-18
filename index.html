@@ -485,7 +485,7 @@
 <input type="date" class="countdown-input" id="cust-season-input" style="width:100%;font-size:.75rem;">
 <button class="countdown-clear" id="cust-season-clear" title="クリア">✕</button>
 </div>
-<div id="cust-season-note" style="font-size:.56rem;color:var(--text-muted);margin-top:5px;line-height:1.7;">新たな旅の始まり。この日から数え直します（前の軌跡は消えません）</div>
+<div id="cust-season-note" style="font-size:.56rem;color:var(--text-muted);margin-top:5px;line-height:1.7;">新たな目標に向けて、この日から0からスタート（前の軌跡は消えません）</div>
 <button type="button" class="cust-btn" id="cust-season-add" style="display:none;width:100%;margin-top:6px;">＋ 新しいしおりを挟む</button>
 <div id="cust-journey-list" style="display:none;"></div>
 </div>
@@ -5380,7 +5380,7 @@ function _refreshSeasonNote(){
   const el=$('cust-season-note');if(!el)return;
   el.textContent=getSeasonStart()
     ? '✕ でいまのしおりを外せます（記録は消えません）'
-    : '新たな旅の始まり。この日から数え直します（前の軌跡は消えません）';
+    : '新たな目標に向けて、この日から0からスタート（前の軌跡は消えません）';
 }
 // これまでの旅の一覧（第1の旅・第2の旅…）
 function _renderJourneyList(){
