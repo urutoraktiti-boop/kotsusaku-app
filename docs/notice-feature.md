@@ -129,6 +129,9 @@ print('合計',len(d['title'])+len(d['body'])+sum(len(n) for n in d['notes']))"
 
 - **文章は `notice.json` だけが出どころ**。`index.html` のモーダルHTMLに文章を
   直書きしないこと（直書きしても実行時に上書きされ、二重管理＝バグの元）。
+- **更新案内（`UPDATE_COPY`）に版ごとの内容を書かない**。あちらは「更新前の＝古い版」が
+  自分の文面を表示するため、何を書いても必ず古くなる（実際にv118のリリースでv113の案内が出た。
+  `CLAUDE-lessons.md` #008）。「何が新しいか」の案内は**この notice.json だけの仕事**。
 - **`id` を必ず更新する**。同じidは「既読の人には出ない」。
 - **`z-index:24000` を下げない**。下げると他のバナーに隠れてOABが押せなくなる。
 - `notice.json` は hosting で配信される（firebase.json の ignore 対象外）。

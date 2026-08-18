@@ -292,9 +292,9 @@
 <div id="update-banner" style="display:none;position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,.72);align-items:center;justify-content:center;padding:20px;">
 <div style="background:#0f1117;border:2px solid #f472b6;border-radius:20px;padding:28px 24px;max-width:380px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(244,114,182,.35);">
 <div style="font-size:2.2rem;line-height:1;margin-bottom:10px;">📋</div>
-<div id="update-title-text" style="font-size:1.05rem;font-weight:800;color:#fde8f7;margin-bottom:4px;">v110 逃げた記録、ひっ捕らえたっぺ！🦍</div>
-<div id="update-version-text" style="font-size:.82rem;font-weight:700;color:#fde8f7;margin-bottom:10px;">勝手に消えてた継続日数と学習記録を、ガッチリ握って離さないようにしたっぺ。</div>
-<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">✅ 消えてた継続日数・学習データを連れ戻した（もう逃がさん）<br>✅ 画面を2つ3つ開いても、記録同士がケンカしないよう仲裁したっぺ<br>✅ アプリに戻った瞬間の「あれ、消えてる…？」をブロック<br>✅「みんなの軌跡」の日付のズレ（朝の寝ぼけ）もシャキッと矯正<br>🦍 握力おかわり済み。きみの記録、もう手のひらの中だっぺ</div>
+<div id="update-title-text" style="font-size:1.05rem;font-weight:800;color:#fde8f7;margin-bottom:4px;">🌸 新しい版があります</div>
+<div id="update-version-text" style="font-size:.82rem;font-weight:700;color:#fde8f7;margin-bottom:10px;">「今すぐ更新する」を押すと最新版に入れ替わります。学習記録・設定はそのまま残ります。</div>
+<div id="update-release-notes" style="font-size:.72rem;color:#a78bfa;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:8px;padding:8px 12px;margin-bottom:16px;text-align:center;line-height:1.9;">✅ 何が新しいかは、更新後に出るお知らせでご案内します<br>✅ 更新しても記録・設定は消えません<br>🌸 入れ替わらないときは下の「更新されない場合はこちら」へ</div>
 <div id="update-data-note" style="font-size:.66rem;color:#fca5a5;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.22);border-radius:8px;padding:7px 10px;margin-bottom:12px;line-height:1.65;text-align:left;">※キャッシュ・サイトデータを削除すると、端末内の記録が消える場合があります。</div>
 <button id="update-reload-btn" style="display:block;width:100%;background:#f472b6;color:#fff;border:none;border-radius:12px;padding:14px;font-size:1rem;font-weight:800;cursor:pointer;margin-bottom:12px;letter-spacing:.03em;">
 ✅ 今すぐ更新する
@@ -7968,10 +7968,15 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
     // 旧版が sessionStorage に残した記録も掃除しておく
     try { sessionStorage.removeItem(key); } catch(e) {}
   }
+  // 更新案内の文面。
+  // ★バージョン名や新機能の内容をここに書かないこと（教訓#005）。
+  // この文面を表示するのは「更新前の＝古い版」なので、版ごとの内容を書くと必ず古くなる。
+  // 実際にv118を出したとき、端末に残っていたv113の文面が表示された。
+  // 「何が新しいか」は notice.json（毎回ネットから取得）が担当する。
   var UPDATE_COPY = {
-    title: 'v113 「桜」……それは、お前の“咲くまで”を見届ける道しるべだピヨッ！ ゴゴゴゴ…',
-    body: 'コツを重ねる者よ、気づいていたかピヨ。ストップウォッチの隣に、いつの間にか桜が咲いていたことに——。タップすれば、開花日までの道のりに寄り添う言葉が届くッ。そして今宵から、そのカードは“めくれる”ようになったピヨ。積み上げてきた日々の言葉を、何度でも読み返せるんだッ…お前の記録は、風化などしないピヨォッ！？',
-    notes: '✅ ストップウォッチ横に新しい🌸アイコンが登場ッ（バッジコレクションは「今週のチャレンジ」の隣へお引っ越しピヨ）<br>✅ 開花日の30日前〜3日後だけ現れる、期間限定の“咲きの気配”だッ<br>✅ タップすれば全165本の中から、今日という日にふさわしい一言が届くピヨ<br>✅ カードは右へスワイプ（またはボタン・矢印キー）すればめくれるッ…過去の言葉に何度でも会えるんだピヨ<br>🌸 未来は見せない。だが積み上げた過去は、ぜんぶお前のものだッ……ゴゴゴゴ'
+    title: '🌸 新しい版があります',
+    body: '「今すぐ更新する」を押すと最新版に入れ替わります。学習記録・設定はそのまま残ります。',
+    notes: '✅ 何が新しいかは、更新後に出るお知らせでご案内します<br>✅ 更新しても記録・設定は消えません<br>🌸 入れ替わらないときは下の「更新されない場合はこちら」へ'
   };
 
   function formatVersionBadge(ver) {
