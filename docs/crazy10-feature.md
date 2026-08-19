@@ -1,4 +1,4 @@
-# Crazy10（ITACHACHA House Crazy10）イベント機能
+# Crazy10 / Crazy11（ITACHACHA House Crazy）イベント機能
 
 公式のクレイジー（自習時間を事前に決めて、みんなで一斉に取り組む特別自習室）の仕組みと、
 **次回イベントの追加手順**をまとめたメモ。
@@ -25,8 +25,9 @@ const CRAZY10_EVENTS=[
   {dateStr:'2026-08-08',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true,label:'SPECIAL'},
   {dateStr:'2026-08-13',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true,label:'SPECIAL'},
   // 2日連続開催（2DAYS）は、両日に同じ series を書く
-  {dateStr:'2026-08-21',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true,series:'2026-08-crazy10-2days'},
-  {dateStr:'2026-08-22',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true,series:'2026-08-crazy10-2days'},
+  // 5:00〜17:00・休憩1時間＝実質11時間 → 呼び名は自動で「Crazy11」になる
+  {dateStr:'2026-08-21',start:5,end:17,breakStart:12,breakEnd:13,finaleAt:16+55/60,isOfficial:true,series:'2026-08-crazy11-2days'},
+  {dateStr:'2026-08-22',start:5,end:17,breakStart:12,breakEnd:13,finaleAt:16+55/60,isOfficial:true,series:'2026-08-crazy11-2days'},
 ];
 ```
 
@@ -42,6 +43,7 @@ const CRAZY10_EVENTS=[
 | `isOfficial` | 公式イベントは必ず `true`（`false` は利用者ごとの My Crazy 用） |
 | `label` | **任意**。付けると「DAY n」ではなくこの名前で表示される（例：`'SPECIAL'`） |
 | `series` | **任意**。連続開催を1つの回としてまとめたいときだけ、各日に同じ文字列を書く |
+| `shortName` / `fullName` | **任意**。呼び名を自動判定に任せず、手で決めたいときだけ書く（下記） |
 
 休憩が2回以上あるときは `breaks:[{s:11.5,e:12.5},{s:14,e:14.5}]` の形も使える。
 
@@ -54,8 +56,8 @@ const CRAZY10_PREVIEW_DATES=['2026-05-15','2026-05-16','2026-08-12','2026-08-20'
 
 **書くのは「開催日」ではなく「その前日」**。その日の18時以降にアプリを開くと、
 「🥦 明日、朝5時から！…」というトースト（画面に一瞬出るミニ通知）が1回だけ出る。
-※このトーストの文言は**朝5時開始で固定のベタ書き**（`_showCrazy10PreviewToastIfNeeded()` 内）。
-開始時刻が5時以外の回で前夜告知を出すなら、ここも直すこと。
+※文言の中の開始時刻・呼び名・実質時間は**イベント定義から自動で組み立てる**ので、
+開催時間が変わってもここを直す必要はない（`_showCrazy10PreviewToastIfNeeded()` 内）。
 
 当日決定など前夜告知が不要なら触らなくてよい。
 
@@ -79,6 +81,43 @@ const CRAZY10_PREVIEW_DATES=['2026-05-15','2026-05-16','2026-08-12','2026-08-20'
 ### 5. main にマージすると自動でデプロイされる
 
 GitHub Actions（`.github/workflows/firebase-hosting-deploy.yml`）が Firebase Hosting に反映する。
+
+---
+
+## 呼び名（Crazy10 / Crazy11）は自動で決まる
+
+**イベントの呼び名は「休憩を除いた実質の学習時間」から自動で作られる。**
+10時間なら `Crazy10`、11時間なら `Crazy11`。名前をどこかに書き足す必要はない。
+
+```
+実質時間 = (end - start) - 休憩の合計
+```
+
+| 回 | 時間 | 実質 | 自動で付く呼び名 |
+|---|---|---|---|
+| 5/16・5/17・8/8・8/13 | 5:00〜16:00（休憩1h） | 10時間 | ITACHACHA House Crazy10 |
+| 8/21・8/22 | 5:00〜17:00（休憩1h） | 11時間 | ITACHACHA House Crazy11 |
+
+過去の回はそのまま `Crazy10` と表示され続けるので、**新しい回の名前が過去の回に
+さかのぼって書き換わることはない**（フィナーレを見返しても当時の名前のまま）。
+
+### 呼び名・時間の文言はここだけで作る
+
+| 関数 | 返すもの |
+|---|---|
+| `_getEventStudyHours(ev)` | 実質の学習時間（数値。11 など） |
+| `_getEventStudyHoursText(ev)` | `'11時間'` |
+| `_getEventShortName(ev)` | `'Crazy11'` |
+| `_getEventFullName(ev)` | `'ITACHACHA House Crazy11'` |
+| `_getEventTimeText(ev)` | `'05:00〜17:00（休憩 12:00〜13:00）'` |
+| `_hToJpTimeStr(h)` | `'5時'` / `'5時30分'` |
+
+**画面に出す呼び名・時間は、必ずこの関数から作ること。ベタ書きしない。**
+以前は当日ポップアップと前夜告知トーストに「朝5時〜16時、10時間」がベタ書きされていて、
+開催時間を変えるたびに直し忘れる危険があった（2026-08-19に全部この関数に置き換え済み）。
+
+`Crazy9.5` のような半端な名前になるのが困る回は、イベント定義に
+`shortName:'Crazy10'` や `fullName:'ITACHACHA House 特別編'` を書けば、そちらが優先される。
 
 ---
 
@@ -133,8 +172,8 @@ GitHub Actions（`.github/workflows/firebase-hosting-deploy.yml`）が Firebase 
 - **「あとで決める」は参加/不参加を記録しない**。記録すると `_hasCrazy10JoinChoice()` が
   true になり、当日ポップアップが出なくなってしまう。
 - 時間の文言はイベント定義から組み立てている（`_hToTimeStr` 等）ので、
-  5:00〜16:00以外の回を足しても**このポップアップは直さなくてよい**。
-  ※当日ポップアップの方はベタ書きのままなので、そちらは要注意（下記「落とし穴」）。
+  5:00〜17:00以外の回を足しても**このポップアップは直さなくてよい**。
+  当日ポップアップ・前夜告知トーストも2026-08-19に同じ作りへそろえた。
 
 ---
 
@@ -154,14 +193,18 @@ GitHub Actions（`.github/workflows/firebase-hosting-deploy.yml`）が Firebase 
 | `_isCrazy10FinaleAvailable(ds)` | フィナーレが解禁済みか（過去日は常に解禁） |
 | `showCrazy10Finale(dateStr)` | フィナーレを表示する |
 | `_renderOfficialEventList()` | 設定パネルの公式イベント一覧を描画 |
+| `_getEventShortName(ev)` / `_getEventFullName(ev)` | **呼び名（Crazy10 / Crazy11）の唯一の出どころ** |
+| `_getEventStudyHours(ev)` / `_getEventStudyHoursText(ev)` | 実質の学習時間（数値 / 「11時間」） |
 
 ---
 
 ## 変更時の落とし穴
 
-- **参加確認ポップアップの時間の文言はベタ書き**（`_showCrazy10PopupIfNeeded()` 内、
-  「朝5時〜16時、10時間の特別自習室」）。**5:00〜16:00以外の回を追加するときは
-  この文言も必ず直すこと**（コード内にもコメントを入れてある）。
+- **呼び名・時間の文言を新しく書き足すときは、必ず `_getEventShortName()` /
+  `_getEventStudyHoursText()` などから作る**。ベタ書きすると、開催時間を変えた回で
+  古い文言が残る（実際に「朝5時〜16時、10時間」が3か所にベタ書きされていた）。
+- **フィナーレの見出しは固定HTMLに書かない**。`crazy10-finale-title` /
+  `crazy10-finale-badge-title` は空にしてあり、`showCrazy10Finale()` が唯一の出どころ（教訓#005）。
 - 集計を新しく書き足したくなったら、まず `_collectFinaleDayRows()` を使えないか考える。
   同じ集計を2か所に書くと、今回のような「片方だけ直して直ったつもり」になる（教訓#005）。
 - 早朝自習室（asajuku）のタブは、Crazy10開催日には自動で隠れる（`index.html` 3419行付近）。

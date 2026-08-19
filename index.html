@@ -170,11 +170,12 @@
 <div id="crazy10-finale-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.40);z-index:10200;align-items:center;justify-content:center;padding:16px;">
 <div id="crazy10-finale-popup" style="background:#0d1f13;border:2px solid #4ade80;border-radius:20px;padding:22px 20px;max-width:340px;width:100%;text-align:center;position:relative;z-index:1;box-shadow:0 16px 50px rgba(0,0,0,.45);max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;">
 <div style="font-size:2.2rem;margin-bottom:6px;">&#x1F966;</div>
-<div style="font-size:.92rem;font-weight:800;color:#bbf7d0;letter-spacing:.03em;margin-bottom:4px;">ITACHACHA House Crazy10</div>
+<!-- 見出し・記録ラベルは空。回ごとに Crazy10 / Crazy11 と変わるので showCrazy10Finale() が唯一の出どころ -->
+<div id="crazy10-finale-title" style="font-size:.92rem;font-weight:800;color:#bbf7d0;letter-spacing:.03em;margin-bottom:4px;"></div>
 <div id="crazy10-finale-date" style="font-size:.64rem;color:#4ade80;font-weight:800;letter-spacing:.08em;margin-bottom:8px;"></div>
 <div id="crazy10-finale-message" style="font-size:.78rem;color:#86efac;margin-bottom:10px;line-height:1.7;">お疲れ様でした！<br>頑張ったね。</div>
 <div id="crazy10-finale-badge" style="background:rgba(0,0,0,.3);border:1px solid rgba(74,222,128,.3);border-radius:10px;padding:8px 10px;margin-bottom:14px;text-align:left;">
-<div style="font-size:.55rem;font-weight:700;color:#4ade80;letter-spacing:.05em;margin-bottom:5px;">&#x1F966; Crazy10 — あなたの記録</div>
+<div id="crazy10-finale-badge-title" style="font-size:.55rem;font-weight:700;color:#4ade80;letter-spacing:.05em;margin-bottom:5px;"></div>
 <div id="crazy10-finale-stars" style="display:block;line-height:1;margin-bottom:0;"></div>
 <div id="crazy10-finale-count" style="font-size:.55rem;color:#86efac;margin-top:2px;"></div>
 </div>
@@ -6650,7 +6651,8 @@ function renderSubjectDayCard(){
   _renderSubjectRangeCard('subject-day-card',[currentDate],'今日',{stacked:false,pct:false});
 }
 
-// ── ITACHACHA House Crazy10 イベント定義 ──
+// ── ITACHACHA House Crazy10 / Crazy11 イベント定義 ──
+// （呼び名は実質の学習時間から自動で決まる。下の _getEventShortName を参照）
 // 【イベントの追加方法】1行足すだけで開催できる。詳しくは docs/crazy10-feature.md
 //   dateStr    開催日（'YYYY-MM-DD'）
 //   start/end  開始・終了時刻（小数の時間。11.5 = 11時30分）
@@ -6667,9 +6669,11 @@ const CRAZY10_EVENTS=[
   {dateStr:'2026-08-08',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true,label:'SPECIAL'},
   // 2026-08-13：急きょ決定した一日限りの特別回（series なし＝この日だけで1つの回。8/8とは別々に集計される）
   {dateStr:'2026-08-13',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true,label:'SPECIAL'},
-  // 2026-08-21〜22：金土の2日連続開催（同じ series ＝1つの回。フィナーレは DAY1・DAY2・2日間合計を出す）
-  {dateStr:'2026-08-21',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true,series:'2026-08-crazy10-2days'},
-  {dateStr:'2026-08-22',start:5,end:16,breakStart:11.5,breakEnd:12.5,finaleAt:15+55/60,isOfficial:true,series:'2026-08-crazy10-2days'},
+  // 2026-08-21〜22：金土の2日連続開催「Crazy11」（同じ series ＝1つの回。
+  // フィナーレは DAY1・DAY2・2日間合計を出す）
+  // 5:00〜17:00・休憩12:00〜13:00 ＝ 実質11時間 → 呼び名は自動で Crazy11 になる
+  {dateStr:'2026-08-21',start:5,end:17,breakStart:12,breakEnd:13,finaleAt:16+55/60,isOfficial:true,series:'2026-08-crazy11-2days'},
+  {dateStr:'2026-08-22',start:5,end:17,breakStart:12,breakEnd:13,finaleAt:16+55/60,isOfficial:true,series:'2026-08-crazy11-2days'},
 ];
 // ── 「回（series）」の判定 ──
 // series が無いイベントは、その日1日だけで1つの回として扱う
@@ -6682,6 +6686,40 @@ function _getSeriesEvents(seriesId){
 function _getSeriesIndex(ev){
   if(!ev)return -1;
   return _getSeriesEvents(_getEventSeriesId(ev)).findIndex(e=>e.dateStr===ev.dateStr);
+}
+// ── イベントの呼び名（Crazy10 / Crazy11 …）と実質の学習時間 ──
+// 呼び名は「休憩を除いた実質の学習時間」から自動で決まる。10時間なら Crazy10、11時間なら Crazy11。
+// 過去の回（5:00〜16:00・休憩1時間＝10時間）は自動で Crazy10 のまま表示される。
+// ★画面に出る呼び名・時間の文言は、必ずこの関数から作ること（ベタ書きしない）。
+// どうしても別名にしたいときだけ、イベントに shortName / fullName を書けば優先される。
+function _getEventStudyHours(ev){
+  if(!ev)return 0;
+  return (ev.end-ev.start)-_calcTotalBreak(_normalizeBreaks(ev));
+}
+// 「11時間」のように日本語で読ませる用
+function _getEventStudyHoursText(ev){return (Math.round(_getEventStudyHours(ev)*10)/10)+'時間';}
+// 「5時」「5時30分」のように日本語で読ませる用
+function _hToJpTimeStr(h){
+  const hh=Math.floor(h),mm=Math.round((h-hh)*60);
+  return hh+'時'+(mm>0?(mm+'分'):'');
+}
+// 短い呼び名（Crazy10 / Crazy11）
+function _getEventShortName(ev){
+  if(ev&&ev.shortName)return ev.shortName;
+  if(!ev)return 'Crazy10';
+  return 'Crazy'+(Math.round(_getEventStudyHours(ev)*10)/10);
+}
+// 正式名（ITACHACHA House Crazy11）
+function _getEventFullName(ev){
+  if(ev&&ev.fullName)return ev.fullName;
+  return 'ITACHACHA House '+_getEventShortName(ev);
+}
+// 「05:00〜17:00（休憩 12:00〜13:00）」の形
+function _getEventTimeText(ev){
+  if(!ev)return '';
+  const breaks=_normalizeBreaks(ev);
+  const brk=breaks.length?breaks.map(b=>_hToTimeStr(b.s)+'〜'+_hToTimeStr(b.e)).join('、'):'なし';
+  return _hToTimeStr(ev.start)+'〜'+_hToTimeStr(ev.end)+'（休憩 '+brk+'）';
 }
 // 前夜告知トーストを出す日（＝開催日の「前日」を書く）。'2026-08-12' は 8/13 開催の前夜、
 // '2026-08-20'/'2026-08-21' は 8/21・8/22（2日連続開催）それぞれの前夜
@@ -8005,7 +8043,7 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v119-crazy2days-0818'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v119-crazy11-0819'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _updateBtnLabel = null; // 更新ボタンの元の文言（再表示時に戻すため）
   var _pendingWorker = null;
@@ -8971,7 +9009,7 @@ window.addEventListener('storage', (e) => {
 
 
 // ══════════════════════════════════════════════
-// ITACHACHA House Crazy10 イベント制御
+// ITACHACHA House Crazy10 / Crazy11 イベント制御
 // ══════════════════════════════════════════════
 
 // ── 星バッジHTML生成 ──
@@ -9021,7 +9059,7 @@ function _renderCrazy10Stars(dateStr){
   const _starSubColor=_isMyEv?'#7dd3fc':'#86efac';
   let html='<div id="crazy10-stars-wrap" style="margin:8px 0 4px;padding:8px 12px;background:'+_starBg+';border:1px solid '+_starBorder+';border-radius:10px;">';
   const _myEvName=(!ev.isOfficial&&ev.name)?ev.name:'My Crazy';
-  const _evTitle=ev.isOfficial?'🥦 ITACHACHA House Crazy10':'📅 '+_escapeHtml(_myEvName);
+  const _evTitle=ev.isOfficial?('🥦 '+_getEventFullName(ev)):('📅 '+_escapeHtml(_myEvName));
   const _timeLabel=(!ev.isOfficial&&isFinite(ev.start)&&isFinite(ev.end))?_hToTimeStr(ev.start)+'〜'+_hToTimeStr(ev.end):'';
   html+='<div style="font-size:.6rem;font-weight:700;color:'+_starColor+';letter-spacing:.05em;margin-bottom:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">'
     +'<span>'+_evTitle+'</span>'
@@ -9132,7 +9170,7 @@ function _syncCrazy10SettingsSec(){
   const ds=ev?ev.dateStr:toStudyDateStr(new Date());
   const label=document.getElementById('crazy10-tog-label');
   const help=document.getElementById('crazy10-tog-help');
-  if(label)label.textContent=ev&&ev.isOfficial?_formatEventDateShort(ds)+' Crazy10に参加する':'Crazy10 に参加する';
+  if(label)label.textContent=ev&&ev.isOfficial?(_formatEventDateShort(ds)+' '+_getEventShortName(ev)+'に参加する'):'Crazy に参加する';
   if(help)help.textContent='途中からON/OFFできます。記録は消えません。';
   tog.checked=_isCrazy10Joined(ds);
   tog.onchange=function(){
@@ -9425,12 +9463,12 @@ function _showCrazy10PopupIfNeeded(){
   const popup=document.getElementById('crazy10-popup');
   if(popup){
     popup.innerHTML='<div style="font-size:2rem;margin-bottom:6px;">🥦</div>'
-      +'<div style="font-size:1rem;font-weight:800;color:#bbf7d0;letter-spacing:.04em;margin-bottom:4px;">ITACHACHA House Crazy10</div>'
+      +'<div style="font-size:1rem;font-weight:800;color:#bbf7d0;letter-spacing:.04em;margin-bottom:4px;">'+_getEventFullName(ev)+'</div>'
       +'<div style="font-size:.64rem;color:#4ade80;font-weight:800;letter-spacing:.08em;margin-bottom:8px;">本日 '+_formatEventDateShort(ev.dateStr)+'</div>'
       // label付き（本日限りの特別回）のときだけ出す一言
       +(ev.label?'<div style="font-size:.66rem;font-weight:800;color:#052e16;background:#4ade80;border-radius:999px;padding:4px 12px;display:inline-block;margin-bottom:10px;">🎉 本日限りの特別開催！</div>':'')
-      // ↓時間の文言はベタ書き。5:00〜16:00・休憩11:30〜12:30以外で開催する回を追加したら必ずここも直すこと
-      +'<div style="font-size:.75rem;color:#86efac;margin-bottom:14px;line-height:1.6;">朝5時〜16時、10時間の特別自習室<br>開催中です！参加しますか？</div>'
+      // ↓時間の文言はイベント定義から組み立てる（ベタ書きしないので開催時間が変わっても直す必要がない）
+      +'<div style="font-size:.75rem;color:#86efac;margin-bottom:14px;line-height:1.6;">朝'+_hToJpTimeStr(ev.start)+'〜'+_hToJpTimeStr(ev.end)+'、実質'+_getEventStudyHoursText(ev)+'の特別自習室<br>開催中です！参加しますか？</div>'
       +'<div style="display:flex;gap:10px;justify-content:center;margin-bottom:14px;">'
       +'<button id="crazy10-join-btn" style="background:#4ade80;color:#052e16;border:none;border-radius:10px;padding:10px 28px;font-size:.9rem;font-weight:800;cursor:pointer;">参加</button>'
       +'<button id="crazy10-skip-btn" style="background:transparent;color:#6ee7b7;border:1.5px solid #4ade80;border-radius:10px;padding:10px 28px;font-size:.9rem;font-weight:800;cursor:pointer;">不参加</button>'
@@ -9447,8 +9485,8 @@ function _showCrazy10PopupIfNeeded(){
     var popup=document.getElementById('crazy10-popup');
     if(popup){popup.innerHTML='<div style="font-size:2rem;margin-bottom:8px;">🥦</div>'
       +'<div style="font-size:.64rem;color:#4ade80;font-weight:800;letter-spacing:.08em;margin-bottom:8px;">'+_formatEventDateShort(ev.dateStr)+'</div>'
-      +'<div style="font-size:.9rem;font-weight:800;color:#4ade80;margin-bottom:8px;">Crazy10、発動。</div>'
-      +'<div style="font-size:.7rem;color:#86efac;margin-bottom:14px;line-height:1.8;">10時間の旅が始まる。<br>ニヤニヤ、楽しむぞ!!</div>'
+      +'<div style="font-size:.9rem;font-weight:800;color:#4ade80;margin-bottom:8px;">'+_getEventShortName(ev)+'、発動。</div>'
+      +'<div style="font-size:.7rem;color:#86efac;margin-bottom:14px;line-height:1.8;">'+_getEventStudyHoursText(ev)+'の旅が始まる。<br>ニヤニヤ、楽しむぞ!!</div>'
       +'<div style="border-top:1px solid rgba(74,222,128,.2);padding-top:10px;margin-top:4px;">'
 	      +'<a href="https://www.youtube.com/@Cteamchannel/streams" target="_blank" style="display:inline-flex;align-items:center;gap:5px;background:rgba(255,0,0,.15);border:1px solid rgba(255,80,80,.35);border-radius:7px;padding:7px 11px;text-decoration:none;color:#fca5a5;font-size:.65rem;font-weight:700;"><svg width=\"16\" height=\"12\" viewBox=\"0 0 28 20\" aria-hidden=\"true\"><rect width=\"28\" height=\"20\" rx=\"5\" fill=\"#ff0033\"/><path d=\"M11 6v8l7-4z\" fill=\"#fff\"/></svg>ライブ配信</a>'
       +'</div>'
@@ -9480,11 +9518,16 @@ function _showCrazy10PreviewToastIfNeeded(){
       '📅 明日、「'+tmEvName+'」がやってくる。ニヤニヤ……準備はいい？',
     ];
   } else {
-    // 公式イベント用メッセージ（既存のまま）
+    // 公式イベント用メッセージ
+    // ↓時間と呼び名はイベント定義から組み立てる（ベタ書きしないので開催時間が変わっても直す必要がない）
+    const offEv=_getCrazy10Event(tmStr);
+    const startTxt='朝'+_hToJpTimeStr(offEv?offEv.start:5);
+    const shortName=_getEventShortName(offEv);
+    const hoursTxt=_getEventStudyHoursText(offEv);
     msgs=[
-      '🥦 明日、朝5時から！ITACHACHA House Crazy10 開催だよ！準備はいい？',
-      '🥦 明日のCrazy10、一緒にやろう！朝5時集合！',
-      '🥦 ニヤニヤ……明日は特別な日だ。朝5時から10時間、クレイジーにいこう。',
+      '🥦 明日、'+startTxt+'から！ITACHACHA House '+shortName+' 開催だよ！準備はいい？',
+      '🥦 明日の'+shortName+'、一緒にやろう！'+startTxt+'集合！',
+      '🥦 ニヤニヤ……明日は特別な日だ。'+startTxt+'から'+hoursTxt+'、クレイジーにいこう。',
     ];
   }
   const msg=msgs[Math.floor(Math.random()*msgs.length)];
@@ -9527,7 +9570,7 @@ function _showCrazy10PrejoinPopupIfNeeded(){
   const brkTxt=breaks.length?breaks.map(b=>_hToTimeStr(b.s)+'〜'+_hToTimeStr(b.e)).join('、'):'なし';
   const studyTxt=_hDiffStr((ev.end-ev.start)-_calcTotalBreak(breaks));
   popup.innerHTML='<div style="font-size:2rem;margin-bottom:6px;">🥦</div>'
-    +'<div style="font-size:1rem;font-weight:800;color:#bbf7d0;letter-spacing:.04em;margin-bottom:4px;">ITACHACHA House Crazy10</div>'
+    +'<div style="font-size:1rem;font-weight:800;color:#bbf7d0;letter-spacing:.04em;margin-bottom:4px;">'+_getEventFullName(ev)+'</div>'
     +'<div style="font-size:.64rem;color:#4ade80;font-weight:800;letter-spacing:.08em;margin-bottom:8px;">明日 '+_formatEventDateShort(ev.dateStr)+'</div>'
     +(ev.label?'<div style="font-size:.66rem;font-weight:800;color:#052e16;background:#4ade80;border-radius:999px;padding:4px 12px;display:inline-block;margin-bottom:10px;">🎉 一日限りの特別開催！</div>':'')
     +'<div style="font-size:.75rem;color:#86efac;margin-bottom:6px;line-height:1.6;">'+timeTxt+'（休憩 '+brkTxt+'）<br>実質'+studyTxt+'の特別自習室だよ。</div>'
@@ -9780,6 +9823,12 @@ function showCrazy10Finale(dateStr){
   const dayRows=_collectFinaleDayRows(ds);
   if(!dayRows.length)return;
 
+  // ── 見出し（Crazy10 / Crazy11 …）。文言はここが唯一の出どころ ──
+  const titleEl=document.getElementById('crazy10-finale-title');
+  if(titleEl)titleEl.textContent=_getEventFullName(ev);
+  const badgeTitleEl=document.getElementById('crazy10-finale-badge-title');
+  if(badgeTitleEl)badgeTitleEl.textContent='🥦 '+_getEventShortName(ev)+' — あなたの記録';
+
   // ── 星バッジ描画 ──
   _buildFinaleStarsMulti(dayRows);
 
@@ -9875,7 +9924,7 @@ function _autoTriggerFinaleIfNeeded(){
     if(!ended)return;
     _finaleAutoTriggered=true;
     setTimeout(()=>{
-      showEasterToast('🥦 Crazy10お疲れ様！フィナーレボタンから結果を見てね🌸');
+      showEasterToast('🥦 '+_getEventShortName(_getCrazy10Event(targetDate))+'お疲れ様！フィナーレボタンから結果を見てね🌸');
     },1200);
   }
 }
@@ -10222,7 +10271,7 @@ function _addMyEvent(){
     if(ev.dateStr!==dateVal)return false;
     return s<ev.end&&e>ev.start;
   });
-  if(officialConflict){showToast('公式Crazy10の時間帯と重複しています','error');return;}
+  if(officialConflict){showToast('公式イベントの時間帯と重複しています','error');return;}
   if(myConflict){showToast('登録済みのMy Crazyと時間が重複しています','error');return;}
   if(!CUST.myEvents)CUST.myEvents=[];
   const nextEvent={dateStr:dateVal,name:nameVal,start:s,end:e,breaks:breaks};
