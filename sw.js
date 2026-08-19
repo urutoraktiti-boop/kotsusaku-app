@@ -5,7 +5,7 @@
 //   2. index.html の CURRENT_VERSION（フォールバック値）
 //   3. version.json の version
 // ============================================================
-const CACHE_VERSION = 'kotsusaku-v118-shiori-0818';
+const CACHE_VERSION = 'kotsusaku-v119-crazy11-0819';
 const CACHE_FILES = [
   './',
   './index.html',
