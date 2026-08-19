@@ -4890,6 +4890,36 @@ $('export-btn').addEventListener('click',()=>{
   }
   setTimeout(()=>URL.revokeObjectURL(url),60000);
 });
+// ── バックアップ復元の「関所」──
+// アプリ自身は日付キーを必ず 'YYYY-MM-DD'（月日を2桁）で書くが、外から来るファイルは
+// 'YYYY-M-D' や 'YYYY/M/D' の可能性がある。しおりの期間判定は日付を「文字の並び順」で
+// 比べているため、形が違うと静かに別の期間に入ってしまう（教訓#010）。
+// そこで、取り込む瞬間に形をそろえる。ここが外部データの唯一の入口。
+function _normalizeDateKey(k){
+  const m=String(k).match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
+  if(!m)return null; // 日付に見えないものは触らない
+  return m[1]+'-'+String(m[2]).padStart(2,'0')+'-'+String(m[3]).padStart(2,'0');
+}
+// 日付をキーに持つ表の形をそろえる。同じ日が両方の書き方で入っていたら1つにまとめる。
+// 日付として読めないキーは取り込まない。アプリはどの画面でも日付で記録を探すため、
+// 取り込んでも二度と表示できず、合計だけを増やす「幽霊の記録」になってしまうから。
+// 戻り値: fixed=形を直した件数 / skipped=取り込まなかった件数（どちらも0なら何もしていない）
+function _normalizeDateKeyedMap(obj){
+  const out={};let fixed=0,skipped=0;
+  if(!obj||typeof obj!=='object')return{map:out,fixed:0,skipped:0};
+  Object.keys(obj).forEach(k=>{
+    const key=_normalizeDateKey(k);
+    if(!key){skipped++;return;}
+    if(key!==k)fixed++;
+    const v=obj[k];
+    if(out[key]===undefined){out[key]=v;return;}
+    // すでに同じ日がある＝重複。中身が表なら合体、文字なら中身のある方を残す
+    if(v&&typeof v==='object'&&out[key]&&typeof out[key]==='object'){
+      out[key]=Object.assign({},v,out[key]); // 2桁の正しい方を優先して上書き
+    }else if(!out[key]&&v){out[key]=v;}
+  });
+  return{map:out,fixed:fixed,skipped:skipped};
+}
 $('import-btn').addEventListener('click',()=>$('import-file-input').click());
 $('import-file-input').addEventListener('change',function(){
   const file=this.files[0];if(!file)return;
@@ -4900,10 +4930,17 @@ $('import-file-input').addEventListener('change',function(){
       if(typeof backup.version==='undefined'||!backup.studyData){showToast('❌ ファイルの形式が正しくありません',true);return;}
       const exportDate=backup.exportedAt?new Date(backup.exportedAt).toLocaleString('ja-JP'):'不明';
       if(!(await appConfirm('バックアップ（'+exportDate+'）を復元します。\n現在のデータは上書きされます。よろしいですか？', { title:'バックアップを復元しますか？', okText:'復元する' })))return;
-      LS.set('study-data',JSON.stringify(backup.studyData));
-      LS.set('study-deletes',JSON.stringify(backup.studyDeletes||{}));
-      if(backup.studySubjects)LS.set('study-subjects',JSON.stringify(backup.studySubjects));
-      if(backup.studyNotes)LS.set('study-notes',JSON.stringify(backup.studyNotes));
+      // 日付キーの形をそろえてから取り込む（関所）
+      const _nData=_normalizeDateKeyedMap(backup.studyData);
+      const _nDel =_normalizeDateKeyedMap(backup.studyDeletes||{});
+      const _nSubj=_normalizeDateKeyedMap(backup.studySubjects||{});
+      const _nNote=_normalizeDateKeyedMap(backup.studyNotes||{});
+      const _fixedTotal=_nData.fixed+_nDel.fixed+_nSubj.fixed+_nNote.fixed;
+      const _skipTotal=_nData.skipped+_nDel.skipped+_nSubj.skipped+_nNote.skipped;
+      LS.set('study-data',JSON.stringify(_nData.map));
+      LS.set('study-deletes',JSON.stringify(_nDel.map));
+      if(backup.studySubjects)LS.set('study-subjects',JSON.stringify(_nSubj.map));
+      if(backup.studyNotes)LS.set('study-notes',JSON.stringify(_nNote.map));
       if(backup.studyGoal)LS.set('study-goal',backup.studyGoal);
       if(backup.studyWeekGoal)LS.set('study-week-goal',backup.studyWeekGoal);
       if(backup.studyMonthGoal)LS.set('study-month-goal',backup.studyMonthGoal);
@@ -4920,6 +4957,15 @@ $('import-file-input').addEventListener('change',function(){
       switchView('daily');if(window.refreshCustomGoalBtns)window.refreshCustomGoalBtns();
       const cloudOk = await saveToCloudNow();
       showToast(cloudOk ? '✅ データを復元し、クラウドにも同期しました！' : '✅ データを復元しました！（クラウドはオンライン時に同期されます）');
+      // 日付の形を直した場合だけ、あとから知らせる（通常は出ない）
+      if(_fixedTotal>0||_skipTotal>0){
+        const _msg=_fixedTotal>0&&_skipTotal>0
+          ? '🔧 日付をそろえました（直した'+_fixedTotal+'件／読めず取り込まなかった'+_skipTotal+'件）'
+          : (_fixedTotal>0
+              ? '🔧 日付の書き方が違う記録 '+_fixedTotal+'件を、そろえて取り込みました'
+              : '⚠️ 日付として読めない記録 '+_skipTotal+'件は取り込みませんでした');
+        setTimeout(()=>showToast(_msg),3200);
+      }
     }catch(err){showToast('❌ 読み込みに失敗しました',true);}
   };
   reader.readAsText(file);this.value='';
