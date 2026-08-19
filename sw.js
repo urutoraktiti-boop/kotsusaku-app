@@ -12,7 +12,7 @@ const CACHE_FILES = [
   './manifest.json',
   './kotsu-tasks.css',
   './kotsu-tasks.js',
-  './bloom-countdown.js?v=bloomday1',   // index.html の読み込み先と必ずそろえること
+  './bloom-countdown.js?v=bloomday2',   // index.html の読み込み先と必ずそろえること
   './assets/stories/mystery/story_mystery_005.png',
   './assets/stories/mystery/story_mystery_010.png',
   './assets/stories/mystery/story_mystery_020.png',
