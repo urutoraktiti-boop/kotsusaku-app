@@ -227,8 +227,10 @@
    * ------------------------------------------------------------
    * ・開花日の当日にアプリを開いたとき、1回だけ自動で表示する
    * ・同じ開花日につき1回だけ（開花日を設定し直せば、その日にまた出る）
-   * ・音は最初オフ。スピーカーのボタンで自分で鳴らす
-   *   （携帯・パソコンとも「音つきの自動再生」は止められる決まりのため）
+   * ・出したらまず「音あり／音なし」を選んでもらう。選んでから再生する
+   *   （携帯・パソコンとも「音つきの自動再生」は止められる決まり。
+   *     ボタンを押してもらうこと自体が、音を鳴らす許可になる）
+   * ・選んだあとも、動画の下のボタンで音を切り替えられる
    * ============================================================ */
   var DAY_VIDEO_SRC = './assets/bloom/bloom-day.mp4';
   /* 一部の環境（H.264を再生できないブラウザ）用の予備。
@@ -236,6 +238,8 @@
   var DAY_VIDEO_SRC_WEBM = './assets/bloom/bloom-day.webm';
   var DAY_VIDEO_POSTER = './assets/bloom/bloom-day-poster.jpg';
   var DAY_VIDEO_SEEN_KEY = 'kotsusaku-bloom-day-video-seen';
+  /* 「音あり／音なし」でどちらを選んだか。▶ を押し直したときに希望どおりで流すために覚えておく */
+  var dayVideoWantSound = false;
 
   var DAY_VIDEO_CSS = [
     '#bloom-day-overlay{position:fixed;inset:0;z-index:25000;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.82);}',
@@ -245,10 +249,28 @@
     '@keyframes bloomDayPop{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}',
     '#bloom-day-label{display:inline-block;font-size:.68rem;font-weight:800;color:#f472b6;border:1px solid #f472b6;border-radius:999px;padding:3px 12px;margin-bottom:10px;}',
     '#bloom-day-stage{position:relative;display:inline-block;line-height:0;max-width:100%;}',
-    '#bloom-day-video{display:block;max-width:100%;width:auto;height:auto;max-height:60vh;max-height:60dvh;border-radius:14px;background:#000;}',
-    '#bloom-day-sound{position:absolute;right:8px;top:8px;width:34px;height:34px;border-radius:50%;border:none;background:rgba(0,0,0,.55);color:#fff;font-size:.95rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}',
+    /* 動画の大きさ。下の「音を消す」ボタンと閉じるボタンの分を引いて、
+       小さい携帯でも一番下まで収まるようにしてある */
+    '#bloom-day-video{display:block;max-width:100%;width:auto;height:auto;max-height:calc(100vh - 280px);max-height:calc(100dvh - 280px);border-radius:14px;background:#000;}',
+
+    /* 「音あり／音なし」の確認。出したらまずこれが動画の上に出る */
+    '#bloom-day-ask{position:absolute;inset:0;border-radius:14px;background:rgba(0,0,0,.68);display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:14px;line-height:1.5;}',
+    '#bloom-day-ask.show{display:flex;}',
+    '#bloom-day-ask-text{font-size:.86rem;font-weight:800;color:#fff;margin-bottom:2px;text-shadow:0 2px 8px rgba(0,0,0,.8);}',
+    '#bloom-day-ask-on,#bloom-day-ask-off{width:min(210px,86%);border-radius:999px;padding:12px 0;font-size:.88rem;font-weight:800;cursor:pointer;line-height:1;}',
+    '#bloom-day-ask-on{border:none;background:#f472b6;color:#fff;box-shadow:0 4px 16px rgba(244,114,182,.5);}',
+    '#bloom-day-ask-off{border:2px solid rgba(255,255,255,.75);background:rgba(0,0,0,.35);color:#fff;}',
+    '#bloom-day-ask-on:active,#bloom-day-ask-off:active{transform:scale(.97);}',
+
+    /* 自動再生が止められたときだけ出す「▶」 */
     '#bloom-day-play{position:absolute;inset:0;border:none;background:rgba(0,0,0,.35);color:#fff;font-size:2.4rem;border-radius:14px;cursor:pointer;display:none;align-items:center;justify-content:center;padding:0;}',
     '#bloom-day-play.show{display:flex;}',
+
+    /* 音の切り替え。動画の上に重ねると見えにくいので、動画の下に文字つきで置く */
+    '#bloom-day-sound{display:none;margin:10px auto 0;border:1px solid rgba(253,232,247,.45);border-radius:999px;background:rgba(253,232,247,.08);color:#fde8f7;font-size:.75rem;font-weight:800;padding:8px 18px;cursor:pointer;line-height:1;}',
+    '#bloom-day-sound.show{display:inline-block;}',
+    '#bloom-day-sound:active{transform:scale(.97);}',
+
     '#bloom-day-text{font-size:.78rem;font-weight:700;line-height:1.7;color:#fde8f7;margin:12px 0 12px;}',
     '#bloom-day-close{width:100%;border:none;border-radius:12px;padding:12px 0;font-size:.9rem;font-weight:800;cursor:pointer;background:#f472b6;color:#fff;}',
     '#bloom-day-close:active{transform:scale(.98);}'
@@ -259,14 +281,16 @@
       ov: document.getElementById('bloom-day-overlay'),
       vid: document.getElementById('bloom-day-video'),
       sound: document.getElementById('bloom-day-sound'),
-      play: document.getElementById('bloom-day-play')
+      play: document.getElementById('bloom-day-play'),
+      ask: document.getElementById('bloom-day-ask')
     };
   }
 
-  function setSoundIcon(muted) {
+  /* 音の切り替えボタンの文字。いまの状態ではなく「押すとどうなるか」を書く */
+  function setSoundLabel(muted) {
     var s = document.getElementById('bloom-day-sound');
     if (!s) return;
-    s.textContent = muted ? '🔇' : '🔊';
+    s.textContent = muted ? '🔊 音を出す' : '🔇 音を消す';
     s.setAttribute('aria-label', muted ? '音を出す' : '音を消す');
   }
 
@@ -292,8 +316,13 @@
       '<source src="' + DAY_VIDEO_SRC_WEBM + '" type="video/webm">' +
       '</video>' +
       '<button id="bloom-day-play" type="button" aria-label="再生する">▶</button>' +
-      '<button id="bloom-day-sound" type="button" aria-label="音を出す">🔇</button>' +
+      '<div id="bloom-day-ask">' +
+      '<div id="bloom-day-ask-text">音を出して見ますか？</div>' +
+      '<button id="bloom-day-ask-on" type="button">🔊 音ありで見る</button>' +
+      '<button id="bloom-day-ask-off" type="button">🔇 音なしで見る</button>' +
       '</div>' +
+      '</div>' +
+      '<button id="bloom-day-sound" type="button" aria-label="音を出す">🔊 音を出す</button>' +
       '<div id="bloom-day-text">積み上げてきた日々が、ぜんぶ味方。<br>いってらっしゃい。</div>' +
       '<button id="bloom-day-close" type="button">🌸 いってきます</button>' +
       '</div>';
@@ -306,20 +335,39 @@
       if (e.key === 'Escape' && el.ov.classList.contains('show')) hideDayVideo();
     });
 
-    /* 音のオン・オフ */
+    /* 「音あり／音なし」を選んでもらってから再生する */
+    document.getElementById('bloom-day-ask-on').addEventListener('click', function () { startDayVideo(true); });
+    document.getElementById('bloom-day-ask-off').addEventListener('click', function () { startDayVideo(false); });
+
+    /* 選んだあとの音の切り替え（動画の下のボタン） */
     el.sound.addEventListener('click', function () {
       el.vid.muted = !el.vid.muted;
-      setSoundIcon(el.vid.muted);
+      setSoundLabel(el.vid.muted);
       playDayVideo(false);
     });
 
-    /* 自動再生が止められたときの「▶」 */
+    /* 自動再生が止められたときの「▶」。押すのは指の操作なので、
+       ここでは選ばれたとおり（音あり／音なし）に戻して流し直す */
     el.play.addEventListener('click', function () {
       el.play.classList.remove('show');
-      el.vid.muted = false;
-      setSoundIcon(false);
+      el.vid.muted = !dayVideoWantSound;
+      setSoundLabel(el.vid.muted);
       playDayVideo(true);
     });
+  }
+
+  /* 選ばれたとおりに再生を始める。押した指の操作なので、音つきでも再生できる */
+  function startDayVideo(withSound) {
+    var el = dayVideoEls();
+    if (!el.vid) return;
+    el.ask.classList.remove('show');
+    el.play.classList.remove('show');
+    el.sound.classList.add('show');
+    dayVideoWantSound = !!withSound;
+    el.vid.muted = !withSound;
+    setSoundLabel(el.vid.muted);
+    try { el.vid.currentTime = 0; } catch (e) { /* noop */ }
+    playDayVideo(withSound);
   }
 
   /* 再生を試みる。音つきで断られたら、音を消してもう一度だけ試す */
@@ -332,7 +380,7 @@
       p.catch(function () {
         if (retryMuted && !el.vid.muted) {
           el.vid.muted = true;
-          setSoundIcon(true);
+          setSoundLabel(true);
           var q;
           try { q = el.vid.play(); } catch (e2) { q = null; }
           if (q && q.catch) q.catch(function () { el.play.classList.add('show'); });
@@ -347,12 +395,16 @@
     buildDayVideoUi();
     var el = dayVideoEls();
     el.ov.classList.add('show');
+    /* まだ再生しない。静止画の上に「音あり／音なし」の確認を出して待つ */
     el.play.classList.remove('show');
-    el.vid.muted = true;          /* 音つきの自動再生は止められるため、まずは音なしで出す */
-    setSoundIcon(true);
+    el.sound.classList.remove('show');
+    el.ask.classList.add('show');
+    dayVideoWantSound = false;
+    el.vid.muted = true;
+    setSoundLabel(true);
+    /* 選ばれたらすぐ流せるよう、ここで動画を先に読み込んでおく */
     if (el.vid.preload !== 'auto') el.vid.preload = 'auto';
-    try { el.vid.currentTime = 0; } catch (e) { /* noop */ }
-    playDayVideo(false);
+    try { el.vid.pause(); el.vid.currentTime = 0; el.vid.load(); } catch (e) { /* noop */ }
   }
 
   function hideDayVideo() {
