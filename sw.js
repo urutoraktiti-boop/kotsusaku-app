@@ -50,7 +50,9 @@ self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_VERSION).then(cache => cache.addAll(CACHE_FILES))
   );
-  // skipWaiting はメッセージ経由でのみ実行（自動発火しない）
+  // skipWaiting はメッセージ経由でのみ実行（自動発火しない）。
+  // index.html 側が、新しい配達係の用意ができた時点で黙って 'SKIP_WAITING' を送る
+  // （更新案内ポップアップは出さない。2026-08-19変更）
 });
 
 // 有効化時：古いキャッシュを削除
