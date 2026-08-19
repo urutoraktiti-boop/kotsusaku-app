@@ -5,7 +5,7 @@
 //   2. index.html の CURRENT_VERSION（フォールバック値）
 //   3. version.json の version
 // ============================================================
-const CACHE_VERSION = 'kotsusaku-v119-crazy11-0819';
+const CACHE_VERSION = 'kotsusaku-v120-bloomday-movie-0819';
 const CACHE_FILES = [
   './',
   './index.html',
@@ -40,6 +40,7 @@ const CACHE_FILES = [
   './assets/spirits/title_500.png',
   './assets/spirits/title_1000.png',
   './assets/spirits/title_2000.png',
+  './assets/bloom/bloom-day-poster.jpg',
   './icon.svg',
   './icon-192.png',
   './icon-512.png',
