@@ -8037,9 +8037,12 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
 // ============================================================
 // バージョン管理 & Service Worker 登録
 // ① 起動時に version.json をfetchして最新版と比較
-// ② 差異があれば即・大きなモーダルで更新を促す
-// ③ 「今すぐ更新」でSW強制更新→リロード
-// ④ うまくいかない場合はモーダル内に手動手順を表示
+// ② 差異があっても“自動では”案内を出さない（2026-08-19変更）。
+//    画面本体(index.html)はネットワーク優先で取得されるので、次にオンラインで
+//    開いたときに静かに最新版へ入れ替わる。案内ポップアップは出さない。
+//    「何が新しいか」は notice.json のお知らせが担当する（教訓#005・#008）。
+// ③ 新しいService Workerが用意できたら、黙って入れ替えるだけ（画面は再読み込みしない）
+// ④ 案内ポップアップは設定の「更新」ボタンを押したときだけ出す（入れ替わらない端末の逃げ道）
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
@@ -8203,8 +8206,10 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
           _clearUpdatePromptIfNoWaitingWorker();
           return;
         }
-        // CURRENT_VERSION（このファイルが持つバージョン）と比較して更新バナーを出す
-        showUpdateBanner(latest, null);
+        // ★ここでは案内ポップアップを出さない（2026-08-19変更）。
+        // 画面本体はネットワーク優先で取得されるため、次回オンライン起動で静かに
+        // 最新版へ入れ替わる。利用者に操作をお願いする必要がない。
+        // 手動で確かめたい人は、設定の「更新」ボタン（checkAppUpdate）から出せる。
         // ※ CURRENT_VERSION はここでは上書きしない（比較基準として維持）
       })
       .catch(function(){
@@ -8214,7 +8219,9 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
       });
   }
 
-  // 手動「更新」ボタンから呼ばれる
+  // 設定の「更新」ボタンから呼ばれる。
+  // ★更新案内ポップアップ（update-banner）を出すのは、いまはこの経路だけ。
+  //   自動では出さない（2026-08-19変更）。利用者が自分で押したときだけ出す。
   window.checkAppUpdate = function() {
     var btn = document.getElementById('refresh-btn');
     function setRefreshState(text, disabled, resetDelay){
@@ -8261,20 +8268,26 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
       (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
     window.addEventListener('load', function(){
       checkVersionJson();
+      // 新しいService Worker（裏の配達係）が用意できたら、案内を出さずに黙って
+      // 入れ替える。画面の再読み込みはしない＝入力中の操作を邪魔しない。
+      // 新しいファイルは次にアプリを開いたときから使われる。
+      function _activateSilently(worker){
+        if (!worker) return;
+        try { worker.postMessage('SKIP_WAITING'); } catch(e) {}
+      }
       navigator.serviceWorker.register('./sw.js').then(function(reg){
-        // 新しいSWがインストールされたらバナー表示
         reg.addEventListener('updatefound', function(){
           var newWorker = reg.installing;
           if (!newWorker) return;
           newWorker.addEventListener('statechange', function(){
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              showUpdateBanner(null, newWorker);
+              _activateSilently(newWorker);
             }
           });
         });
-        // すでに待機中のSWがあればバナー表示
+        // すでに待機中のSWがあれば、それも黙って入れ替える
         if (reg.waiting) {
-          showUpdateBanner(null, reg.waiting);
+          _activateSilently(reg.waiting);
         }
       }).catch(function(err){
         console.log('Service Worker registration skipped:', err);
