@@ -76,7 +76,7 @@
   var CSS = [
     '#bloom-cd-overlay{position:fixed;inset:0;z-index:24500;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(0,0,0,.5);backdrop-filter:blur(2px);}',
     '#bloom-cd-overlay.show{display:flex;}',
-    '#bloom-cd-card{position:relative;background:var(--surface,var(--surface2,#fff));color:var(--text,#1f2937);border:1px solid var(--border,#e5e7eb);border-radius:18px;max-width:340px;width:100%;padding:20px 18px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.35);animation:bloomCdPop .22s ease-out;touch-action:pan-y;user-select:none;}',
+    '#bloom-cd-card{position:relative;background:var(--surface,var(--surface2,#fff));color:var(--text,#1f2937);border:1px solid var(--border,#e5e7eb);border-radius:18px;max-width:340px;width:100%;padding:20px 18px;text-align:center;max-height:calc(100vh - 48px);max-height:calc(100dvh - 48px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;box-shadow:0 12px 40px rgba(0,0,0,.35);animation:bloomCdPop .22s ease-out;touch-action:pan-y;user-select:none;}',
     '@keyframes bloomCdPop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}',
     '#bloom-cd-label{display:inline-block;font-size:.68rem;font-weight:800;color:var(--accent,#e97fae);border:1px solid var(--accent,#e97fae);border-radius:999px;padding:3px 12px;margin-bottom:10px;}',
     '#bloom-cd-icon{font-size:2.6rem;line-height:1.2;margin-bottom:2px;}',
@@ -88,7 +88,10 @@
     '#bloom-cd-prev:disabled,#bloom-cd-next:disabled{opacity:.3;cursor:default;}',
     '#bloom-cd-daytag{font-size:.66rem;font-weight:700;color:var(--text-muted,#6b7280);min-width:52px;}',
     '#bloom-cd-close{width:100%;border:none;border-radius:12px;padding:11px 0;font-size:.85rem;font-weight:800;cursor:pointer;background:var(--accent,#e97fae);color:#fff;}',
-    '#bloom-cd-close:active{transform:scale(.98);}'
+    '#bloom-cd-close:active{transform:scale(.98);}',
+    '#bloom-cd-replay{display:none;width:100%;margin-bottom:8px;border:1px solid var(--accent,#e97fae);border-radius:12px;padding:10px 0;font-size:.8rem;font-weight:800;cursor:pointer;background:transparent;color:var(--accent,#e97fae);}',
+    '#bloom-cd-replay.show{display:block;}',
+    '#bloom-cd-replay:active{transform:scale(.98);}'
   ].join('');
 
   /* アイコンを表示する期間: 開花日の30日前 〜 開花日の3日後 */
@@ -123,11 +126,13 @@
       '<span id="bloom-cd-daytag"></span>' +
       '<button id="bloom-cd-next" type="button" aria-label="次の日の応援メッセージ">›</button>' +
       '</div>' +
+      '<button id="bloom-cd-replay" type="button">🎬 開花のムービーをもう一度</button>' +
       '<button id="bloom-cd-close" type="button">🌸 開花スイッチ</button>' +
       '</div>';
     document.body.appendChild(ov);
     ov.addEventListener('click', function (e) { if (e.target === ov) hide(); });
     document.getElementById('bloom-cd-close').addEventListener('click', hide);
+    document.getElementById('bloom-cd-replay').addEventListener('click', function () { hide(); showDayVideo(); });
     document.getElementById('bloom-cd-prev').addEventListener('click', goOlder);
     document.getElementById('bloom-cd-next').addEventListener('click', goNewer);
     document.addEventListener('keydown', function (e) {
@@ -159,6 +164,10 @@
     document.getElementById('bloom-cd-period').textContent = m.period;
     document.getElementById('bloom-cd-main').textContent = m.main;
     document.getElementById('bloom-cd-sub').textContent = m.sub;
+
+    /* 開花日 当日を見ているときだけ、ムービーを見返せるようにする */
+    var replay = document.getElementById('bloom-cd-replay');
+    if (replay) replay.classList.toggle('show', d === 0);
 
     var nav = document.getElementById('bloom-cd-nav');
     if (openedDaysLeft === null) {
@@ -213,7 +222,183 @@
     btn.style.display = visible ? '' : 'none';
   }
 
-  window.BLOOM_CD = { show: show, hide: hide, message: todaysMessage, older: goOlder, newer: goNewer, updateTriggerVisibility: updateTriggerVisibility };
+  /* ============================================================
+   * 開花日 当日のムービー（カウントダウンの最後）
+   * ------------------------------------------------------------
+   * ・開花日の当日にアプリを開いたとき、1回だけ自動で表示する
+   * ・同じ開花日につき1回だけ（開花日を設定し直せば、その日にまた出る）
+   * ・音は最初オフ。スピーカーのボタンで自分で鳴らす
+   *   （携帯・パソコンとも「音つきの自動再生」は止められる決まりのため）
+   * ============================================================ */
+  var DAY_VIDEO_SRC = './assets/bloom/bloom-day.mp4';
+  /* 一部の環境（H.264を再生できないブラウザ）用の予備。
+     再生できる方を1つだけ取りに行くので、両方が通信されることはない */
+  var DAY_VIDEO_SRC_WEBM = './assets/bloom/bloom-day.webm';
+  var DAY_VIDEO_POSTER = './assets/bloom/bloom-day-poster.jpg';
+  var DAY_VIDEO_SEEN_KEY = 'kotsusaku-bloom-day-video-seen';
+
+  var DAY_VIDEO_CSS = [
+    '#bloom-day-overlay{position:fixed;inset:0;z-index:25000;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.82);}',
+    '#bloom-day-overlay.show{display:flex;}',
+    /* 教訓#007：小さい携帯でも一番下のボタンに指が届くよう、高さの上限とスクロールを必ず付ける */
+    '#bloom-day-card{position:relative;background:#0f1117;border:2px solid #f472b6;border-radius:20px;max-width:360px;width:100%;padding:16px 14px;text-align:center;box-shadow:0 12px 48px rgba(244,114,182,.35);max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;animation:bloomDayPop .28s ease-out;}',
+    '@keyframes bloomDayPop{from{transform:scale(.94);opacity:0}to{transform:scale(1);opacity:1}}',
+    '#bloom-day-label{display:inline-block;font-size:.68rem;font-weight:800;color:#f472b6;border:1px solid #f472b6;border-radius:999px;padding:3px 12px;margin-bottom:10px;}',
+    '#bloom-day-stage{position:relative;display:inline-block;line-height:0;max-width:100%;}',
+    '#bloom-day-video{display:block;max-width:100%;width:auto;height:auto;max-height:60vh;max-height:60dvh;border-radius:14px;background:#000;}',
+    '#bloom-day-sound{position:absolute;right:8px;top:8px;width:34px;height:34px;border-radius:50%;border:none;background:rgba(0,0,0,.55);color:#fff;font-size:.95rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}',
+    '#bloom-day-play{position:absolute;inset:0;border:none;background:rgba(0,0,0,.35);color:#fff;font-size:2.4rem;border-radius:14px;cursor:pointer;display:none;align-items:center;justify-content:center;padding:0;}',
+    '#bloom-day-play.show{display:flex;}',
+    '#bloom-day-text{font-size:.78rem;font-weight:700;line-height:1.7;color:#fde8f7;margin:12px 0 12px;}',
+    '#bloom-day-close{width:100%;border:none;border-radius:12px;padding:12px 0;font-size:.9rem;font-weight:800;cursor:pointer;background:#f472b6;color:#fff;}',
+    '#bloom-day-close:active{transform:scale(.98);}'
+  ].join('');
+
+  function dayVideoEls() {
+    return {
+      ov: document.getElementById('bloom-day-overlay'),
+      vid: document.getElementById('bloom-day-video'),
+      sound: document.getElementById('bloom-day-sound'),
+      play: document.getElementById('bloom-day-play')
+    };
+  }
+
+  function setSoundIcon(muted) {
+    var s = document.getElementById('bloom-day-sound');
+    if (!s) return;
+    s.textContent = muted ? '🔇' : '🔊';
+    s.setAttribute('aria-label', muted ? '音を出す' : '音を消す');
+  }
+
+  function buildDayVideoUi() {
+    if (document.getElementById('bloom-day-overlay')) return;
+    var st = document.createElement('style');
+    st.id = 'bloom-day-style';
+    st.textContent = DAY_VIDEO_CSS;
+    document.head.appendChild(st);
+
+    var ov = document.createElement('div');
+    ov.id = 'bloom-day-overlay';
+    ov.setAttribute('role', 'dialog');
+    ov.setAttribute('aria-modal', 'true');
+    ov.setAttribute('aria-label', '開花日 当日のムービー');
+    ov.innerHTML =
+      '<div id="bloom-day-card">' +
+      '<div id="bloom-day-label">🌸 開花日 当日</div>' +
+      '<div id="bloom-day-stage">' +
+      '<video id="bloom-day-video" muted loop playsinline webkit-playsinline preload="none" ' +
+      'poster="' + DAY_VIDEO_POSTER + '">' +
+      '<source src="' + DAY_VIDEO_SRC + '" type="video/mp4">' +
+      '<source src="' + DAY_VIDEO_SRC_WEBM + '" type="video/webm">' +
+      '</video>' +
+      '<button id="bloom-day-play" type="button" aria-label="再生する">▶</button>' +
+      '<button id="bloom-day-sound" type="button" aria-label="音を出す">🔇</button>' +
+      '</div>' +
+      '<div id="bloom-day-text">積み上げてきた日々が、ぜんぶ味方。<br>いってらっしゃい。</div>' +
+      '<button id="bloom-day-close" type="button">🌸 いってきます</button>' +
+      '</div>';
+    document.body.appendChild(ov);
+
+    var el = dayVideoEls();
+    el.ov.addEventListener('click', function (e) { if (e.target === el.ov) hideDayVideo(); });
+    document.getElementById('bloom-day-close').addEventListener('click', hideDayVideo);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && el.ov.classList.contains('show')) hideDayVideo();
+    });
+
+    /* 音のオン・オフ */
+    el.sound.addEventListener('click', function () {
+      el.vid.muted = !el.vid.muted;
+      setSoundIcon(el.vid.muted);
+      playDayVideo(false);
+    });
+
+    /* 自動再生が止められたときの「▶」 */
+    el.play.addEventListener('click', function () {
+      el.play.classList.remove('show');
+      el.vid.muted = false;
+      setSoundIcon(false);
+      playDayVideo(true);
+    });
+  }
+
+  /* 再生を試みる。音つきで断られたら、音を消してもう一度だけ試す */
+  function playDayVideo(retryMuted) {
+    var el = dayVideoEls();
+    if (!el.vid) return;
+    var p;
+    try { p = el.vid.play(); } catch (e) { p = null; }
+    if (p && p.catch) {
+      p.catch(function () {
+        if (retryMuted && !el.vid.muted) {
+          el.vid.muted = true;
+          setSoundIcon(true);
+          var q;
+          try { q = el.vid.play(); } catch (e2) { q = null; }
+          if (q && q.catch) q.catch(function () { el.play.classList.add('show'); });
+          return;
+        }
+        el.play.classList.add('show');
+      });
+    }
+  }
+
+  function showDayVideo() {
+    buildDayVideoUi();
+    var el = dayVideoEls();
+    el.ov.classList.add('show');
+    el.play.classList.remove('show');
+    el.vid.muted = true;          /* 音つきの自動再生は止められるため、まずは音なしで出す */
+    setSoundIcon(true);
+    if (el.vid.preload !== 'auto') el.vid.preload = 'auto';
+    try { el.vid.currentTime = 0; } catch (e) { /* noop */ }
+    playDayVideo(false);
+  }
+
+  function hideDayVideo() {
+    var el = dayVideoEls();
+    if (!el.ov) return;
+    el.ov.classList.remove('show');
+    if (el.vid) {
+      try { el.vid.pause(); el.vid.currentTime = 0; } catch (e) { /* noop */ }
+    }
+  }
+
+  function examDateKey() {
+    try { return localStorage.getItem('exam-date') || ''; } catch (e) { return ''; }
+  }
+
+  /* 開花日の当日、まだ見ていなければ1回だけ自動で出す */
+  function maybeAutoShowDayVideo() {
+    if (daysLeft() !== 0) return;
+    var key = examDateKey();
+    if (!key) return;
+    try { if (localStorage.getItem(DAY_VIDEO_SEEN_KEY) === key) return; } catch (e) { /* noop */ }
+    /* 閉じずにアプリを終了しても二度は出さない（出した時点で記録する） */
+    try { localStorage.setItem(DAY_VIDEO_SEEN_KEY, key); } catch (e) { /* noop */ }
+    showDayVideo();
+  }
+
+  /* 開花日の前日に動画を先に取っておく（当日すぐ再生できるように） */
+  var dayVideoPrefetched = false;
+  function prefetchDayVideo() {
+    if (dayVideoPrefetched) return;
+    if (daysLeft() !== 1) return;
+    try {
+      var c = navigator.connection;
+      if (c && c.saveData) return;   /* 通信量を節約する設定の人には取りに行かない */
+    } catch (e) { /* noop */ }
+    dayVideoPrefetched = true;
+    var url = DAY_VIDEO_SRC;
+    try {
+      var probe = document.createElement('video');
+      if (!probe.canPlayType('video/mp4; codecs="avc1.4D401E"')) url = DAY_VIDEO_SRC_WEBM;
+    } catch (e) { /* noop */ }
+    try { fetch(url).catch(function () {}); } catch (e) { /* noop */ }
+  }
+
+  window.BLOOM_CD = { show: show, hide: hide, message: todaysMessage, older: goOlder, newer: goNewer,
+    updateTriggerVisibility: updateTriggerVisibility, showDayVideo: showDayVideo, hideDayVideo: hideDayVideo };
 
   function init() {
     buildUi();
@@ -222,6 +407,8 @@
     document.addEventListener('visibilitychange', updateTriggerVisibility);
     window.addEventListener('focus', updateTriggerVisibility);
     setInterval(updateTriggerVisibility, 30000);
+    /* 開花日 当日のムービー（画面が出そろってから） */
+    setTimeout(function () { maybeAutoShowDayVideo(); prefetchDayVideo(); }, 1200);
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

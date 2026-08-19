@@ -12,7 +12,7 @@ const CACHE_FILES = [
   './manifest.json',
   './kotsu-tasks.css',
   './kotsu-tasks.js',
-  './bloom-countdown.js',
+  './bloom-countdown.js?v=bloomday1',   // index.html の読み込み先と必ずそろえること
   './assets/stories/mystery/story_mystery_005.png',
   './assets/stories/mystery/story_mystery_010.png',
   './assets/stories/mystery/story_mystery_020.png',
@@ -40,6 +40,7 @@ const CACHE_FILES = [
   './assets/spirits/title_500.png',
   './assets/spirits/title_1000.png',
   './assets/spirits/title_2000.png',
+  './assets/bloom/bloom-day-poster.jpg',
   './icon.svg',
   './icon-192.png',
   './icon-512.png',
