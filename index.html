@@ -8046,7 +8046,7 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v120-bloomday-movie-0819'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v119-crazy11-0819'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _updateBtnLabel = null; // 更新ボタンの元の文言（再表示時に戻すため）
   var _pendingWorker = null;
@@ -10599,6 +10599,9 @@ function _triggerCrazy10FinaleBtn(h,m,dateStr){
   };
 })();
 </script>
-<script src="./bloom-countdown.js"></script>
+<!-- ?v= の目印は、バージョンを上げずに新しい bloom-countdown.js を全員へ届けるためのもの。
+     手元に保管された古いファイルは別の名前（目印なし）なので使われない。
+     bloom-countdown.js を直したときは、この目印と sw.js の CACHE_FILES を同じ値にそろえて変える -->
+<script src="./bloom-countdown.js?v=bloomday1"></script>
 </body>
 </html>

@@ -5,14 +5,14 @@
 //   2. index.html の CURRENT_VERSION（フォールバック値）
 //   3. version.json の version
 // ============================================================
-const CACHE_VERSION = 'kotsusaku-v120-bloomday-movie-0819';
+const CACHE_VERSION = 'kotsusaku-v119-crazy11-0819';
 const CACHE_FILES = [
   './',
   './index.html',
   './manifest.json',
   './kotsu-tasks.css',
   './kotsu-tasks.js',
-  './bloom-countdown.js',
+  './bloom-countdown.js?v=bloomday1',   // index.html の読み込み先と必ずそろえること
   './assets/stories/mystery/story_mystery_005.png',
   './assets/stories/mystery/story_mystery_010.png',
   './assets/stories/mystery/story_mystery_020.png',
