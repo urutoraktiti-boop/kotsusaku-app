@@ -12,6 +12,9 @@ const STUDY_DIAG_REF = 'analytics_diagnostics/studyTotal';
 const STUDY_DIAG_LOG = 'analytics_diagnostics_log';
 const STUDY_DIAG_LOG_KEEP_DAYS = 14;
 const STUDY_DIAG_MAX_LISTED = 20;
+// 「端末ごとの過去最高値」を覚えておく上限台数。
+// 1台あたり数十バイトなので、この台数ならFirestoreの1ドキュメント上限（1MB）に十分収まる。
+const STUDY_MAX_DEVICE_ENTRIES = 20000;
 const ALLOWED_ORIGINS = new Set([
   'https://urutoraktiti-boop.github.io',
   'https://urutoraktiti-boop.github.io/kotsusaku-dashboard',
@@ -79,10 +82,30 @@ function addBadgeCounts(target, badgeList) {
   badgeList.forEach((badgeId) => countMapInc(target, badgeId));
 }
 
+// 「端末ごとのこれまでの最高値」と前回の生の値を1回だけ読む。
+// 集計の前に読んでおき、最後の診断記録でも使い回す（読み取りは1時間に1回のまま）。
+async function readStudyTotalState(db) {
+  try {
+    const snap = await db.doc(STUDY_DIAG_REF).get();
+    return snap.exists ? (snap.data() || {}) : {};
+  } catch (error) {
+    // ここが読めなくても集計は続ける（その回は「過去最高値なし」として扱う）
+    console.error('readStudyTotalState failed:', error);
+    return {};
+  }
+}
+
 async function aggregateAnalyticsSummaryCore() {
   const db = getFirestore();
   const snap = await db.collection('analytics').get();
   const now = new Date();
+
+  // 総学習時間は積み上がる値なので、本来は減らない。
+  // それでも端末側の申告値が下がることがあるため（データ全消し・古いバックアップの復元・
+  // 送信保留分の送り直しなど）、端末ごとに「これまでの最高値」を覚えておき、
+  // 申告値がそれより低い回は最高値の方を採用する。こうすると合計は絶対に減らない。
+  const prevState = await readStudyTotalState(db);
+  const prevDeviceMax = prevState.deviceStudyMax || prevState.deviceStudyTotals || {};
 
   const summary = {
     analyticsCount: snap.size,
@@ -133,13 +156,28 @@ async function aggregateAnalyticsSummaryCore() {
   let avgDailyCount = 0;
   let streakSum = 0;
   let streakCount = 0;
-  // 端末ごとの累計学習時間。前回の集計と比べて「減った端末」を見つけるために使う。
+  // 端末ごとの累計学習時間（端末が申告してきた生の値）。
+  // 前回の集計と比べて「減った端末」を見つけるために使う。
   const deviceStudyTotals = {};
+  // 端末ごとの「これまでの最高値」。次回の集計でも使うので保存する。
+  const deviceStudyMax = {};
+  let rawStudyMinTotal = 0;   // 端末の申告値をそのまま足した合計（調査用に残す）
+  let raisedDeviceCount = 0;  // 申告値が過去最高値より低かった端末の数
+  let raisedMin = 0;          // その端末たちを最高値に戻した分数
 
   snap.forEach((doc) => {
     const data = doc.data() || {};
-    const totalStudyMin = positiveNumber(data.totalStudyMin);
-    if (totalStudyMin > 0) deviceStudyTotals[doc.id] = Math.round(totalStudyMin);
+    const rawStudyMin = Math.round(positiveNumber(data.totalStudyMin));
+    const bestStudyMin = Math.max(rawStudyMin, Math.round(positiveNumber(prevDeviceMax[doc.id])));
+    // 合計には「これまでの最高値」を使う。診断には生の値をそのまま残す。
+    const totalStudyMin = bestStudyMin;
+    rawStudyMinTotal += rawStudyMin;
+    if (bestStudyMin > rawStudyMin) {
+      raisedDeviceCount += 1;
+      raisedMin += bestStudyMin - rawStudyMin;
+    }
+    if (rawStudyMin > 0) deviceStudyTotals[doc.id] = rawStudyMin;
+    if (bestStudyMin > 0) deviceStudyMax[doc.id] = bestStudyMin;
     const avgDailyMinutes = positiveNumber(data.avgDailyMinutes);
     const streakDays = positiveNumber(data.streakDays);
     const level = Math.max(1, Math.round(positiveNumber(data.level) || 1));
@@ -206,9 +244,38 @@ async function aggregateAnalyticsSummaryCore() {
     });
   });
 
+  // ドキュメントごと消えた端末（機種変更・アプリの入れ直しなど）も、過去の記録は合計に残す。
+  // ここを入れないと、1台消えた瞬間に合計が数万分ぶん落ちる。
+  // 記録が無限に増えないよう、覚えておく端末数には上限を設け、時間の多い順に残す。
+  let ghostDeviceCount = 0;
+  let ghostStudyMin = 0;
+  let maxMapSize = Object.keys(deviceStudyMax).length;
+  const ghosts = Object.entries(prevDeviceMax)
+    .filter(([id]) => !Object.prototype.hasOwnProperty.call(deviceStudyMax, id))
+    .map(([id, value]) => [id, Math.round(positiveNumber(value))])
+    .filter(([, best]) => best > 0)
+    .sort((a, b) => b[1] - a[1]);
+  ghosts.forEach(([id, best]) => {
+    if (maxMapSize >= STUDY_MAX_DEVICE_ENTRIES) return;
+    deviceStudyMax[id] = best;
+    maxMapSize += 1;
+    ghostDeviceCount += 1;
+    ghostStudyMin += best;
+  });
+  if (ghosts.length > ghostDeviceCount) {
+    console.warn(`Study total: dropped ${ghosts.length - ghostDeviceCount} old device record(s) to keep the diagnostics document small`);
+  }
+  summary.totalStudyMin += ghostStudyMin;
+
   summary.avgDailyMinutes = avgDailyCount ? Math.round(avgDailySum / avgDailyCount) : 0;
   summary.avgStreakDays = streakCount ? Math.round(streakSum / streakCount) : 0;
   summary.totalStudyMin = Math.round(summary.totalStudyMin);
+  // 端末の申告値をそのまま足した合計。表示には使わないが、減少の調査用に残す。
+  summary.totalStudyMinRaw = Math.round(rawStudyMinTotal);
+  summary.studyTotalRaisedDevices = raisedDeviceCount;
+  summary.studyTotalRaisedMin = Math.round(raisedMin);
+  summary.studyTotalGhostDevices = ghostDeviceCount;
+  summary.studyTotalGhostMin = Math.round(ghostStudyMin);
   summary.totalTasks = Math.round(summary.totalTasks);
   summary.completedTasks = Math.round(summary.completedTasks);
   summary.pendingTasks = Math.max(Math.round(summary.pendingTasks), Math.max(summary.totalTasks - summary.completedTasks, 0));
@@ -216,26 +283,50 @@ async function aggregateAnalyticsSummaryCore() {
   await db.collection('analytics_summary').doc('summary').set(summary, { merge: true });
 
   try {
-    await recordStudyTotalDiagnostics(db, summary.totalStudyMin, deviceStudyTotals, now);
+    await recordStudyTotalDiagnostics(db, {
+      prevState,
+      now,
+      currentTotal: summary.totalStudyMin,
+      rawTotal: summary.totalStudyMinRaw,
+      deviceStudyTotals,
+      deviceStudyMax,
+      raisedDeviceCount,
+      raisedMin: summary.studyTotalRaisedMin,
+      ghostDeviceCount,
+      ghostStudyMin: summary.studyTotalGhostMin,
+    });
   } catch (error) {
     // 診断の失敗で集計本体を止めない
     console.error('recordStudyTotalDiagnostics failed:', error);
   }
 
-  console.log(`Aggregated analytics summary: users=${summary.userCount}, totalStudyMin=${summary.totalStudyMin}, taskUsers=${summary.taskUsers}, totalTasks=${summary.totalTasks}`);
+  console.log(`Aggregated analytics summary: users=${summary.userCount}, totalStudyMin=${summary.totalStudyMin} (raw=${summary.totalStudyMinRaw}, raised=${raisedDeviceCount} devices/${summary.studyTotalRaisedMin} min, ghosts=${ghostDeviceCount}/${summary.studyTotalGhostMin} min), taskUsers=${summary.taskUsers}, totalTasks=${summary.totalTasks}`);
   return summary;
 }
 
-// 総学習時間は積み上がる値なので、本来は減らない。
-// それでも減った回があるため、「どの端末の値が下がったのか」を毎回記録して原因を追えるようにする。
-// 追加コストは 1時間あたり 読み取り1回・書き込み1〜2回だけ。
-async function recordStudyTotalDiagnostics(db, currentTotal, deviceStudyTotals, now) {
+// 表示される合計は「端末ごとの過去最高値」で守ってあるので、もう減らない。
+// ただし「どの端末の申告値が下がったのか」は原因調査に必要なので、
+// 生の申告値どうしを比べる記録はこれまでどおり残す。
+// 追加コストは 1時間あたり 読み取り1回（集計の冒頭で済ませたもの）・書き込み1〜2回だけ。
+async function recordStudyTotalDiagnostics(db, info) {
+  const {
+    prevState = {},
+    now = new Date(),
+    currentTotal = 0,
+    rawTotal = 0,
+    deviceStudyTotals = {},
+    deviceStudyMax = {},
+    raisedDeviceCount = 0,
+    raisedMin = 0,
+    ghostDeviceCount = 0,
+    ghostStudyMin = 0,
+  } = info || {};
   const diagRef = db.doc(STUDY_DIAG_REF);
-  const prevSnap = await diagRef.get();
-  const prev = prevSnap.exists ? (prevSnap.data() || {}) : {};
+  const prev = prevState || {};
   const prevDevices = prev.deviceStudyTotals || {};
-  const prevTotal = numberValue(prev.totalStudyMin, 0);
-  const hasPrev = prevSnap.exists && Object.keys(prevDevices).length > 0;
+  // 前回の生の合計。この項目が無かった頃の記録しかない場合は totalStudyMin で代用する。
+  const prevTotal = numberValue(prev.rawTotalStudyMin, numberValue(prev.totalStudyMin, 0));
+  const hasPrev = Object.keys(prevDevices).length > 0;
 
   const drops = [];
   let droppedMin = 0;
@@ -256,25 +347,35 @@ async function recordStudyTotalDiagnostics(db, currentTotal, deviceStudyTotals, 
     drops.sort((a, b) => b.lostMin - a.lostMin);
   }
 
-  const deltaTotal = hasPrev ? currentTotal - prevTotal : 0;
+  const deltaTotal = hasPrev ? rawTotal - prevTotal : 0;
   const topDrops = drops.slice(0, STUDY_DIAG_MAX_LISTED);
 
   await diagRef.set({
+    // 表示に使う合計（過去最高値で守ったあと）
     totalStudyMin: currentTotal,
+    // 端末の申告値をそのまま足した合計（下がることがある方）
+    rawTotalStudyMin: rawTotal,
     prevTotalStudyMin: hasPrev ? prevTotal : null,
     deltaTotalStudyMin: hasPrev ? deltaTotal : null,
     droppedDeviceCount: drops.length,
     droppedMin,
     disappearedMin,
     topDrops,
+    // 過去最高値で埋め戻した分
+    raisedDeviceCount,
+    raisedMin,
+    ghostDeviceCount,
+    ghostStudyMin,
     deviceCount: Object.keys(deviceStudyTotals).length,
     deviceStudyTotals,
+    // 端末ごとの過去最高値。次回の集計がこれを使う（この項目が本体）
+    deviceStudyMax,
     checkedAtIso: now.toISOString(),
     updatedAt: FieldValue.serverTimestamp(),
   });
 
   if (drops.length === 0) {
-    console.log(`Study total diagnostics: no drops. total=${currentTotal} delta=${hasPrev ? deltaTotal : 'n/a'}`);
+    console.log(`Study total diagnostics: no drops. shown=${currentTotal} raw=${rawTotal} delta=${hasPrev ? deltaTotal : 'n/a'}`);
     return;
   }
 
@@ -284,6 +385,7 @@ async function recordStudyTotalDiagnostics(db, currentTotal, deviceStudyTotals, 
     timestamp: FieldValue.serverTimestamp(),
     checkedAtIso: now.toISOString(),
     totalStudyMin: currentTotal,
+    rawTotalStudyMin: rawTotal,
     prevTotalStudyMin: prevTotal,
     deltaTotalStudyMin: deltaTotal,
     droppedDeviceCount: drops.length,
@@ -293,8 +395,9 @@ async function recordStudyTotalDiagnostics(db, currentTotal, deviceStudyTotals, 
   });
 
   console.warn(
-    `Study total DROP detected: ${drops.length} device(s), -${droppedMin} min ` +
-    `(disappeared docs: ${disappearedMin} min), total ${prevTotal} -> ${currentTotal}`
+    `Study total DROP detected (raw values only; shown total is protected): ` +
+    `${drops.length} device(s), -${droppedMin} min ` +
+    `(disappeared docs: ${disappearedMin} min), raw ${prevTotal} -> ${rawTotal}, shown ${currentTotal}`
   );
 
   const cutoff = new Date(now.getTime() - STUDY_DIAG_LOG_KEEP_DAYS * 86400000);
