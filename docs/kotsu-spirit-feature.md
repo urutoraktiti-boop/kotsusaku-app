@@ -72,7 +72,7 @@
 
 ## 11. リリース/PWA
 - バージョン `kotsusaku-v111-spirits`（`sw.js` `CACHE_VERSION` / `index.html` `CURRENT_VERSION` 7032行 / `version.json` の3点統一）。
-- 全画像を `sw.js` の `CACHE_FILES` に登録済み（登録漏れ＝オフライン/古表示の原因）。**画像追加時は CACHE_FILES追加＋CACHE_VERSIONバンプ必須**。
+- ~~全画像を `sw.js` の `CACHE_FILES` に登録済み~~ → **2026-09-06 から画像は先読みしない**。表示したときに配達係が保管する（`docs/loading-and-cache.md`）。画像を追加しても `CACHE_FILES` に足す必要はない（ファイルを置くだけ）。
 - 更新ポップアップ `UPDATE_COPY`（index.html 7038行）＝「タマゴ、割れる。🐣✨」。
 
 ## 12. 既存不具合の是正（ついで）
