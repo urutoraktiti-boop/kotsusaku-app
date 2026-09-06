@@ -171,30 +171,30 @@
 
   // 第1弾 8体（仮名・絵文字アイコン。image は画像完成後に設定）
   const KOTSU_SPIRITS = [
-    { id: 'first_light', name: 'ヨアケ・ピヨーン', desc: 'ここからが本番ピヨ！', icon: '🌅', image: 'assets/spirits/spirit_first_light.png', unlock: { type: 'reach100' } },
-    { id: 'crash', name: 'トッパ・ガリベン', desc: '一問入魂、いくピヨ', icon: '⚔️', image: 'assets/spirits/spirit_crash.png', unlock: { type: 'abilityB', ability: 'power' } },
-    { id: 'rapid', name: 'ソッコー・ダッシュ', desc: 'もう終わったピヨ？', icon: '💨', image: 'assets/spirits/spirit_rapid.png', unlock: { type: 'abilityB', ability: 'speed' } },
-    { id: 'horizon', name: 'ミハラ・シーカー', desc: '世界は広いピヨ', icon: '🔭', image: 'assets/spirits/spirit_horizon.png', unlock: { type: 'abilityB', ability: 'range' } },
-    { id: 'everlasting', name: 'ズット・モエテル', desc: 'きょうもコツコツ燃えるピヨ', icon: '🔥', image: 'assets/spirits/spirit_everlasting.png', unlock: { type: 'abilityB', ability: 'stamina' } },
-    { id: 'surehand', name: 'ドンピシャ・アロー', desc: 'ハズさないピヨ', icon: '🎯', image: 'assets/spirits/spirit_surehand.png', unlock: { type: 'abilityB', ability: 'precision' } },
-    { id: 'rising_core', name: 'ノビシロ・モリモリ', desc: 'まだ育つピヨ！', icon: '💎', image: 'assets/spirits/spirit_rising_core.png', unlock: { type: 'abilityB', ability: 'growth' } },
-    { id: 'complete_soul', name: 'カンペキ・タマシイ', desc: 'コンプ、いただきピヨ👑', icon: '👑', image: 'assets/spirits/spirit_complete_soul.png', unlock: { type: 'allA' } }
+    { id: 'first_light', name: 'ヨアケ・ピヨーン', desc: 'ここからが本番ピヨ！', icon: '🌅', image: 'assets/spirits/spirit_first_light.webp', unlock: { type: 'reach100' } },
+    { id: 'crash', name: 'トッパ・ガリベン', desc: '一問入魂、いくピヨ', icon: '⚔️', image: 'assets/spirits/spirit_crash.webp', unlock: { type: 'abilityB', ability: 'power' } },
+    { id: 'rapid', name: 'ソッコー・ダッシュ', desc: 'もう終わったピヨ？', icon: '💨', image: 'assets/spirits/spirit_rapid.webp', unlock: { type: 'abilityB', ability: 'speed' } },
+    { id: 'horizon', name: 'ミハラ・シーカー', desc: '世界は広いピヨ', icon: '🔭', image: 'assets/spirits/spirit_horizon.webp', unlock: { type: 'abilityB', ability: 'range' } },
+    { id: 'everlasting', name: 'ズット・モエテル', desc: 'きょうもコツコツ燃えるピヨ', icon: '🔥', image: 'assets/spirits/spirit_everlasting.webp', unlock: { type: 'abilityB', ability: 'stamina' } },
+    { id: 'surehand', name: 'ドンピシャ・アロー', desc: 'ハズさないピヨ', icon: '🎯', image: 'assets/spirits/spirit_surehand.webp', unlock: { type: 'abilityB', ability: 'precision' } },
+    { id: 'rising_core', name: 'ノビシロ・モリモリ', desc: 'まだ育つピヨ！', icon: '💎', image: 'assets/spirits/spirit_rising_core.webp', unlock: { type: 'abilityB', ability: 'growth' } },
+    { id: 'complete_soul', name: 'カンペキ・タマシイ', desc: 'コンプ、いただきピヨ👑', icon: '👑', image: 'assets/spirits/spirit_complete_soul.webp', unlock: { type: 'allA' } }
   ];
 
-  const SPIRIT_LOCKED_IMAGE = 'assets/spirits/spirit_locked.png';
-  const SPIRIT_BANNER_IMAGE = 'assets/spirits/spirit_unlock_banner.png';
+  const SPIRIT_LOCKED_IMAGE = 'assets/spirits/spirit_locked.webp';
+  const SPIRIT_BANNER_IMAGE = 'assets/spirits/spirit_unlock_banner.webp';
   const SPIRIT_EGG_FRAMES = {
-    closed: 'assets/spirits/spirit_egg_closed.png',
-    crack1: 'assets/spirits/spirit_egg_crack_1.png',
-    crack2: 'assets/spirits/spirit_egg_crack_2.png',
-    open: 'assets/spirits/spirit_egg_open.png'
+    closed: 'assets/spirits/spirit_egg_closed.webp',
+    crack1: 'assets/spirits/spirit_egg_crack_1.webp',
+    crack2: 'assets/spirits/spirit_egg_crack_2.webp',
+    open: 'assets/spirits/spirit_egg_open.webp'
   };
 
   // 累計コツ数で付与される記念称号（仮名）
   const SPIRIT_TITLES = [
-    { min: 500, icon: '🎖️', name: 'コツの探究者', image: 'assets/spirits/title_500.png' },
-    { min: 1000, icon: '🏅', name: 'コツの匠', image: 'assets/spirits/title_1000.png' },
-    { min: 2000, icon: '🏆', name: 'コツの伝説', image: 'assets/spirits/title_2000.png' }
+    { min: 500, icon: '🎖️', name: 'コツの探究者', image: 'assets/spirits/title_500.webp' },
+    { min: 1000, icon: '🏅', name: 'コツの匠', image: 'assets/spirits/title_1000.webp' },
+    { min: 2000, icon: '🏆', name: 'コツの伝説', image: 'assets/spirits/title_2000.webp' }
   ];
 
   const CATEGORY_META = {

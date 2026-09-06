@@ -64,9 +64,10 @@
 `init()`→`syncSpirits()` で100到達済みは即解放記録（announcedAt無し）。次の `open()`→`maybeShowSpiritIntro()` で未演出分をまとめて1回演出→announcedAt記録。
 
 ## 10. 画像アセット（`assets/spirits/`）
-- 立ち絵8体 `spirit_<id>.png` ／ 未解放 `spirit_locked.png` ／ 解放バナー `spirit_unlock_banner.png`
-- タマゴ4コマ `spirit_egg_closed/crack_1/crack_2/open.png`
-- 称号バッジ `title_500/1000/2000.png`
+- 立ち絵8体 `spirit_<id>.webp` ／ 未解放 `spirit_locked.webp` ／ 解放バナー `spirit_unlock_banner.webp`
+- タマゴ4コマ `spirit_egg_closed/crack_1/crack_2/open.webp`
+- 称号バッジ `title_500/1000/2000.webp`
+- **2026-09-06 に PNG から WebP に変換した**（17枚 1.9MB → 0.3MB。バナーは 1200×600 → 800×400。表示幅は最大でも400px程度なので、2倍密度の画面でも足りる）。画像を追加・差し替えるときも WebP で入れること（`python3` + Pillow で変換できる）
 - いずれも読込失敗時は絵文字へフォールバック（`onerror`）。
 
 ## 11. リリース/PWA
