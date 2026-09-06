@@ -4,8 +4,8 @@
 //   1. ここの CACHE_VERSION
 //   2. index.html の CURRENT_VERSION（フォールバック値）
 //   3. version.json の version
-//   4. index.html の kotsu-tasks.css / kotsu-tasks.js の「?v=」と、
-//      下の CACHE_FILES の同じ2行（同じ文字列にそろえる。ずれると保管が使われない）
+//   4. index.html の kotsusaku.css / kotsu-tasks.css / kotsu-tasks.js の「?v=」と、
+//      下の CACHE_FILES の同じ3行（同じ文字列にそろえる。ずれると保管が使われない）
 // 「何が新しいか」の案内は notice.json だけの仕事（教訓#008）。
 // ============================================================
 const CACHE_VERSION = 'kotsusaku-v121-lighter-0906';
@@ -16,6 +16,7 @@ const CACHE_FILES = [
   './',
   './index.html',
   './manifest.json',
+  './kotsusaku.css?v=kotsusaku-v121-lighter-0906',    // index.html の読み込み先（?v=）と必ずそろえること
   './kotsu-tasks.css?v=kotsusaku-v121-lighter-0906',   // index.html の読み込み先（?v=）と必ずそろえること
   './kotsu-tasks.js?v=kotsusaku-v121-lighter-0906',    // 同上。ずれると保管した分が使われず、毎回ネットから取りに行く
   './bloom-countdown.js?v=bloomday2',   // index.html の読み込み先と必ずそろえること

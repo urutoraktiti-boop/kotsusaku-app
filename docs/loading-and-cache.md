@@ -12,7 +12,7 @@
 |---|---|---|
 | 画面本体 `index.html` | **必ずサーバーに「変わった？」と聞く**（`cache:'no-cache'`）。変わっていなければ中身は再送されない（304） | 更新を次回起動で必ず反映しつつ、毎回700KB（圧縮後190KB）を取り直さない |
 | `version.json` / `notice.json` | 毎回ネットから取る（`no-store`） | 小さいファイル。お知らせと版の判定は常に最新であること |
-| `kotsu-tasks.css` / `kotsu-tasks.js` / `bloom-countdown.js` | 配達係（Service Worker）が**インストール時に先読み**。URLの `?v=` が変わると取り直す | 起動直後に必要 |
+| `kotsusaku.css`（本体の見た目）/ `kotsu-tasks.css` / `kotsu-tasks.js` / `bloom-countdown.js` | 配達係（Service Worker）が**インストール時に先読み**。URLの `?v=` が変わると取り直す | 起動直後に必要 |
 | アイコン・manifest | 同上 | ホーム画面追加に必要 |
 | 画像（スピリット・ストーリー・ポスター） | **表示したときに保管**（`RUNTIME_CACHE_RE`）。2回目からは通信なし | 初回起動で1MB超をまとめて取りに行かないため |
 | 動画（`bloom-day.mp4/webm`） | 保管しない | 大きい。開花日の当日だけ使う |
@@ -23,7 +23,7 @@
 ## 配達係（`sw.js`）の決まり
 
 - 版を上げるときは **4か所**をそろえる：`sw.js` の `CACHE_VERSION`、`index.html` の `CURRENT_VERSION`、
-  `version.json`、そして `index.html` の `?v=` と `sw.js` の `CACHE_FILES` の同じ2行。
+  `version.json`、そして `index.html` の `?v=`（`kotsusaku.css` / `kotsu-tasks.css` / `kotsu-tasks.js` の3行）と `sw.js` の `CACHE_FILES` の同じ3行。
   `?v=` がずれると、先読みした分が使われず毎回ネットから取りに行く（v120で実際にずれていた）。
 - `CACHE_FILES` に入れるのは「開いた瞬間に必要なもの」だけ。**画像は入れない**（表示時に保管される）。
   1つでも404になるとインストール自体が失敗するので、増やすときは必ず存在確認する。
@@ -41,6 +41,25 @@
 - 起動時のクラウド同期は `_fbReady` を最長8秒待つ。待ちきれず先に進んだ場合は `_fbLateStartup` が立ち、
   準備できた時点で `_initFirebase()` が `syncFromCloudIfNeeded()` を呼んで追いつく。
 - **Firebase を同期の `<script src>` に戻さないこと。** 戻すと画面の組み立てが数百KBの読み込み待ちになる。
+
+---
+
+## 本体CSSの置き場所（`kotsusaku.css`）
+
+`index.html` の `<head>` にあった 1行52KB の `<style>` 3ブロックを、2026-09-06 に `kotsusaku.css` へ出した
+（1ルール1行に整えただけで中身は同じ。前後のスクリーンショット比較で画面が一致することを確認済み）。
+- 読み込み位置は元と同じ `<title>` の直後。`<style id="subject-colors">` と `kotsu-tasks.css` より**前**に置くこと
+  （順番を変えるとスタイルの優先順位が変わる）。
+- `index.html` 末尾の `<style>`（ニヤニヤ演出・休憩タイマーのアニメ）は `kotsu-tasks.css` より後ろで効かせる必要があるので、
+  そのまま本体に残してある。
+- 見た目を直すときは `kotsusaku.css` を直す。`grep` で探すときも本体HTMLではなくこのファイルを見る。
+
+## 集計関数は1か所（アナリティクスも本体の関数を使う）
+
+累計時間・学習日数・連続日数の計算は `index.html` 本体の `allTimeTotal()` / `allTimeDays()` / `currentStreak()` / `dayTotal()` が唯一の出どころ。
+アナリティクス送信用の IIFE（`getTotalStudyMin` など）は 2026-09-06 からこれらを呼ぶだけになった（以前は同じ計算をもう一度書いていた）。
+ただし画面上部の**保険用 IIFE**（`window.__kotsusakuEnsureGrid` / `__kotsusakuEnsureAllTimeCard` など。本体の描画が失敗したときだけ動く）は、
+本体が壊れていても動く必要があるため**わざと独立させてある**。こちらは統一しないこと。
 
 ---
 
@@ -62,6 +81,8 @@
 | 画像17枚（PNG 1.9MB）をインストール時に全部先読み | 初回起動が重い。WebP化（0.3MB）＋表示時保管に変更 |
 | `?v=` と `CACHE_FILES` の不一致 | 先読みした JS/CSS が使われていなかった |
 | 30秒タイマーが3本、称号テキストの非表示要素を毎回描画 | 無駄な処理（小） |
+| 本体CSSが1行52KBで `index.html` の中 | 探しにくい・差分が見づらい（`kotsusaku.css` に外部化） |
+| アナリティクス用の集計が本体と二重 | 片方だけ直すと数字が食い違う（本体の関数を呼ぶ形に統一） |
 
 ---
 
