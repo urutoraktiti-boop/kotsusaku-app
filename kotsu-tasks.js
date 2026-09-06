@@ -595,6 +595,7 @@
   }
 
   function updateTopStoryCharacters() {
+    if (document.hidden) return; // 画面が隠れている間は何もしない（0.7秒ごとに呼ばれる）
     const conf = topStoryCharacterFor(getCurrentStory());
     const running = isStopwatchRunning();
     const storyId = getCurrentStory();
@@ -615,10 +616,11 @@
     const bouncerBubble = document.querySelector('[data-ks-bouncer-bubble]');
     if (runner) runner.classList.toggle('is-running', running);
     updateRunnerSpeedLine(runner, running);
-    if (runnerChar) runnerChar.dataset.ksKind = conf.kind;
-    if (bouncerChar) bouncerChar.dataset.ksKind = conf.kind;
-    if (runnerBubble) runnerBubble.textContent = state.topStoryComment.runner;
-    if (bouncerBubble) bouncerBubble.textContent = state.topStoryComment.bouncer;
+    // 変わったときだけ書き換える（同じ値の書き込みを0.7秒ごとに繰り返さない）
+    if (runnerChar && runnerChar.dataset.ksKind !== conf.kind) runnerChar.dataset.ksKind = conf.kind;
+    if (bouncerChar && bouncerChar.dataset.ksKind !== conf.kind) bouncerChar.dataset.ksKind = conf.kind;
+    if (runnerBubble && runnerBubble.textContent !== state.topStoryComment.runner) runnerBubble.textContent = state.topStoryComment.runner;
+    if (bouncerBubble && bouncerBubble.textContent !== state.topStoryComment.bouncer) bouncerBubble.textContent = state.topStoryComment.bouncer;
   }
 
   function scheduleTopStoryBouncer() {
