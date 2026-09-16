@@ -549,6 +549,14 @@
 <button type="button" data-story-card="koumuin" onclick="onStorySelChange('koumuin')" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);cursor:pointer;font-size:.65rem;text-align:left;">🏛️ 公務員試験</button>
 </div>
 </div>
+<!-- 🍞 イタパン表示のオン・オフ（🥦ストーリー選択中のみ表示） -->
+<div id="itapan-tog-row" style="display:none;margin-top:9px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:6px 12px;">
+<div class="cust-tog-row">
+<span style="font-size:.75rem;color:var(--text)">🍞 夜のイタパン表示</span>
+<label class="tog-sw"><input type="checkbox" id="cust-itapan-tog" checked><span class="tog-slider"></span></label>
+</div>
+<div id="itapan-tog-note" style="font-size:.58rem;color:var(--text-muted);margin:2px 0 6px;"></div>
+</div>
 <div style="display:none;">
 <div class="cust-row">
 <label class="cust-lbl">コンボ文字</label>
@@ -3386,7 +3394,8 @@ function checkItachachaStreakPopup(){
   setTimeout(()=>_showPopup('itachacha-popup',html,3200,null,null),700);
 }
 
-// ③ 🍞イタパントースト（21:40〜22:00チェック時）
+// ③ 🍞イタパントースト（夜21時台の該当マスをチェックしたとき）
+//    出す・出さないの判定は _isItapanOn()（開催期間＋設定トグル）に一本化している。
 const _ITAPAN_MSGS={
   40:['🍞 イタパン開始！5分全力で暗記しよう！','🍞 さあ、何を覚える？5分で1個。始めよう。','🍞 イタパンの時間。全力で。'],
   50:['🍞 もう1個いける。全力で。','🍞 5分で次の1個。止まらないで。','🍞 覚えたら「覚えた！」って言おう。'],
@@ -3394,7 +3403,7 @@ const _ITAPAN_MSGS={
 };
 function _itapanLsKey(){return 'itapan-toast-'+toStudyDateStr(new Date());}
 function checkItapanToast(m){
-  if(!_isItachachaMode())return;
+  if(!_isItapanOn())return;
   const msgs=_ITAPAN_MSGS[m];
   if(!msgs)return;
   const key=_itapanLsKey()+'-m'+m;
@@ -4619,20 +4628,46 @@ function buildGrid(){
 
 // itachacha：ライブ配信時間帯判定ヘルパー
 function _isItachachaMode(){return CUST.storyId==='itachacha';}
+
+// ── 🍞 イタパン（夜21時台）の開催期間 ─────────────────────────────
+// 「いま開催しているか」はこの1か所だけで決める。休止・再開はここを直すだけで全員に効く。
+//   休止する → 最後の期間の until を「最終開催日」にする
+//   再開する → {from:'2026-11-01',until:''} のように期間をもう1つ足す（until:'' は当分ずっと）
+// 設定画面のトグル（CUST.itapanShow）は「その人の好み」。期間内 かつ トグルON のときだけ表示する。
+// ※関数にしているのは、読み込み順によっては const が「まだ使えない」状態になるのを避けるため
+//   （CLAUDE-lessons.md #004）。
+function _itapanPeriods(){
+  return [
+    {from:'2025-01-01',until:'2026-09-15'}, // 第1期（2026-09-16から休止中）
+  ];
+}
+function _itapanTodayStr(){
+  return (typeof currentDate!=='undefined'&&currentDate)?currentDate:toStudyDateStr(new Date());
+}
+// 開催期間内か（日付文字列 'YYYY-MM-DD' はそのまま大小比較できる）
+function _isItapanPeriod(ds){
+  const d=ds||_itapanTodayStr();
+  return _itapanPeriods().some(p=>(!p.from||d>=p.from)&&(!p.until||d<=p.until));
+}
+// 🍞を出してよいか＝🥦ストーリー中 かつ 開催期間内 かつ 設定がON
+function _isItapanOn(ds){
+  return _isItachachaMode()&&_isItapanPeriod(ds)&&CUST.itapanShow!==false;
+}
+
 function _itachachaLiveEmoji(h){
   if(!_isItachachaMode())return null;
   // 朝5〜6時台（5:10〜7:00）
   if(h===5||h===6)return'🥦';
-  // 夜21時台（21:40〜22:00）→ MINS=[10,20,30,40,50,60]なので21:40=m40, 21:50=m50, 21:60=m60
-  if(h===21)return'🍞';
+  // 夜21時台（21:30〜22:00の3マス）→ MINS=[10,20,30,40,50,60]で、m40は「21:30〜21:40」のマス
+  if(h===21)return _isItapanOn()?'🍞':null;
   return null;
 }
 function _itachachaBlockClass(h,m){
   if(!_isItachachaMode())return null;
   // 朝5:10〜7:00（h=5全枠、h=6全枠）
   if(h===5||h===6)return'itachacha-live';
-  // 夜21:40〜22:00（h=21のm=40,50,60のみ）
-  if(h===21&&(m===40||m===50||m===60))return'itachacha-bread';
+  // 夜21:30〜22:00（h=21のm=40,50,60。マスの数字は「終わりの時刻」なのでm40＝21:30〜21:40）
+  if(h===21&&(m===40||m===50||m===60))return _isItapanOn()?'itachacha-bread':null;
   return null;
 }
 function onHourBtn(h){
@@ -4706,8 +4741,8 @@ function onBlock(e){
   if(!wasChecked) checkItachachaMorningSurprise();
   // 🥦 itachacha：連続記録ポップアップ（5〜7時の最初のチェック）
   if(!wasChecked) checkItachachaStreakPopup();
-  // 🍞 itachacha：イタパントースト（21:40〜22:00）
-  if(!wasChecked&&CUST.storyId==='itachacha'&&h===21){checkItapanToast(m);}
+  // 🍞 itachacha：イタパントースト（夜21時台。開催期間＋設定トグルはcheckItapanToast側で判定）
+  if(!wasChecked&&h===21){checkItapanToast(m);}
   // サウンド
   if(!wasChecked)playCheckSound();
   // Crazy10: 最終SETの最後ブロックをチェックしたらフィナーレボタンを表示
@@ -6367,7 +6402,7 @@ function getStoryTierMsg(tierIdx){
   return (ov['tierMsg'+tierIdx]!==undefined&&ov['tierMsg'+tierIdx]!=='')?ov['tierMsg'+tierIdx]:s.tiers[tierIdx]?.msg||'';
 }
 
-const CUST_DEFAULTS={appName:'コツコツ✏️サクサク🌸',checkEmoji:'🌸',comboEmoji:'✨',comboText:'コンボ！',comboHighText:'すごい！',showTreeBg:true,customQuotes:[],useCustomQuotesOnly:false,levelNames:{},levelIcons:{},badgeOverrides:{},customBadges:[],storyId:'samurai',storyOverrides:{},storyLoopCount:{},storyLoopStartMin:{},targetTotalH:0,seasonMarks:[],seasonTargets:{},appIcon:'A',crazy10Joined:{},myEvents:[],storyChoiceTouched:false,learningGoalsTouched:false,targetTotalTouched:false,subjects:[],subjectsSeededFor:''};
+const CUST_DEFAULTS={appName:'コツコツ✏️サクサク🌸',checkEmoji:'🌸',comboEmoji:'✨',comboText:'コンボ！',comboHighText:'すごい！',showTreeBg:true,itapanShow:true,customQuotes:[],useCustomQuotesOnly:false,levelNames:{},levelIcons:{},badgeOverrides:{},customBadges:[],storyId:'samurai',storyOverrides:{},storyLoopCount:{},storyLoopStartMin:{},targetTotalH:0,seasonMarks:[],seasonTargets:{},appIcon:'A',crazy10Joined:{},myEvents:[],storyChoiceTouched:false,learningGoalsTouched:false,targetTotalTouched:false,subjects:[],subjectsSeededFor:''};
 
 // ── 科目カラー：パレット・プリセット・チップバー・設定エディタ ──
 const SUBJECT_COLOR_SLOTS=['c1','c2','c3','c4','c5','c6','c7','c8'];
@@ -7549,6 +7584,24 @@ function onStorySelChange(val){
   const co2=$('cust-combo-inp');
   if(co2){co2.value=isItachacha2?'🥦':(CUST.comboEmoji||'✨');co2.disabled=isItachacha2;co2.style.opacity=isItachacha2?'0.4':'';co2.title=isItachacha2?'itachachaストーリー中は🥦固定':'';}
   _syncStoryCards();
+  _syncItapanTogUI();
+}
+// 🍞 イタパン表示トグルの状態をそろえる
+// ・🥦ストーリー以外では行ごと隠す（関係のない人には出さない）
+// ・開催期間外（休止中）はスイッチを押せなくして、理由を下に出す
+function _syncItapanTogUI(){
+  const row=$('itapan-tog-row');if(!row)return;
+  const isItachacha=(CUST.storyId==='itachacha');
+  row.style.display=isItachacha?'block':'none';
+  if(!isItachacha)return;
+  const inPeriod=_isItapanPeriod(toStudyDateStr(new Date()));
+  const tg=$('cust-itapan-tog');
+  if(tg){tg.checked=CUST.itapanShow!==false;tg.disabled=!inPeriod;}
+  row.style.opacity=inPeriod?'':'.55';
+  const note=$('itapan-tog-note');
+  if(note)note.textContent=inPeriod
+    ?'夜9時台のマスが🍞で光ります。オフにすると光らず、一言も出ません。'
+    :'いまはイタパンがお休み中です。再開したらここでオン・オフできます。';
 }
 function _syncStoryCards(){
   document.querySelectorAll('[data-story-card]').forEach(function(btn){
@@ -7610,6 +7663,7 @@ function _syncCustPanel(){
   const co=$('cust-combo-inp');
   if(co){co.value=isItachacha?'🥦':(CUST.comboEmoji||'✨');co.disabled=isItachacha;co.style.opacity=isItachacha?'0.4':'';co.title=isItachacha?'itachachaストーリー中は🥦固定':'';}
   const tt=$('cust-tree-tog');if(tt)tt.checked=CUST.showTreeBg!==false;
+  _syncItapanTogUI();
   const qo=$('cust-qonly');if(qo)qo.checked=!!CUST.useCustomQuotesOnly;
   _renderCheckGrid();_renderComboGrid();_renderQuotesList();_renderLevelList();_renderBadgeEditList();_renderSubjectEditList();
   const ct=$('cust-combo-text');if(ct)ct.value=CUST.comboText&&CUST.comboText!=='コンボ！'?CUST.comboText:'';
@@ -7805,6 +7859,12 @@ function _renderQuotesList(){
   // 背景トグル
   const treeTog=$('cust-tree-tog');
   if(treeTog)treeTog.addEventListener('change',function(){CUST.showTreeBg=this.checked;saveCust();applyTreeBg(CUST.showTreeBg);});
+  // 🍞 イタパン表示トグル（切り替えたらその場で表を描き直す）
+  const itapanTog=$('cust-itapan-tog');
+  if(itapanTog)itapanTog.addEventListener('change',function(){
+    CUST.itapanShow=this.checked;saveCust();
+    buildGrid();if(typeof refreshGrid==='function')refreshGrid();
+  });
   // カスタム名言のみ
   const qOnly=$('cust-qonly');
   if(qOnly)qOnly.addEventListener('change',function(){CUST.useCustomQuotesOnly=this.checked;saveCust();renderQuote();});
