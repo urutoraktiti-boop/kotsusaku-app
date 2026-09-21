@@ -8,7 +8,7 @@
 //      下の CACHE_FILES の同じ3行（同じ文字列にそろえる。ずれると保管が使われない）
 // 「何が新しいか」の案内は notice.json だけの仕事（教訓#008）。
 // ============================================================
-const CACHE_VERSION = 'kotsusaku-v122-crazy7-0921';
+const CACHE_VERSION = 'kotsusaku-v123-journey-0921';
 // 先読み（インストール時にまとめて保管）は「開いた瞬間に必要なもの」だけにする（2026-09-06）。
 // 画像（スピリット・ストーリー・開花日のポスター）は、表示したときに保管する（下の fetch 参照）。
 // 以前は画像も全部ここに入れていて、初回起動で 1MB 以上を一気に取りに行っていた。
@@ -16,9 +16,9 @@ const CACHE_FILES = [
   './',
   './index.html',
   './manifest.json',
-  './kotsusaku.css?v=kotsusaku-v122-crazy7-0921',    // index.html の読み込み先（?v=）と必ずそろえること
-  './kotsu-tasks.css?v=kotsusaku-v122-crazy7-0921',   // index.html の読み込み先（?v=）と必ずそろえること
-  './kotsu-tasks.js?v=kotsusaku-v122-crazy7-0921',    // 同上。ずれると保管した分が使われず、毎回ネットから取りに行く
+  './kotsusaku.css?v=kotsusaku-v123-journey-0921',    // index.html の読み込み先（?v=）と必ずそろえること
+  './kotsu-tasks.css?v=kotsusaku-v123-journey-0921',   // index.html の読み込み先（?v=）と必ずそろえること
+  './kotsu-tasks.js?v=kotsusaku-v123-journey-0921',    // 同上。ずれると保管した分が使われず、毎回ネットから取りに行く
   './bloom-countdown.js?v=bloomday2',   // index.html の読み込み先と必ずそろえること
   './icon.svg',
   './icon-192.png',

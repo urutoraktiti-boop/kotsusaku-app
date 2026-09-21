@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-<title>コツコツ✏️サクサク🌸</title><link rel="stylesheet" href="./kotsusaku.css?v=kotsusaku-v122-crazy7-0921">
+<title>コツコツ✏️サクサク🌸</title><link rel="stylesheet" href="./kotsusaku.css?v=kotsusaku-v123-journey-0921">
 <style id="subject-colors">
 /* ── 科目カラー（10分マスの科目別色分け） ──
    ⚠ 色を変えるときは JS の SUBJECT_PALETTE 定数と両方直すこと（canvas描画・凡例ドットで使用） */
@@ -93,7 +93,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="stylesheet" href="./kotsu-tasks.css?v=kotsusaku-v122-crazy7-0921">
+<link rel="stylesheet" href="./kotsu-tasks.css?v=kotsusaku-v123-journey-0921">
 </head>
 <body>
 <canvas id="fw-canvas"></canvas>
@@ -333,7 +333,20 @@
 <button class="badge-tab-btn active" data-story="asajuku" onclick="switchBadgeTab('asajuku')">🌅 早朝</button>
 </div>
 </div>
+<div id="journey-badge-sec" style="display:none;margin-bottom:14px;">
+<div id="journey-badge-title" style="font-size:.72rem;font-weight:800;color:var(--accent);margin-bottom:7px;"></div>
+<div class="badge-grid" id="journey-badge-grid"></div>
+<div id="journey-badge-note" style="font-size:.56rem;color:var(--text-muted);margin-top:7px;line-height:1.6;">しおりを挟むたびに、ここは空っぽから始まります（下の生涯バッジは消えません）。</div>
+<div style="border-top:1px solid var(--border);margin:13px 0 9px;"></div>
+<div style="font-size:.72rem;font-weight:800;color:var(--text-muted);margin-bottom:7px;">🏅 生涯のバッジ</div>
+</div>
 <div class="badge-grid" id="badge-grid"></div>
+</div>
+</div>
+<div id="journey-finale-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10400;align-items:center;justify-content:center;padding:16px;" onclick="if(event.target===this)closeJourneyFinale()">
+<div id="journey-finale-popup" style="background:var(--surface);border:2px solid var(--accent);border-radius:20px;padding:20px 18px;max-width:340px;width:100%;text-align:center;position:relative;max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;">
+<div id="journey-finale-body"></div>
+<button type="button" id="journey-finale-close" onclick="closeJourneyFinale()" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px;font-size:.8rem;font-weight:800;cursor:pointer;">閉じる</button>
 </div>
 </div>
 <div id="cust-overlay" class="cust-overlay" onclick="if(event.target===this)closeCustPanel()">
@@ -427,6 +440,13 @@
 </div>
 <div id="cust-season-note" style="font-size:.56rem;color:var(--text-muted);margin-top:5px;line-height:1.7;">新たな目標に向けて、この日から時間もレベルも0からスタート（前の軌跡・称号は消えません）</div>
 <button type="button" class="cust-btn" id="cust-season-add" style="display:none;width:100%;margin-top:6px;">＋ 新しいしおりを挟む</button>
+<div id="cust-ghost-row" style="display:none;margin-top:8px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:6px 12px;">
+<div class="cust-tog-row">
+<span style="font-size:.72rem;color:var(--text)">🏃 前の旅とくらべる</span>
+<label class="tog-sw"><input type="checkbox" id="cust-ghost-tog" checked><span class="tog-slider"></span></label>
+</div>
+<div style="font-size:.56rem;color:var(--text-muted);margin:0 0 4px;line-height:1.6;">前の旅の同じ日数より進んでいるときだけ、累計カードに出ます。</div>
+</div>
 <div id="cust-journey-list" style="display:none;"></div>
 </div>
 </div>
@@ -1324,7 +1344,7 @@
   setTimeout(window.__kotsusakuEnsureForecast,900);
   setTimeout(window.__kotsusakuEnsureForecast,2000);
 })();
-</script><script src="./kotsu-tasks.js?v=kotsusaku-v122-crazy7-0921"></script><script>
+</script><script src="./kotsu-tasks.js?v=kotsusaku-v123-journey-0921"></script><script>
 
 const $=id=>document.getElementById(id);
 
@@ -1410,7 +1430,7 @@ function trackEvent(name, params) {
   }
   try {
     analytics.logEvent(name, Object.assign({
-      app_version: 'kotsusaku-v122-crazy7-0921'
+      app_version: 'kotsusaku-v123-journey-0921'
     }, params || {}));
   } catch(e) {
     console.warn('Analytics送信エラー:', e);
@@ -1713,7 +1733,7 @@ function _memoStat(key, fn) {
     const now = new Date().toISOString();
     const base = {
       userId: getAnonymousId(),
-      appVersion: 'kotsusaku-v122-crazy7-0921',
+      appVersion: 'kotsusaku-v123-journey-0921',
       lastAccess: now,
       firstAccess: getFirstAccess(),
       os: device.os,
@@ -2915,27 +2935,254 @@ function _fmtSeasonMD(ds){const d=parseDate(ds);return (d.getMonth()+1)+'/'+d.ge
 function _fmtSeasonYMD(ds){const d=parseDate(ds);return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate();}
 // これまでの旅の一覧。しおりで区切った各期間の合計（分）と学習日数を返す。
 // 最初のしおりより前にも記録があれば、それも1つの旅として先頭に入れる。
+// マスを1つ押すたびに checkBadges() 経由で何度も呼ばれるので、集計キャッシュに乗せる。
+// _statMemo は学習データが変わると消える。しおりを変えても古い値を返さないよう、
+// キーにしおりの一覧を含める（docs/season-reset-feature.md「集計キャッシュの注意」）。
+// 返す配列は使い回しなので、呼び出し側で中身を書き換えないこと。
 function getJourneySegments(){
   const marks=getSeasonMarks();
   if(!marks.length)return [];
-  const studied=Object.keys(data).filter(ds=>dayTotal(ds)>0).sort();
-  const starts=[];
-  if(studied.length&&studied[0]<marks[0])starts.push(studied[0]);
-  marks.forEach(m=>starts.push(m));
-  return starts.map((st,i)=>{
-    const end=starts[i+1]||null; // null＝いまも続いている旅
-    let total=0,days=0;
-    for(const ds in data){
-      if(ds<st)continue;
-      if(end&&ds>=end)continue;
-      const t=dayTotal(ds);
-      if(t>0){total+=t;days++;}
-    }
-    return {no:i+1,start:st,end:end,total:total,days:days,isCurrent:!end};
+  return _memoStat('journeySegs|'+marks.join(','),function(){
+    const studied=Object.keys(data).filter(ds=>dayTotal(ds)>0).sort();
+    const starts=[];
+    if(studied.length&&studied[0]<marks[0])starts.push(studied[0]);
+    marks.forEach(m=>starts.push(m));
+    return starts.map((st,i)=>{
+      const end=starts[i+1]||null; // null＝いまも続いている旅
+      let total=0,days=0;
+      for(const ds in data){
+        if(ds<st)continue;
+        if(end&&ds>=end)continue;
+        const t=dayTotal(ds);
+        if(t>0){total+=t;days++;}
+      }
+      return {no:i+1,start:st,end:end,total:total,days:days,isCurrent:!end};
+    });
   });
 }
 // '2026-09-01' → '〜8/31'（しおりを挟んだ日の前日まで）
 function _fmtSeasonPrevLabel(ds){const d=parseDate(ds);d.setDate(d.getDate()-1);return '〜'+(d.getMonth()+1)+'/'+d.getDate();}
+
+// ════════════════════════════════════════════
+// === 旅ごとの集計・名前・バッジ（しおりを挟んだ人向けの仕掛け）===
+// 生涯の記録（allTimeTotal・バッジ殿堂・スピリット・テーマ解放）は一切変えない。
+// ここで足すのは「いまの旅の中だけで数え直すもの」。
+// 注意: 共有して使う関数は必ず最も外側のスコープに置く（教訓#004）。
+// 注意: 集計キャッシュ(_statMemo)は学習データが変わったときにしか消えないので、
+//       期間で区切る集計はキーにその日付を含める（docs/season-reset-feature.md）。
+// ════════════════════════════════════════════
+function _dsDiffDays(a,b){return Math.round((parseDate(b)-parseDate(a))/86400000);}
+function _dsAddDays(ds,n){return toDateStr(new Date(parseDate(ds).getTime()+n*86400000));}
+// 旅を見分けるキー。しおりで始まる旅はそのしおりの日付、
+// いちばん最初の旅（最初のしおりより前）は '__first'（開始日が動いても変わらないように）
+function journeyKeyOf(sg){
+  if(!sg||!sg.start)return '';
+  return getSeasonMarks().indexOf(sg.start)>=0?sg.start:'__first';
+}
+// いまの旅。しおりが1枚も無いときは「全期間」を表す仮の旅（no:0）を返す
+function getCurrentJourneySeg(){
+  const segs=getJourneySegments();
+  if(segs.length)return segs[segs.length-1];
+  const studied=Object.keys(data).filter(ds=>dayTotal(ds)>0).sort();
+  return {no:0,start:studied[0]||toStudyDateStr(new Date()),end:null,total:allTimeTotal(),days:allTimeDays(),isCurrent:true};
+}
+// 1つ前の旅（無ければ null）
+function getPrevJourneySeg(){
+  const segs=getJourneySegments();
+  return segs.length>=2?segs[segs.length-2]:null;
+}
+// 旅の中の「記録がある日」を古い順に [日付,分] で返す
+// 返す配列は使い回しなので、呼び出し側で中身を書き換えないこと
+function journeyDayList(sg){
+  if(!sg||!sg.start)return [];
+  return _memoStat('journeyDays|'+sg.start+'|'+(sg.end||''),function(){
+    const out=[];
+    for(const ds in data){
+      if(ds<sg.start)continue;
+      if(sg.end&&ds>=sg.end)continue;
+      const t=dayTotal(ds);
+      if(t>0)out.push([ds,t]);
+    }
+    out.sort((a,b)=>a[0]<b[0]?-1:(a[0]>b[0]?1:0));
+    return out;
+  });
+}
+// 旅の成績（合計・学習日数・最長連続・1日の最高）
+function getJourneyStats(sg){
+  const empty={total:0,days:0,maxStreak:0,maxDay:0,first:'',last:''};
+  if(!sg||!sg.start)return empty;
+  return _memoStat('journeyStats|'+sg.start+'|'+(sg.end||''),function(){
+    const list=journeyDayList(sg);
+    if(!list.length)return empty;
+    let total=0,maxDay=0,maxStreak=0,run=0,prev='';
+    list.forEach(function(row){
+      const ds=row[0],t=row[1];
+      total+=t;if(t>maxDay)maxDay=t;
+      run=(prev&&_dsDiffDays(prev,ds)===1)?run+1:1;
+      if(run>maxStreak)maxStreak=run;
+      prev=ds;
+    });
+    return {total:total,days:list.length,maxStreak:maxStreak,maxDay:maxDay,first:list[0][0],last:list[list.length-1][0]};
+  });
+}
+// 旅の開始から何日経ったか（開始日を1日目）
+function journeyElapsedDays(sg){
+  if(!sg||!sg.start)return 0;
+  return Math.max(0,_dsDiffDays(sg.start,toStudyDateStr(new Date()))+1);
+}
+// 旅が何日続いたか（暦日）。終わった旅は しおり〜次のしおりの前日まで
+function journeySpanDays(sg){
+  if(!sg||!sg.start)return 0;
+  if(!sg.end)return journeyElapsedDays(sg);
+  return Math.max(0,_dsDiffDays(sg.start,sg.end));
+}
+// 旅の開始から n日目までの合計（分）。ゴースト（前の旅との同日比較）に使う
+function journeyTotalWithinDays(sg,n){
+  if(!sg||!sg.start||n<=0)return 0;
+  const limit=_dsAddDays(sg.start,n-1);
+  let sum=0;
+  journeyDayList(sg).forEach(function(row){if(row[0]<=limit)sum+=row[1];});
+  return sum;
+}
+
+// ── 旅の名前（CUST.journeyNames：旅のキー → 名前）──
+// CUST_DEFAULTS の中身を共有しないよう、書き換えは必ず新しい入れ物を作って入れ直す
+const JOURNEY_NAME_MAX=12;
+function getJourneyName(sg){
+  try{
+    const m=CUST.journeyNames;
+    if(!m||typeof m!=='object')return '';
+    return String(m[journeyKeyOf(sg)]||'').trim();
+  }catch(e){return '';}
+}
+function journeyLabel(sg){
+  const nm=getJourneyName(sg);
+  return nm||('第'+((sg&&sg.no)||1)+'の旅');
+}
+function _snapshotCustField(k,v){
+  try{if(_custSnapshot){const snap=JSON.parse(_custSnapshot);snap[k]=v;_custSnapshot=JSON.stringify(snap);}}catch(e){}
+}
+function setJourneyName(sg,name){
+  const k=journeyKeyOf(sg);if(!k)return;
+  const cur=(CUST.journeyNames&&typeof CUST.journeyNames==='object')?CUST.journeyNames:{};
+  // 絵文字を途中で切らないよう、1文字ずつに分けてから数える（アプリの他の入力欄と同じやり方）
+  const v=[...String(name||'').trim()].slice(0,JOURNEY_NAME_MAX).join('');
+  if((cur[k]||'')===v)return;
+  const next=Object.assign({},cur);
+  if(v)next[k]=v;else delete next[k];
+  CUST.journeyNames=next;
+  saveCust();
+  _snapshotCustField('journeyNames',Object.assign({},next));
+  persistTopSettingsNow();
+  try{renderLevelBar();}catch(e){}
+  try{_renderJourneyList();}catch(e){}
+}
+// 外したしおりの名前を捨てる（'__first' は残す）
+function _pruneJourneyNames(){
+  try{
+    const cur=CUST.journeyNames;
+    if(!cur||typeof cur!=='object')return;
+    const marks=getSeasonMarks();const next={};
+    Object.keys(cur).forEach(function(k){if(k==='__first'||marks.indexOf(k)>=0)next[k]=cur[k];});
+    if(Object.keys(next).length!==Object.keys(cur).length){
+      CUST.journeyNames=next;saveCust();_snapshotCustField('journeyNames',Object.assign({},next));
+    }
+  }catch(e){}
+}
+
+// ── 旅バッジ（この旅の中で数え直すバッジ）──
+// 生涯のバッジ（BADGE_DEF）はそのまま。こちらは旅ごとに別のキーで記録するので、
+// しおりを挟むと「集めるもの」がもう一度現れる。prev:true は前の旅がある人だけ。
+const JOURNEY_BADGE_DEF=[
+  {id:'start',      icon:'🔖',name:'新たな一歩',   desc:'この旅で初めて学習した',      check:function(c){return c.days>=1;}},
+  {id:'d7',         icon:'🌱',name:'7日',          desc:'この旅で7日学習した',          check:function(c){return c.days>=7;}},
+  {id:'d30',        icon:'🌿',name:'30日',         desc:'この旅で30日学習した',         check:function(c){return c.days>=30;}},
+  {id:'d100',       icon:'🌳',name:'100日',        desc:'この旅で100日学習した',        check:function(c){return c.days>=100;}},
+  {id:'h10',        icon:'⏱',name:'10時間',       desc:'この旅で10時間積んだ',         check:function(c){return c.total>=600;}},
+  {id:'h50',        icon:'📚',name:'50時間',   desc:'この旅で50時間積んだ',         check:function(c){return c.total>=3000;}},
+  {id:'h100',       icon:'🌟',name:'100時間',  desc:'この旅で100時間積んだ',        check:function(c){return c.total>=6000;}},
+  {id:'streak7',    icon:'🔥',name:'7日連続',desc:'この旅で7日連続で学習した',check:function(c){return c.maxStreak>=7;}},
+  {id:'beat_streak',icon:'⚡',name:'連続を更新',desc:'前の旅の最長連続を超えた',prev:true,check:function(c,p){return p.maxStreak>0&&c.maxStreak>p.maxStreak;}},
+  {id:'beat_day',   icon:'💪',name:'1日を更新',desc:'前の旅の1日の最高を超えた',prev:true,check:function(c,p){return p.maxDay>0&&c.maxDay>p.maxDay;}},
+  {id:'beat_pace',  icon:'🏃',name:'前回より速い',desc:'同じ日数で前の旅を上回った',prev:true,check:function(c,p,x){return x.aheadDays>=7;}},
+  {id:'beat_total', icon:'🏆',name:'総時間を更新',desc:'前の旅の合計時間を超えた',prev:true,check:function(c,p){return p.total>0&&c.total>p.total;}},
+];
+function journeyBadgeKey(jkey,id){return 'jb|'+jkey+'|'+id;}
+function isJourneyBadgeKey(k){return String(k||'').indexOf('jb|')===0;}
+// いまの旅に出すバッジ定義（前の旅が無ければ自己ベスト更新は出さない）
+function journeyBadgeDefs(){
+  const hasPrev=!!getPrevJourneySeg();
+  return JOURNEY_BADGE_DEF.filter(function(b){return hasPrev||!b.prev;});
+}
+// 判定に使う材料をまとめる
+function journeyBadgeCtx(){
+  const sg=getCurrentJourneySeg();
+  const cur=getJourneyStats(sg);
+  const pv=getPrevJourneySeg();
+  const prev=pv?getJourneyStats(pv):{total:0,days:0,maxStreak:0,maxDay:0};
+  const n=journeyElapsedDays(sg);
+  const prevAt=pv?journeyTotalWithinDays(pv,n):0;
+  const fair=!!pv&&n<=journeySpanDays(pv); // 前の旅にその日数があるか
+  return {sg:sg,cur:cur,prev:prev,elapsed:n,prevAt:prevAt,aheadDays:(fair&&prevAt>0&&cur.total>prevAt)?n:0};
+}
+// しおりを挟んでいる人にだけ出す。
+// まとめて何個も取れたときはポップアップを並べず、トースト1回にまとめる（教訓#010）
+function checkJourneyBadges(silent){
+  try{
+    if(!getSeasonStart())return;
+    const x=journeyBadgeCtx();
+    const jkey=journeyKeyOf(x.sg);if(!jkey)return;
+    const got=[];
+    journeyBadgeDefs().forEach(function(b){
+      const key=journeyBadgeKey(jkey,b.id);
+      if(earnedBadges[key])return;
+      let ok=false;
+      try{ok=!!b.check(x.cur,x.prev,x);}catch(e){ok=false;}
+      if(!ok)return;
+      earnedBadges[key]=toDateStr(new Date());
+      got.push(b);
+    });
+    if(!got.length)return;
+    saveBadges();
+    // しおりを挟んだ瞬間の「さかのぼって条件を満たしている分」は、お祝いせず静かに記録する
+    if(silent){}
+    else if(got.length===1)showBadgePopup({icon:got[0].icon,name:got[0].name,desc:got[0].desc});
+    else showToast('🔖 この旅のバッジを'+got.length+'個 獲得！');
+    try{renderJourneyBadges();}catch(e){}
+  }catch(e){}
+}
+// この旅で取った旅バッジの数
+function journeyBadgeCount(){
+  try{
+    if(!getSeasonStart())return 0;
+    const jkey=journeyKeyOf(getCurrentJourneySeg());if(!jkey)return 0;
+    let n=0;
+    journeyBadgeDefs().forEach(function(b){if(earnedBadges[journeyBadgeKey(jkey,b.id)])n++;});
+    return n;
+  }catch(e){return 0;}
+}
+
+// ── ゴースト（前の旅の「同じ○日目」との比較）──
+// 上回っているときだけ出す。遅れているときは黙っている（責めない）。
+function journeyGhost(){
+  try{
+    if(CUST.ghostShow===false)return null;
+    if(!getSeasonStart())return null;
+    const sg=getCurrentJourneySeg(),pv=getPrevJourneySeg();
+    if(!pv)return null;
+    const n=journeyElapsedDays(sg);
+    if(n<7)return null;
+    // 前の旅が「その日数まで続いていた」ときだけ比べる。
+    // 前の旅が30日で終わっているのに「同じ83日目より」と出すのは比較になっていない
+    // （前の旅の合計を超えたことは、旅バッジの🏆「総時間を更新」が受け持つ）
+    if(n>journeySpanDays(pv))return null;
+    const prevAt=journeyTotalWithinDays(pv,n);
+    if(prevAt<=0)return null;
+    const cur=getJourneyStats(sg).total;
+    if(cur<=prevAt)return null;
+    return {n:n,diff:cur-prevAt,prevAt:prevAt};
+  }catch(e){return null;}
+}
 function currentStreak(){return _memoStat('currentStreak',()=>_computeCurrentStreak());}
 function _computeCurrentStreak(){
   const todayStudyStr=toStudyDateStr(new Date());const todayDt=parseDate(todayStudyStr);
@@ -2990,11 +3237,13 @@ function renderQuote(){
   const s=getActiveStory();
   const storyQ=s?((CUST.storyOverrides&&CUST.storyOverrides[s.id]&&CUST.storyOverrides[s.id].quotes)||s.quotes||[]):[];
   // 現在の周回に応じた名言（2周目はquotes2、3周目はquotes3…10周目以降はquotes10）
-  const loopCnt=s?(CUST.storyLoopCount&&CUST.storyLoopCount[s.id])||0:0;
-  const _qKey=loopCnt>=1?('quotes'+(Math.min(loopCnt+1,10))):null;
+  // _getLoopCount は 1周目＝1。以前は生の storyLoopCount を「1以上＝2周目」と誤って判定しており、
+  // ストーリーを選んだだけの1周目の人に、2周目の名言が混ざって出ていた。
+  const loopCnt=s?_getLoopCount(s.id):1;
+  const _qKey=loopCnt>=2?('quotes'+(Math.min(loopCnt,10))):null;
   const loopQ=s?(((_qKey&&s[_qKey])||[])):[];
-  // 現在のストーリーティアのキャラメッセージ
-  const tier=s?getStoryTier(getLevelData(allTimeTotal()).lv):null;
+  // 現在のストーリーティアのキャラメッセージ（ストーリーカードと同じ「周回内のLv」で判定）
+  const tier=s?getStoryTier(_getLoopLv(s.id)):null;
   const tierMsg=tier?tier.msg:'';
   let pool;
   if(CUST.useCustomQuotesOnly&&CUST.customQuotes&&CUST.customQuotes.length>0){
@@ -3049,7 +3298,9 @@ function renderLevelBar(){
   (function(){
     var chip=$('journey-chip');if(!chip)return;
     var no=getJourneyNo();
-    if(no>=2){chip.textContent='第'+no+'の旅';chip.style.display='';}
+    var nm='';try{nm=getJourneyName(getCurrentJourneySeg());}catch(e){nm='';}
+    // 2つ目以降の旅、または名前をつけた旅のときだけ出す
+    if(no>=2||(no>=1&&nm)){chip.textContent=nm||('第'+no+'の旅');chip.style.display='';}
     else chip.style.display='none';
   })();
   // 称号（ld.title）はヘッダーには出さない（以前から CSS で非表示だった要素と描画処理を 2026-09-06 に削除）。
@@ -3455,6 +3706,8 @@ function checkBadges(){
   }
   // 早朝自習室バッジチェック
   if(typeof _checkAsajukuBadges==='function')_checkAsajukuBadges();
+  // 🔖 この旅のバッジ（しおりを挟んでいる人だけ）
+  if(typeof checkJourneyBadges==='function')checkJourneyBadges();
   updateBadgeCount();
   if(newBadge)renderBadgeGrid();
 }
@@ -3502,8 +3755,39 @@ function switchBadgeTab(storyId){
   document.querySelectorAll('.badge-tab-btn').forEach(btn=>{
     btn.classList.toggle('active',btn.dataset.story===storyId);
   });
+  const _own=(storyId===CUST.storyId);
+  if(typeof renderJourneyBadges==='function')renderJourneyBadges(_own);
   if(storyId==='asajuku'){_renderAsajukuBadgeGrid();return;}
   _renderBadgeGridForStory(storyId);
+}
+
+// 🔖 この旅のバッジ。しおりを挟んでいない人には出さない（生涯バッジと二重になるため）
+function renderJourneyBadges(show){
+  const sec=$('journey-badge-sec'),grid=$('journey-badge-grid'),ttl=$('journey-badge-title');
+  if(!sec||!grid)return;
+  let ok=false;
+  try{ok=!!getSeasonStart();}catch(e){ok=false;}
+  if(show===false)ok=false;
+  if(!ok){sec.style.display='none';grid.innerHTML='';return;}
+  let x,jkey,defs;
+  try{x=journeyBadgeCtx();jkey=journeyKeyOf(x.sg);defs=journeyBadgeDefs();}catch(e){sec.style.display='none';return;}
+  if(!jkey){sec.style.display='none';return;}
+  grid.innerHTML='';
+  let cnt=0;
+  defs.forEach(function(b){
+    const key=journeyBadgeKey(jkey,b.id);
+    const earned=!!earnedBadges[key];
+    if(earned)cnt++;
+    const el=document.createElement('div');
+    el.className='badge-item'+(earned?' earned':' locked');
+    el.title=b.desc;
+    el.innerHTML='<div class="badge-icon">'+b.icon+'</div><div class="badge-name">'+b.name+'</div><div class="badge-desc">'+b.desc+'</div>'
+      +(earned?'<div class="badge-date">'+earnedBadges[key]+' 達成</div>':'<div class="badge-desc">未達成</div>');
+    grid.appendChild(el);
+  });
+  // 旅の名前は利用者が入れた文字なので textContent で入れる
+  if(ttl)ttl.textContent='🔖 '+journeyLabel(x.sg)+'のバッジ　'+cnt+' / '+defs.length;
+  sec.style.display='block';
 }
 
 function _renderBadgeGridForStory(storyId){
@@ -3540,6 +3824,7 @@ function renderBadgeGrid(){
       btn.classList.toggle('active',btn.dataset.story===_badgeTabStory);
     });
     _renderBadgeGridForStory(_badgeTabStory);
+    if(typeof renderJourneyBadges==='function')renderJourneyBadges(_badgeTabStory===CUST.storyId);
   }else{
     // 資格系・未選択：共通バッジ表示
     _badgeTabStory=null;
@@ -3569,6 +3854,7 @@ function renderBadgeGrid(){
         grid.appendChild(el);
       });
     }
+    if(typeof renderJourneyBadges==='function')renderJourneyBadges(true);
   }
 }
 function manualUnlockBadge(id){
@@ -4071,7 +4357,7 @@ function exportWeeklyReport(){
   });
   // ストリーク表示
   ctx.font='bold 14px sans-serif';ctx.fillStyle=mutedColor;ctx.textAlign='left';
-  ctx.fillText(`🔥 連続 ${currentStreak()}日   📚 累計 ${fmt(allTimeTotal())}   🏅 バッジ ${Object.keys(earnedBadges).length}個`,50,380);
+  ctx.fillText(`🔥 連続 ${currentStreak()}日   📚 累計 ${fmt(allTimeTotal())}   🏅 バッジ ${Object.keys(earnedBadges).filter(k=>!isJourneyBadgeKey(k)).length}個`,50,380);
   // ウォーターマーク
   ctx.font='11px sans-serif';ctx.fillStyle=mutedColor;ctx.textAlign='right';
   ctx.fillText('コツコツサクサク v2',650,405);
@@ -4846,6 +5132,11 @@ function renderAllTimeCard(){
   const prevMin=beforeSeasonTotal();
   // しおりより前に記録がないときは、0分の行を出さない
   const prevHtml=(season&&prevMin>0)?`<div class="atc-prev">🔖 しおりまでの軌跡（${_fmtSeasonPrevLabel(season)}） ${fmtStudyTimeText(prevMin)}</div>`:'';
+  // 🌏 生涯の合計：数え直しても「1分も減っていない」ことが毎日見えるようにする
+  const lifeHtml=(season&&prevMin>0)?`<div class="atc-life">🌏 生涯の合計 ${fmtStudyTimeText(allTimeTotal())}</div>`:'';
+  // 🏃 ゴースト：前の旅の「同じ○日目」より進んでいるときだけ出す（遅れているときは黙る）
+  const _g=(typeof journeyGhost==='function')?journeyGhost():null;
+  const ghostHtml=_g?`<div class="atc-ghost">🏃 前の旅の同じ${_g.n}日目より ＋${fmtStudyTimeText(_g.diff)}</div>`:'';
   el.innerHTML=`
     <div class="atc-icon">📚</div>
     <div class="atc-body">
@@ -4858,7 +5149,7 @@ function renderAllTimeCard(){
       <div class="atc-days-val">${daysLabel}</div>
       <div class="atc-days-lbl">学習日数${startStr?'（'+startStr+'）':''}</div>
     </div>
-    ${prevHtml}`;
+    ${prevHtml}${lifeHtml}${ghostHtml}`;
 }
 function safeRenderAllTimeCard(){
   try{
@@ -5440,35 +5731,113 @@ function _renderJourneyList(){
   const segs=getJourneySegments();
   if(!segs.length){el.style.display='none';el.innerHTML='';return;}
   el.style.display='block';
-  el.innerHTML='<div class="jrn-title">これまでの旅</div>'+segs.map(sg=>{
+  el.innerHTML='<div class="jrn-title">これまでの旅（押すと記録と名前）</div>'+segs.map((sg,i)=>{
     const ld=getJourneyLevel(sg);
-    return '<div class="jrn-row'+(sg.isCurrent?' is-current':'')+'">'
-    +'<span class="jrn-name">第'+sg.no+'の旅</span>'
+    return '<div class="jrn-item" data-jrn="'+i+'">'
+    +'<div class="jrn-row'+(sg.isCurrent?' is-current':'')+'">'
+    +'<span class="jrn-name"></span>'
     +'<span class="jrn-range">'+_fmtSeasonYMD(sg.start)+'〜'+(sg.isCurrent?' いま':'')+'</span>'
     +'<span class="jrn-min">'+fmtStudyTimeText(sg.total)+'</span></div>'
     // 到達レベルと称号。終わった旅は「殿堂入り」としてそのまま残る
-    +'<div class="jrn-sub">'+ld.icon+' Lv.'+ld.lv+' '+ld.title+(sg.isCurrent?'':'　🏅到達')+'</div>';}).join('');
+    +'<div class="jrn-sub">'+ld.icon+' Lv.'+ld.lv+' '+ld.title+(sg.isCurrent?'':'　🏅到達')+'</div>'
+    +'</div>';}).join('');
+  // 旅の名前は利用者が入れた文字なので textContent で入れる（innerHTML に混ぜない）
+  segs.forEach(function(sg,i){
+    const item=el.querySelector('.jrn-item[data-jrn="'+i+'"]');if(!item)return;
+    const nm=item.querySelector('.jrn-name');if(nm)nm.textContent=journeyLabel(sg);
+    item.addEventListener('click',function(){showJourneyFinale(sg);});
+  });
+}
+
+// ── 旅の総括（おつかれさま画面）──
+// 「終わりを祝ってから、次を始める」ためのもの。一覧の行からいつでも開ける。
+let _finaleSeg=null;
+function showJourneyFinale(sg){
+  if(!sg)return;
+  const ov=$('journey-finale-overlay'),body=$('journey-finale-body');
+  if(!ov||!body)return;
+  _finaleSeg=sg;
+  const st=getJourneyStats(sg);
+  const ld=getJourneyLevel(sg);
+  const endLabel=sg.isCurrent?'いま':_fmtSeasonYMD(_dsAddDays(sg.end,-1));
+  const rows=[
+    ['合計', fmtStudyTimeText(st.total)],
+    ['学習日数', st.days+'日'],
+    ['最長連続', st.maxStreak+'日'],
+    ['1日の最高', fmtStudyTimeText(st.maxDay)],
+    ['到達', ld.icon+' Lv.'+ld.lv+' '+ld.title]
+  ];
+  body.innerHTML=
+     '<div style="font-size:2rem;line-height:1;margin-bottom:6px;">'+(sg.isCurrent?'🔖':'🏅')+'</div>'
+    +'<div id="jf-label" style="font-size:.95rem;font-weight:800;color:var(--text);margin-bottom:3px;"></div>'
+    +'<div style="font-size:.6rem;color:var(--text-muted);margin-bottom:9px;">'+_fmtSeasonYMD(sg.start)+'〜'+endLabel+'</div>'
+    +'<div style="font-size:.72rem;font-weight:800;color:var(--accent);margin-bottom:11px;">'+(sg.isCurrent?'いま続いている旅':'おつかれさま。ページは1枚も破れていない。')+'</div>'
+    +'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:9px 11px;margin-bottom:12px;text-align:left;">'
+    +rows.map(function(r){return '<div style="display:flex;justify-content:space-between;gap:10px;font-size:.68rem;padding:3px 0;"><span style="color:var(--text-muted);flex:none;">'+r[0]+'</span><span style="font-weight:800;color:var(--text);text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;">'+r[1]+'</span></div>';}).join('')
+    +'</div>'
+    +'<div style="text-align:left;margin-bottom:12px;">'
+    +'<label for="jf-name-input" style="font-size:.58rem;color:var(--text-muted);display:block;margin-bottom:4px;line-height:1.5;">この旅の名前（'+JOURNEY_NAME_MAX+'文字まで・空欄なら「第'+((sg.no)||1)+'の旅」）</label>'
+    +'<input type="text" id="jf-name-input" maxlength="'+JOURNEY_NAME_MAX+'" placeholder="例：簿記論・秋の陣" style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);font-size:.75rem;">'
+    +'</div>';
+  const lab=$('jf-label');if(lab)lab.textContent=journeyLabel(sg);
+  const inp=$('jf-name-input');
+  if(inp){
+    inp.value=getJourneyName(sg);
+    inp.addEventListener('change',function(){
+      setJourneyName(sg,this.value);
+      const l=$('jf-label');if(l)l.textContent=journeyLabel(sg);
+    });
+  }
+  ov.style.display='flex';
+}
+function closeJourneyFinale(){
+  const inp=$('jf-name-input');
+  if(inp&&_finaleSeg){try{setJourneyName(_finaleSeg,inp.value);}catch(e){}}
+  const ov=$('journey-finale-overlay');if(ov)ov.style.display='none';
+  _finaleSeg=null;
+  try{renderJourneyBadges();}catch(e){}
+  try{safeRenderAllTimeCard();}catch(e){}
 }
 // しおりの一覧を保存して、画面すべてに反映する
 function _saveSeasonMarks(marks){
+  const before=getSeasonMarks().length;
   const list=(marks||[]).filter(_isSeasonDs).filter((v,i,a)=>a.indexOf(v)===i).sort();
   CUST.seasonMarks=list;
   saveCust();
   _recordJourneyTargets(); // 終わった旅の目標を、しおりの日付ごとに記録
+  _pruneJourneyNames();    // 外したしおりの名前を捨てる
   // ✕（キャンセル）で閉じても消えないよう、設定画面の巻き戻し用スナップショットにも反映
-  try{if(_custSnapshot){const snap=JSON.parse(_custSnapshot);snap.seasonMarks=list.slice();snap.seasonTargets=Object.assign({},CUST.seasonTargets||{});delete snap.seasonStart;_custSnapshot=JSON.stringify(snap);}}catch(e){}
+  try{if(_custSnapshot){const snap=JSON.parse(_custSnapshot);snap.seasonMarks=list.slice();snap.seasonTargets=Object.assign({},CUST.seasonTargets||{});snap.journeyNames=Object.assign({},CUST.journeyNames||{});delete snap.seasonStart;_custSnapshot=JSON.stringify(snap);}}catch(e){}
   persistTopSettingsNow();
   _syncSeasonUI();
   safeRenderAllTimeCard();safeRenderForecast();
   // レベルも「いまの旅」で描き直す。しおりを外して上がったときに「昇格！」を出さないよう lastLv を0に
   lastLv=0;
   try{renderLevelBar();}catch(e){}
+  // しおりはストーリーの周回でもあるので、カードと名言も描き直す
+  try{if(typeof updateStoryMainCard==='function')updateStoryMainCard();}catch(e){}
+  try{if(typeof renderQuote==='function')renderQuote();}catch(e){}
+  // この旅のバッジ：さかのぼって満たしている分は静かに記録しておく
+  try{checkJourneyBadges(true);}catch(e){}
+  try{renderJourneyBadges();}catch(e){}
+  // しおりが1枚増えた＝旅が1つ終わった。その旅の総括（おつかれさま）を出す
+  if(list.length>before){
+    try{
+      const segs=getJourneySegments();
+      const ended=segs.length>=2?segs[segs.length-2]:null;
+      if(ended&&ended.total>0)setTimeout(function(){showJourneyFinale(ended);},250);
+    }catch(e){}
+  }
 }
 // 設定画面のしおり欄（入力欄・説明・追加ボタン・一覧）をいまの状態に合わせる
 function _syncSeasonUI(){
   const cur=getSeasonStart();
   const inp=$('cust-season-input');if(inp)inp.value=cur;
   const add=$('cust-season-add');if(add)add.style.display=cur?'block':'none';
+  // 🏃 前の旅とくらべる：くらべる相手（前の旅）があるときだけ出す
+  let hasPrev=false;try{hasPrev=!!getPrevJourneySeg();}catch(e){hasPrev=false;}
+  const grow=$('cust-ghost-row');if(grow)grow.style.display=hasPrev?'block':'none';
+  const gtog=$('cust-ghost-tog');if(gtog)gtog.checked=CUST.ghostShow!==false;
   _refreshSeasonNote();
   _renderJourneyList();
 }
@@ -5488,6 +5857,8 @@ function _setSeasonStartValue(v){
       // 日付を差し替えるときは、そのしおりに記録した目標も新しい日付に引き継ぐ
       const old=marks[marks.length-1];
       try{if(old!==val&&CUST.seasonTargets&&CUST.seasonTargets[old]>0){CUST.seasonTargets[val]=CUST.seasonTargets[old];}}catch(e){}
+      // 旅の名前も新しい日付に引き継ぐ（入れ物は必ず作り直す）
+      try{if(old!==val&&CUST.journeyNames&&CUST.journeyNames[old]){const nn=Object.assign({},CUST.journeyNames);nn[val]=nn[old];delete nn[old];CUST.journeyNames=nn;}}catch(e){}
       marks[marks.length-1]=val;
     }else marks.push(val);
   }
@@ -6402,7 +6773,7 @@ function getStoryTierMsg(tierIdx){
   return (ov['tierMsg'+tierIdx]!==undefined&&ov['tierMsg'+tierIdx]!=='')?ov['tierMsg'+tierIdx]:s.tiers[tierIdx]?.msg||'';
 }
 
-const CUST_DEFAULTS={appName:'コツコツ✏️サクサク🌸',checkEmoji:'🌸',comboEmoji:'✨',comboText:'コンボ！',comboHighText:'すごい！',showTreeBg:true,itapanShow:true,customQuotes:[],useCustomQuotesOnly:false,levelNames:{},levelIcons:{},badgeOverrides:{},customBadges:[],storyId:'samurai',storyOverrides:{},storyLoopCount:{},storyLoopStartMin:{},targetTotalH:0,seasonMarks:[],seasonTargets:{},appIcon:'A',crazy10Joined:{},myEvents:[],storyChoiceTouched:false,learningGoalsTouched:false,targetTotalTouched:false,subjects:[],subjectsSeededFor:''};
+const CUST_DEFAULTS={appName:'コツコツ✏️サクサク🌸',checkEmoji:'🌸',comboEmoji:'✨',comboText:'コンボ！',comboHighText:'すごい！',showTreeBg:true,itapanShow:true,customQuotes:[],useCustomQuotesOnly:false,levelNames:{},levelIcons:{},badgeOverrides:{},customBadges:[],storyId:'samurai',storyOverrides:{},storyLoopCount:{},storyLoopStartMin:{},targetTotalH:0,seasonMarks:[],seasonTargets:{},journeyNames:{},ghostShow:true,appIcon:'A',crazy10Joined:{},myEvents:[],storyChoiceTouched:false,learningGoalsTouched:false,targetTotalTouched:false,subjects:[],subjectsSeededFor:''};
 
 // ── 科目カラー：パレット・プリセット・チップバー・設定エディタ ──
 const SUBJECT_COLOR_SLOTS=['c1','c2','c3','c4','c5','c6','c7','c8'];
@@ -7109,11 +7480,21 @@ function applyTreeBg(show){
   const bg=$('sakura-tree-bg');if(bg)bg.style.visibility=(show!==false)?'':'hidden';
 }
 
-function _getLoopCount(sid){return(CUST.storyLoopCount&&CUST.storyLoopCount[sid])||1;}
+// ストーリーの「周回」と「軌跡のしおり」は、どちらも仕切り直し。
+// 以前は別々に動いていて、しおりを挟んでもストーリーは最終段階のままだった。
+// ここで両方を結び、あとから仕切り直した方を「いまの周回の始まり」として扱う。
+function _getLoopCount(sid){
+  const manual=(CUST.storyLoopCount&&CUST.storyLoopCount[sid])||1;
+  let jn=0;try{jn=getJourneyNo();}catch(e){jn=0;}
+  return Math.max(manual,jn||1);
+}
 function _getLoopStartMin(sid){
   const v=CUST.storyLoopStartMin&&CUST.storyLoopStartMin[sid];
   // 明示的に数値として保存されているもののみ使用（undefinedやnullは0扱いしない）
-  return(typeof v==='number')?v:allTimeTotal();
+  const manual=(typeof v==='number')?v:allTimeTotal();
+  // しおりを挟んでいれば、そこもストーリーの仕切り直し地点として扱う
+  let seasonBase=0;try{seasonBase=beforeSeasonTotal();}catch(e){seasonBase=0;}
+  return Math.max(manual,seasonBase);
 }
 function _getLoopLv(sid){
   const loopMin=Math.max(0,allTimeTotal()-_getLoopStartMin(sid));
@@ -7245,7 +7626,7 @@ function updateStoryMainCard(){
   // ── 周回に応じた名言
   const quoteEl=$('story-quote-box');
   if(quoteEl){
-    const qKey=loopN>=3?'quotes3':loopN===2?'quotes2':'quotes';
+    const qKey=loopN>=2?('quotes'+Math.min(loopN,10)):'quotes';
     const pool=(s[qKey]&&s[qKey].length)?s[qKey]:(s.quotes||['今日も頑張ろう！']);
     const qi=Math.floor(Date.now()/30000)%pool.length;
     // story-quote-box：スクロール対応
@@ -7868,6 +8249,14 @@ function _renderQuotesList(){
     CUST.itapanShow=this.checked;saveCust();
     buildGrid();if(typeof refreshGrid==='function')refreshGrid();
   });
+  // 🏃 前の旅とくらべる（ゴースト）トグル
+  const ghostTog=$('cust-ghost-tog');
+  if(ghostTog)ghostTog.addEventListener('change',function(){
+    CUST.ghostShow=this.checked;saveCust();
+    _snapshotCustField('ghostShow',CUST.ghostShow);
+    persistTopSettingsNow();
+    safeRenderAllTimeCard();
+  });
   // カスタム名言のみ
   const qOnly=$('cust-qonly');
   if(qOnly)qOnly.addEventListener('change',function(){CUST.useCustomQuotesOnly=this.checked;saveCust();renderQuote();});
@@ -8095,7 +8484,7 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v122-crazy7-0921'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v123-journey-0921'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _updateBtnLabel = null; // 更新ボタンの元の文言（再表示時に戻すため）
   var _pendingWorker = null;
@@ -9275,7 +9664,7 @@ function _isOverlayVisible(el){
 }
 function _isAsajukuPopupBlocked(){
   if(typeof _popBusy!=='undefined'&&_popBusy)return true;
-  const ids=['crazy10-overlay','crazy10-finale-overlay','data-policy-overlay','install-banner','update-banner','initial-setup-overlay','cust-overlay','badge-overlay','challenge-overlay','date-edit-overlay','icon-picker-overlay'];
+  const ids=['crazy10-overlay','crazy10-finale-overlay','journey-finale-overlay','data-policy-overlay','install-banner','update-banner','initial-setup-overlay','cust-overlay','badge-overlay','challenge-overlay','date-edit-overlay','icon-picker-overlay'];
   return ids.some(id=>_isOverlayVisible(document.getElementById(id)));
 }
 function _scheduleAsajukuPopupRetry(){
