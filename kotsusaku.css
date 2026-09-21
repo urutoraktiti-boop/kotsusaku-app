@@ -248,6 +248,13 @@ to{transform:translateX(-50%) translateY(0);opacity:1}
 .atc-min{font-size:0.5em}
 .atc-sub{font-size:.65rem;color:var(--text-muted);margin-top:1px}
 .atc-prev{flex:0 0 100%;font-size:.6rem;color:var(--text-muted);text-align:center;opacity:.9;padding-top:2px}
+/* 🌏 生涯の合計・🏃 前の旅との比較。どちらもカードの全幅を1行で使う
+   （細い列に押し込むと、狭い画面で1文字ずつ折り返されて読めなくなる） */
+.atc-life{flex:0 0 100%;font-size:.6rem;color:var(--text-muted);text-align:center;opacity:.9;padding-top:1px}
+.atc-ghost{flex:0 0 100%;font-size:.6rem;color:var(--checked);font-weight:800;text-align:center;padding-top:2px}
+.jrn-item{cursor:pointer;border-radius:7px;padding:1px 4px;transition:background .15s}
+.jrn-item:hover{background:var(--surface2)}
+.jrn-item:active{background:var(--surface2)}
 #cust-journey-list{margin-top:7px;border-top:1px solid var(--border);padding-top:6px}
 .jrn-title{font-size:.58rem;font-weight:800;color:var(--text-muted);margin-bottom:4px}
 .jrn-row{display:flex;align-items:baseline;gap:6px;font-size:.58rem;color:var(--text);padding:2px 0}
