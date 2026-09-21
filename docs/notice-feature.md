@@ -23,24 +23,53 @@
 
 | ファイル | 役割 |
 |---|---|
-| `notice.json`（リポジトリ直下） | **お知らせの中身（唯一の出どころ）**。id / title / body / notes を持つ |
+| `notice.json`（リポジトリ直下） | **お知らせの中身（唯一の出どころ）**。id / title / body / notes を持つ。**複数まとめて書ける（配列）** |
 | `index.html` | 空のお知らせモーダル（`#notice-overlay` 一式）＋ `notice.json` を取得して表示するスクリプト |
 | `sw.js` | `notice.json` を `version.json` と同様に**ネットワーク優先**で取得（古いお知らせが残らないように） |
 
 ### notice.json の形
 
+**お知らせは何件でも並べられる（2026-09-21〜）。** 配列で書く。
+
 ```json
-{
-  "id": "v110-datafix",
-  "title": "タイトル（端末に出る見出し）",
-  "body": "ひとこと説明",
-  "notes": ["✅ 変更点1", "✅ 変更点2", "🦍 自由文"]
-}
+[
+  {
+    "id": "2026-09-27-crazy7",
+    "title": "タイトル（端末に出る見出し）",
+    "body": "ひとこと説明",
+    "notes": ["✅ 変更点1", "✅ 変更点2"]
+  },
+  {
+    "id": "2026-09-21-journey",
+    "title": "2つ目のお知らせ",
+    "body": "…",
+    "notes": ["…"]
+  }
+]
 ```
+
+1件だけのときは、昔どおり中括弧1つでも動く（`{ "id": ..., "title": ... }`）。
 
 - `id`：このお知らせの識別子。**新しいお知らせを出すときは必ず別の値に変える**。
   一度「OK」した利用者には、同じidのお知らせは二度と出ない（localStorageで管理）。
 - `notes`：配列。各要素が箇条書き1行になる（`<li>` に `textContent` で挿入）。
+
+### 複数のお知らせはどう出るか
+
+- **1回の起動で出るのは1件だけ。** まだ読んでいないものを、**書いてある順に上から1件**出す。
+  続けて2枚も3枚もポップアップを重ねない（教訓#007・#010）。
+- OKで閉じると、そのidが既読になる。**次にアプリを開いたとき**に、次の未読が出る。
+- したがって**急ぎのお知らせ（イベント告知など）は配列の先に置く**。
+- すでに全部読んでいる人には何も出ない。
+
+### 既読の記録（旧い形からの引き継ぎ）
+
+| キー | 中身 |
+|---|---|
+| `kotsusaku-notice-seen-ids` | **いま使っている形**。閉じたidの一覧（JSON配列・最大50件） |
+| `kotsusaku-notice-seen-id` | 旧い形。最後に閉じた1件のid。**いまも書き続けている**（版を戻しても壊れないように） |
+
+起動時に両方を読んで足し合わせるので、**以前のお知らせを読んだ人に同じものが出直すことはない**。
 
 ---
 
@@ -51,9 +80,12 @@
   `notice.json` からのみ差し込む（＝同じ文字列を複数箇所に置かない。教訓#005対策）。
 - 起動後 `setTimeout(checkNotice, 1500)` → `fetch('./notice.json?_=' + Date.now(),
   { cache:'no-store' })` で**毎回ネットから最新を取得**。
-- 既読管理：`localStorage` キー `kotsusaku-notice-seen-id` に最後に閉じた `id` を保存。
-  取得した `id` がそれと同じなら表示しない。
-- 閉じる：`#notice-close-btn`、または背景クリックで閉じ、その時点の `id` を既読保存。
+- 取り出し：`pickNotice()` が、配列（または1件のオブジェクト）の中から
+  **まだ読んでいないものを上から1件**選ぶ。無ければ何も出さない。
+- 既読管理：`getSeenIds()` が `kotsusaku-notice-seen-ids`（一覧）と
+  旧 `kotsusaku-notice-seen-id`（1件）の**両方**を読んで足し合わせる。
+- 閉じる：`#notice-close-btn`、または背景クリックで閉じ、`markSeen()` がその `id` を
+  両方のキーに書く（旧キーも書き続ける＝版を戻しても壊れない）。
 - 重なり順：`#notice-overlay` は `z-index:24000`。`install-banner`(23000) など他の
   オーバーレイより前面にして、OKボタンが必ず押せるようにしてある（下げないこと）。
 - 文章は `textContent` で挿入（HTMLインジェクション回避）。`notes` も `<li>` の
@@ -79,6 +111,8 @@
 ## 新しいお知らせの出し方（運用手順）
 
 1. `notice.json` を編集する。
+   - **前のお知らせをまだ出しておきたいなら、消さずに配列に足す**（急ぎの方を先頭に）。
+     差し替えたいなら、古い方の要素をまるごと消す。
    - `id` を**前と違う値**にする（例：`2026-07-summer`）。← これを忘れると、
      すでに見た人には表示されない。
    - `title` / `body` / `notes` を書き換える。
@@ -108,13 +142,24 @@
 
 ### 文字数の数え方
 
+**上限は「お知らせ1件ごと」に効く**（1回に出るのは1件だけのため）。
+
 ```bash
 cd /該当フォルダのパス
 python3 -c "
-import json; d=json.load(open('notice.json'))
-print('title',len(d['title']),'/ body',len(d['body']),'/ notes',len(d['notes']),'項目')
-for n in d['notes']: print(' ',len(n),n)
-print('合計',len(d['title'])+len(d['body'])+sum(len(n) for n in d['notes']))"
+import json
+d=json.load(open('notice.json'))
+d=d if isinstance(d,list) else [d]
+ng=0
+for n in d:
+    t,b,no=len(n['title']),len(n['body']),n.get('notes',[])
+    tot=t+b+sum(len(x) for x in no)
+    print('['+n['id']+']')
+    print('  title',t,'/25   body',b,'/90   notes',len(no),'/4項目   合計',tot,'/250')
+    for x in no:
+        print('   ','NG' if len(x)>30 else 'ok',len(x),x)
+    if t>25 or b>90 or len(no)>4 or tot>250 or any(len(x)>30 for x in no): ng+=1
+print('超過あり' if ng else '全て上限内 ✓')"
 ```
 
 ### 実際の長さの目安
@@ -133,6 +178,10 @@ print('合計',len(d['title'])+len(d['body'])+sum(len(n) for n in d['notes']))"
   自分の文面を表示するため、何を書いても必ず古くなる（実際にv118のリリースでv113の案内が出た。
   `CLAUDE-lessons.md` #008）。「何が新しいか」の案内は**この notice.json だけの仕事**。
 - **`id` を必ず更新する**。同じidは「既読の人には出ない」。
+- **既読の記録は2つのキーに書いている**（`kotsusaku-notice-seen-ids` と旧 `kotsusaku-notice-seen-id`）。
+  片方だけ消すともう片方が効くので、テストで「出直す」ことを確かめたいときは**両方**消すこと。
+- **`page.route()` で notice.json を差し替える自動テストは、配達係（Service Worker）が
+  横取りして効かない。** Playwright なら `newContext({serviceWorkers:'block'})` を付けること。
 - **`z-index:24000` を下げない**。下げると他のバナーに隠れてOABが押せなくなる。
 - `notice.json` は hosting で配信される（firebase.json の ignore 対象外）。
   ファイル名・場所を変えるなら index.html / sw.js の参照も合わせる。

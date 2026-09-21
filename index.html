@@ -273,10 +273,46 @@
 // お知らせ機能：notice.json を毎回ネットから取得して表示する。
 // 文章の出どころは notice.json ただ1か所（重複なし）。一度OKしたidは再表示しない。
 (function(){
-  var NOTICE_SEEN_KEY = 'kotsusaku-notice-seen-id';
+  // 既読の記録。以前は「最後に閉じた1件のid」だけを持っていたが、
+  // お知らせを複数同時に出せるようにしたので「閉じたidの一覧」に変えた。
+  // 旧い形で保存されている人も、そのidを一覧に引き継いで二度出さない。
+  var NOTICE_SEEN_KEY = 'kotsusaku-notice-seen-id';        // 旧：最後に閉じた1件（書き続ける＝戻しても壊れない）
+  var NOTICE_SEEN_LIST_KEY = 'kotsusaku-notice-seen-ids';  // 新：閉じたidの一覧
+  var NOTICE_SEEN_MAX = 50;
+  function getSeenIds(){
+    var out = [];
+    try {
+      var raw = localStorage.getItem(NOTICE_SEEN_LIST_KEY);
+      if(raw){ var a = JSON.parse(raw); if(Array.isArray(a)) out = a.map(String); }
+    } catch(e){}
+    try {
+      var old = localStorage.getItem(NOTICE_SEEN_KEY);
+      if(old && out.indexOf(String(old)) < 0) out.push(String(old));
+    } catch(e){}
+    return out;
+  }
+  function markSeen(id){
+    var ids = getSeenIds();
+    if(ids.indexOf(String(id)) < 0) ids.push(String(id));
+    if(ids.length > NOTICE_SEEN_MAX) ids = ids.slice(ids.length - NOTICE_SEEN_MAX);
+    try { localStorage.setItem(NOTICE_SEEN_LIST_KEY, JSON.stringify(ids)); } catch(e){}
+    try { localStorage.setItem(NOTICE_SEEN_KEY, String(id)); } catch(e){}
+  }
+  // notice.json は「1件のオブジェクト」でも「複数件の配列」でもよい。
+  // まだ読んでいないものを、書いてある順に1件だけ返す（1回の起動で出すのは1件まで。
+  // 続けて何枚もポップアップを重ねない＝教訓#007・#010）。
+  function pickNotice(d){
+    var list = Array.isArray(d) ? d : (d && Array.isArray(d.notices) ? d.notices : [d]);
+    var seen = getSeenIds();
+    for(var i = 0; i < list.length; i++){
+      var n = list[i];
+      if(n && n.id && seen.indexOf(String(n.id)) < 0) return n;
+    }
+    return null;
+  }
   function renderNotice(n){
     if(!n || !n.id) return;
-    try { if(localStorage.getItem(NOTICE_SEEN_KEY) === String(n.id)) return; } catch(e){}
+    try { if(getSeenIds().indexOf(String(n.id)) >= 0) return; } catch(e){}
     var ov = document.getElementById('notice-overlay');
     if(!ov) return;
     var t = document.getElementById('notice-title');
@@ -298,7 +334,7 @@
     ov.style.display = 'flex';
     function dismiss(){
       ov.style.display = 'none';
-      try { localStorage.setItem(NOTICE_SEEN_KEY, String(n.id)); } catch(e){}
+      markSeen(n.id);
     }
     var btn = document.getElementById('notice-close-btn');
     if(btn) btn.onclick = dismiss;
@@ -307,7 +343,7 @@
   function checkNotice(){
     fetch('./notice.json?_=' + Date.now(), { cache: 'no-store' })
       .then(function(r){ return r.ok ? r.json() : null; })
-      .then(function(n){ if(n) renderNotice(n); })
+      .then(function(d){ var n = d ? pickNotice(d) : null; if(n) renderNotice(n); })
       .catch(function(){});
   }
   setTimeout(checkNotice, 1500);
