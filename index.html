@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-<title>コツコツ✏️サクサク🌸</title><link rel="stylesheet" href="./kotsusaku.css?v=kotsusaku-v123-journey-0921">
+<title>コツコツ✏️サクサク🌸</title><link rel="stylesheet" href="./kotsusaku.css?v=kotsusaku-v124-seasondate-0921">
 <style id="subject-colors">
 /* ── 科目カラー（10分マスの科目別色分け） ──
    ⚠ 色を変えるときは JS の SUBJECT_PALETTE 定数と両方直すこと（canvas描画・凡例ドットで使用） */
@@ -93,7 +93,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="stylesheet" href="./kotsu-tasks.css?v=kotsusaku-v123-journey-0921">
+<link rel="stylesheet" href="./kotsu-tasks.css?v=kotsusaku-v124-seasondate-0921">
 </head>
 <body>
 <canvas id="fw-canvas"></canvas>
@@ -1380,7 +1380,7 @@
   setTimeout(window.__kotsusakuEnsureForecast,900);
   setTimeout(window.__kotsusakuEnsureForecast,2000);
 })();
-</script><script src="./kotsu-tasks.js?v=kotsusaku-v123-journey-0921"></script><script>
+</script><script src="./kotsu-tasks.js?v=kotsusaku-v124-seasondate-0921"></script><script>
 
 const $=id=>document.getElementById(id);
 
@@ -1466,7 +1466,7 @@ function trackEvent(name, params) {
   }
   try {
     analytics.logEvent(name, Object.assign({
-      app_version: 'kotsusaku-v123-journey-0921'
+      app_version: 'kotsusaku-v124-seasondate-0921'
     }, params || {}));
   } catch(e) {
     console.warn('Analytics送信エラー:', e);
@@ -1769,7 +1769,7 @@ function _memoStat(key, fn) {
     const now = new Date().toISOString();
     const base = {
       userId: getAnonymousId(),
-      appVersion: 'kotsusaku-v123-journey-0921',
+      appVersion: 'kotsusaku-v124-seasondate-0921',
       lastAccess: now,
       firstAccess: getFirstAccess(),
       os: device.os,
@@ -2965,8 +2965,18 @@ function _recordJourneyTargets(){
     if(changed){CUST.seasonTargets=next;saveCust();}
   }catch(e){}
 }
-// '2026-09-01' → '9/1'
-function _fmtSeasonMD(ds){const d=parseDate(ds);return (d.getMonth()+1)+'/'+d.getDate();}
+// '2026-09-01' → '9/1'（今年）／ '2027-08-03' → '2027/8/3'（今年でない年）
+// 年を隠すと、年を1つ打ち間違えても画面で気づけない。今年と違う年のときは必ず年を出す。
+function _fmtSeasonYearPrefix(d){
+  try{
+    const y=d.getFullYear();
+    if(!y||isNaN(y))return '';                      // 日付として読めないときは年を付けない
+    return y===new Date().getFullYear()?'':(y+'/');
+  }catch(e){return '';}
+}
+function _fmtSeasonMD(ds){const d=parseDate(ds);return _fmtSeasonYearPrefix(d)+(d.getMonth()+1)+'/'+d.getDate();}
+// しおりが未来の日付か（＝その日が来るまで学習時間も予測も0のまま）
+function _isSeasonFuture(ds){try{return !!ds&&ds>toStudyDateStr(new Date());}catch(e){return false;}}
 // '2026-09-01' → '2026/9/1'
 function _fmtSeasonYMD(ds){const d=parseDate(ds);return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate();}
 // これまでの旅の一覧。しおりで区切った各期間の合計（分）と学習日数を返す。
@@ -2996,8 +3006,8 @@ function getJourneySegments(){
     });
   });
 }
-// '2026-09-01' → '〜8/31'（しおりを挟んだ日の前日まで）
-function _fmtSeasonPrevLabel(ds){const d=parseDate(ds);d.setDate(d.getDate()-1);return '〜'+(d.getMonth()+1)+'/'+d.getDate();}
+// '2026-09-01' → '〜8/31'（しおりを挟んだ日の前日まで）。年が違えば年も出す
+function _fmtSeasonPrevLabel(ds){const d=parseDate(ds);d.setDate(d.getDate()-1);return '〜'+_fmtSeasonYearPrefix(d)+(d.getMonth()+1)+'/'+d.getDate();}
 
 // ════════════════════════════════════════════
 // === 旅ごとの集計・名前・バッジ（しおりを挟んだ人向けの仕掛け）===
@@ -4245,8 +4255,15 @@ function renderForecast(){
     const gaugePct=s.querySelector('.forecast-gauge-pct');
     const adviceEl=s.querySelector('.forecast-advice');
     if(!targetH||predictedMin==null){
-      if(targetBtnEl){targetBtnEl.textContent='✏ 目標入力';targetBtnEl.classList.remove('active','has-target');}
-      if(targetDiffEl){targetDiffEl.textContent='✏ ボタンから目標時間を入力';targetDiffEl.className='forecast-target-diff';}
+      // 目標が入っているのに予測だけ出せない状態（しおりが未来・試験日が過去）で
+      // 「✏ 目標入力」に戻すと、入れたはずの目標が消えたように見える。目標はそのまま出す。
+      if(targetH){
+        if(targetBtnEl){targetBtnEl.textContent=fmtStudyTimeText(targetH*60);targetBtnEl.classList.add('active','has-target');}
+        if(targetDiffEl){targetDiffEl.textContent='いまは予測を出せません';targetDiffEl.className='forecast-target-diff';}
+      }else{
+        if(targetBtnEl){targetBtnEl.textContent='✏ 目標入力';targetBtnEl.classList.remove('active','has-target');}
+        if(targetDiffEl){targetDiffEl.textContent='✏ ボタンから目標時間を入力';targetDiffEl.className='forecast-target-diff';}
+      }
       if(gaugeWrap)gaugeWrap.style.display='none';
       return;
     }
@@ -4335,6 +4352,15 @@ function renderForecast(){
   // しおりを挟んでいるときは、その日以降の実績だけで予測する。
   // （新しい試験・科目に向けた予測に、前の期の時間が混ざらないようにするため）
   const _seasonS=getSeasonStart();
+  // しおりが未来の日付なら、実績が0なのは当たり前。「0時間」とだけ出すと壊れて見えるので、
+  // 累計カードと同じように理由が分かる案内を出す（2026-09-22 の利用者報告）
+  if(_isSeasonFuture(_seasonS)){
+    sections.forEach(s=>{
+      s.style.display='block';
+      _setSection(s,null,0,0,'🔖 '+_fmtSeasonMD(_seasonS)+'から新たな旅がはじまります');
+    });
+    return;
+  }
   const _baseLbl=_seasonS?_fmtSeasonMD(_seasonS)+'〜の実績ベース':'累計実績ベース';
   const totalMin=seasonTotal(),studyDays=seasonDays();
   const avgPerDay=studyDays>0?totalMin/studyDays:0;
@@ -5154,7 +5180,7 @@ function renderAllTimeCard(){
   if(baseDs){
     const first=parseDate(baseDs);const today=new Date();today.setHours(0,0,0,0);first.setHours(0,0,0,0);
     // しおりを未来の日付にした場合はマイナスになるので0で止める
-    elapsedDays=Math.max(0,Math.round((today-first)/86400000)+1);startStr=(first.getMonth()+1)+'/'+first.getDate()+'〜';
+    elapsedDays=Math.max(0,Math.round((today-first)/86400000)+1);startStr=_fmtSeasonMD(baseDs)+'〜';
   }
   const daysLabel=elapsedDays>0?`${days}日 <span class="atc-days-total">/ ${elapsedDays}日</span>`:`${days}日`;
   const streak=currentStreak();
@@ -5162,7 +5188,7 @@ function renderAllTimeCard(){
   if(streak>=2)streakContent=`<div class="atc-streak-val">🔥 ${streak}日</div><div class="atc-elapsed-lbl">連続学習中！</div>`;
   else if(streak===1)streakContent=`<div class="atc-streak-val">✨ 1日</div><div class="atc-elapsed-lbl">今日も学習中！</div>`;
   else streakContent=`<div class="atc-streak-val atc-streak-zero">─</div><div class="atc-elapsed-lbl">今日から再スタート</div>`;
-  const seasonFuture=season&&season>toStudyDateStr(new Date());
+  const seasonFuture=_isSeasonFuture(season);
   const cardLabel=season?`${startStr}の軌跡`:'累計学習時間';
   const subText=seasonFuture?`${_fmtSeasonMD(season)}から新たな旅がはじまります`:`1日平均 ${fmtStudyTimeText(avgMin)}`;
   const prevMin=beforeSeasonTotal();
@@ -5757,7 +5783,16 @@ if(_custCdClear){
 // 記録そのもの（study-data）には一切触らない。「どこから数えるか」を1つ覚えるだけ。
 function _refreshSeasonNote(){
   const el=$('cust-season-note');if(!el)return;
-  el.textContent=getSeasonStart()
+  const cur=getSeasonStart();
+  // 未来の日付は「来月から新しい旅」という正しい使い方もあるので禁止はしない。
+  // ただし、その日まで学習時間も予測も0のままなので、年つきではっきり知らせる。
+  if(_isSeasonFuture(cur)){
+    el.style.color='#f59e0b';
+    el.textContent='⚠️ '+_fmtSeasonYMD(cur)+' は未来の日付です。この日が来るまで学習時間・予測は0のままです。年が合っているか確かめてください。';
+    return;
+  }
+  el.style.color='';
+  el.textContent=cur
     ? '✕ でいまのしおりを外せます（記録は消えません）'
     : '新たな目標に向けて、この日から時間もレベルも0からスタート（前の軌跡・称号は消えません）';
 }
@@ -5899,6 +5934,8 @@ function _setSeasonStartValue(v){
     }else marks.push(val);
   }
   _saveSeasonMarks(marks);
+  // 入れたその場で気づけるように（画面の注意書きだけだと見落とす）
+  if(_isSeasonFuture(val))showToast('⚠️ '+_fmtSeasonYMD(val)+' は未来の日付です。この日まで学習時間は0のままです',true);
   if(typeof trackEvent==='function')trackEvent(val?'season_mark_set':'season_mark_clear');
 }
 // 「＋ 新しいしおりを挟む」＝今日の日付で1枚足す（前のしおりより後であること）
@@ -8520,7 +8557,7 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v123-journey-0921'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v124-seasondate-0921'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _updateBtnLabel = null; // 更新ボタンの元の文言（再表示時に戻すため）
   var _pendingWorker = null;
