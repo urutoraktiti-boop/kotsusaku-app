@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-<title>コツコツ✏️サクサク🌸</title><link rel="stylesheet" href="./kotsusaku.css?v=kotsusaku-v121-lighter-0906">
+<title>コツコツ✏️サクサク🌸</title><link rel="stylesheet" href="./kotsusaku.css?v=kotsusaku-v122-crazy7-0921">
 <style id="subject-colors">
 /* ── 科目カラー（10分マスの科目別色分け） ──
    ⚠ 色を変えるときは JS の SUBJECT_PALETTE 定数と両方直すこと（canvas描画・凡例ドットで使用） */
@@ -93,7 +93,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="stylesheet" href="./kotsu-tasks.css?v=kotsusaku-v121-lighter-0906">
+<link rel="stylesheet" href="./kotsu-tasks.css?v=kotsusaku-v122-crazy7-0921">
 </head>
 <body>
 <canvas id="fw-canvas"></canvas>
@@ -1324,7 +1324,7 @@
   setTimeout(window.__kotsusakuEnsureForecast,900);
   setTimeout(window.__kotsusakuEnsureForecast,2000);
 })();
-</script><script src="./kotsu-tasks.js?v=kotsusaku-v121-lighter-0906"></script><script>
+</script><script src="./kotsu-tasks.js?v=kotsusaku-v122-crazy7-0921"></script><script>
 
 const $=id=>document.getElementById(id);
 
@@ -1410,7 +1410,7 @@ function trackEvent(name, params) {
   }
   try {
     analytics.logEvent(name, Object.assign({
-      app_version: 'kotsusaku-v121-lighter-0906'
+      app_version: 'kotsusaku-v122-crazy7-0921'
     }, params || {}));
   } catch(e) {
     console.warn('Analytics送信エラー:', e);
@@ -1713,7 +1713,7 @@ function _memoStat(key, fn) {
     const now = new Date().toISOString();
     const base = {
       userId: getAnonymousId(),
-      appVersion: 'kotsusaku-v121-lighter-0906',
+      appVersion: 'kotsusaku-v122-crazy7-0921',
       lastAccess: now,
       firstAccess: getFirstAccess(),
       os: device.os,
@@ -6691,6 +6691,9 @@ const CRAZY10_EVENTS=[
   // 5:00〜17:00・休憩12:00〜13:00 ＝ 実質11時間 → 呼び名は自動で Crazy11 になる
   {dateStr:'2026-08-21',start:5,end:17,breakStart:12,breakEnd:13,finaleAt:16+55/60,isOfficial:true,series:'2026-08-crazy11-2days'},
   {dateStr:'2026-08-22',start:5,end:17,breakStart:12,breakEnd:13,finaleAt:16+55/60,isOfficial:true,series:'2026-08-crazy11-2days'},
+  // 2026-09-27：日曜の一日限りの回（series なし＝この日だけで1つの回）
+  // 5:00〜12:00・お昼休憩なし ＝ 実質7時間 → 呼び名は自動で Crazy7 になる
+  {dateStr:'2026-09-27',start:5,end:12,finaleAt:11+55/60,isOfficial:true,label:'SPECIAL'},
 ];
 // ── 「回（series）」の判定 ──
 // series が無いイベントは、その日1日だけで1つの回として扱う
@@ -6739,8 +6742,8 @@ function _getEventTimeText(ev){
   return _hToTimeStr(ev.start)+'〜'+_hToTimeStr(ev.end)+'（休憩 '+brk+'）';
 }
 // 前夜告知トーストを出す日（＝開催日の「前日」を書く）。'2026-08-12' は 8/13 開催の前夜、
-// '2026-08-20'/'2026-08-21' は 8/21・8/22（2日連続開催）それぞれの前夜
-const CRAZY10_PREVIEW_DATES=['2026-05-15','2026-05-16','2026-08-12','2026-08-20','2026-08-21'];
+// '2026-08-20'/'2026-08-21' は 8/21・8/22（2日連続開催）それぞれの前夜、'2026-09-26' は 9/27 開催の前夜
+const CRAZY10_PREVIEW_DATES=['2026-05-15','2026-05-16','2026-08-12','2026-08-20','2026-08-21','2026-09-26'];
 function _toLocalDateStr(d){const y=d.getFullYear(),mo=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0');return y+'-'+mo+'-'+dd;}
 function _formatEventDateShort(dateStr){const p=(dateStr||'').split('-');return p.length===3?(Number(p[1])+'/'+Number(p[2])):dateStr;}
 function _formatEventFinaleDate(ev){
@@ -8092,7 +8095,7 @@ var _nowMinuteTimer=setInterval(()=>{if(!document.hidden&&currentView==='daily')
 // ============================================================
 (function(){
   // ── バージョン管理：version.json が唯一のソース ──
-  var CURRENT_VERSION = 'kotsusaku-v121-lighter-0906'; // フォールバック（オフライン時）
+  var CURRENT_VERSION = 'kotsusaku-v122-crazy7-0921'; // フォールバック（オフライン時）
   var _bannerShown = false;
   var _updateBtnLabel = null; // 更新ボタンの元の文言（再表示時に戻すため）
   var _pendingWorker = null;

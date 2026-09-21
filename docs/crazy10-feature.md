@@ -28,8 +28,15 @@ const CRAZY10_EVENTS=[
   // 5:00〜17:00・休憩1時間＝実質11時間 → 呼び名は自動で「Crazy11」になる
   {dateStr:'2026-08-21',start:5,end:17,breakStart:12,breakEnd:13,finaleAt:16+55/60,isOfficial:true,series:'2026-08-crazy11-2days'},
   {dateStr:'2026-08-22',start:5,end:17,breakStart:12,breakEnd:13,finaleAt:16+55/60,isOfficial:true,series:'2026-08-crazy11-2days'},
+  // 休憩なしの回は breakStart/breakEnd を書かない（＝休憩0時間）
+  // 5:00〜12:00・休憩なし＝実質7時間 → 呼び名は自動で「Crazy7」になる
+  {dateStr:'2026-09-27',start:5,end:12,finaleAt:11+55/60,isOfficial:true,label:'SPECIAL'},
 ];
 ```
+
+**休憩がない回は `breakStart` / `breakEnd` を書かない。** 書かなければ休憩0時間として扱われ、
+画面には「休憩 なし」と出る（`_normalizeBreaks()` が空配列を返す）。`breakStart:0,breakEnd:0` のように
+0を書く必要はない。
 
 `label:'SPECIAL'` の単発回が複数あっても問題ない。`series` を書かなければ**日付ごとに別々の回**として
 扱われるので、フィナーレの集計が混ざることはない（設定パネルの一覧では日付が併記される）。
@@ -50,8 +57,9 @@ const CRAZY10_EVENTS=[
 ### 2. 前夜告知を出すなら `CRAZY10_PREVIEW_DATES` に前日を足す
 
 ```js
-const CRAZY10_PREVIEW_DATES=['2026-05-15','2026-05-16','2026-08-12','2026-08-20','2026-08-21'];
+const CRAZY10_PREVIEW_DATES=['2026-05-15','2026-05-16','2026-08-12','2026-08-20','2026-08-21','2026-09-26'];
 // '2026-08-12' は 8/13 開催の前夜／'2026-08-20'・'2026-08-21' は 8/21・8/22（2日連続）それぞれの前夜
+// '2026-09-26' は 9/27 開催の前夜
 ```
 
 **書くのは「開催日」ではなく「その前日」**。その日の18時以降にアプリを開くと、
@@ -74,9 +82,23 @@ const CRAZY10_PREVIEW_DATES=['2026-05-15','2026-05-16','2026-08-12','2026-08-20'
 `notice.json` を書き換える。手順と注意点は `docs/notice-feature.md` を参照。
 **`id` を必ず前と違う値にすること**（同じ id だと既読の人に出ない）。
 
-### 4. バージョンを上げる（3か所セット）
+### 4. バージョンを上げる（4か所セット）
 
-`sw.js` の `CACHE_VERSION` / `index.html` の `CURRENT_VERSION` / `version.json` の `version`。
+`sw.js` の先頭コメントにある4か所を、**同じ文字列に**そろえる。
+
+1. `sw.js` の `CACHE_VERSION`
+2. `index.html` の `CURRENT_VERSION`（フォールバック値）
+3. `version.json` の `version`
+4. `index.html` の `kotsusaku.css` / `kotsu-tasks.css` / `kotsu-tasks.js` の `?v=` と、
+   `sw.js` の `CACHE_FILES` の同じ3行
+
+まとめて置き換えるのが確実：
+
+```bash
+cd /該当フォルダのパス
+grep -rl "kotsusaku-v121-lighter-0906" index.html sw.js version.json \
+  | xargs sed -i 's/kotsusaku-v121-lighter-0906/kotsusaku-v122-crazy7-0921/g'
+```
 
 ### 5. main にマージすると自動でデプロイされる
 
@@ -97,6 +119,7 @@ GitHub Actions（`.github/workflows/firebase-hosting-deploy.yml`）が Firebase 
 |---|---|---|---|
 | 5/16・5/17・8/8・8/13 | 5:00〜16:00（休憩1h） | 10時間 | ITACHACHA House Crazy10 |
 | 8/21・8/22 | 5:00〜17:00（休憩1h） | 11時間 | ITACHACHA House Crazy11 |
+| 9/27 | 5:00〜12:00（休憩なし） | 7時間 | ITACHACHA House Crazy7 |
 
 過去の回はそのまま `Crazy10` と表示され続けるので、**新しい回の名前が過去の回に
 さかのぼって書き換わることはない**（フィナーレを見返しても当時の名前のまま）。
