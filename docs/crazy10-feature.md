@@ -120,6 +120,7 @@ GitHub Actions（`.github/workflows/firebase-hosting-deploy.yml`）が Firebase 
 | 5/16・5/17・8/8・8/13 | 5:00〜16:00（休憩1h） | 10時間 | ITACHACHA House Crazy10 |
 | 8/21・8/22 | 5:00〜17:00（休憩1h） | 11時間 | ITACHACHA House Crazy11 |
 | 9/27 | 5:00〜12:00（休憩なし） | 7時間 | ITACHACHA House Crazy7 |
+| 10/12 | 5:00〜10:00（休憩なし） | 5時間 | ITACHACHA House Crazy5 |
 
 過去の回はそのまま `Crazy10` と表示され続けるので、**新しい回の名前が過去の回に
 さかのぼって書き換わることはない**（フィナーレを見返しても当時の名前のまま）。
