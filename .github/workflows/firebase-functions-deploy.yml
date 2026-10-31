@@ -33,9 +33,6 @@ name: サーバー側（Functions）をデプロイ
 
 on:
   workflow_dispatch: # 画面の「Run workflow」ボタンを押したときだけ実行する
-  push:
-    # 一時的な入口：Node.js 22 への移行を反映するためだけのブランチ（反映後に削除する）
-    branches: [deploy-functions]
 
 # 同時に2回走ると本番のプログラムが競合するため、1本ずつ順番に実行する
 concurrency:
