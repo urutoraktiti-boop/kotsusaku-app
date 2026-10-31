@@ -26,7 +26,7 @@ jobs:
       - name: Node.js を準備
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Firebase Hosting へデプロイ（失敗時は自動で最大3回リトライ）
         uses: nick-fields/retry@v3
