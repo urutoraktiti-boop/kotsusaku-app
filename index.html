@@ -4363,6 +4363,21 @@ function renderForecast(){
   }
   const _baseLbl=_seasonS?_fmtSeasonMD(_seasonS)+'〜の実績ベース':'累計実績ベース';
   const totalMin=seasonTotal(),studyDays=seasonDays();
+  // この旅の記録がまだ1件も無いとき（しおりを挟んだ直後・始めたばかり）。
+  // 実績0から計算すると「予測0時間／達成率0%／1日◯時間の鍛錬を積め」と出て、
+  // 始めた瞬間に心が折れる見え方になる。未来のしおりと同じく、理由を書いて数字は伏せる。
+  // 0が出る理由は複数あるので、画面にその理由を書く（教訓#012）。
+  // 記録が1つでも入れば、次の描画から普通の予測に戻る。
+  if(studyDays===0){
+    const _emptyMsg=_seasonS
+      ? '🔖 '+_fmtSeasonMD(_seasonS)+'〜の記録が入ると予測が出ます'
+      : '記録を入れると予測が出ます';
+    sections.forEach(s=>{
+      s.style.display='block';
+      _setSection(s,null,0,0,_emptyMsg);
+    });
+    return;
+  }
   const avgPerDay=studyDays>0?totalMin/studyDays:0;
   // 予測到達 ＝ これまでの累計 ＋ 今後の見込み（1日平均 × 残り日数）
   // 累計を足し忘れると「累計1000時間なのに予測300時間」のような矛盾が出る
