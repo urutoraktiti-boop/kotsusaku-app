@@ -249,6 +249,8 @@ to{transform:translateX(-50%) translateY(0);opacity:1}
 .fd-sum .fd-v{color:var(--checked);font-size:.7rem}
 .fd-note{color:var(--text-muted);font-size:.56rem;line-height:1.7;margin-top:7px;padding-top:6px;border-top:1px solid var(--border)}
 .fd-note b{color:var(--text)}
+.fd-sec{font-weight:800;color:var(--text-muted);font-size:.58rem;margin-top:9px;padding-top:7px;border-top:1px solid var(--border)}
+.fd-row .fd-v.fd-minus{color:#f59e0b}
 .weekly-report-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-size:.65rem;font-weight:700;padding:4px 10px;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:background .15s,color .15s;margin-left:auto}
 .weekly-report-btn:hover{background:var(--border);color:var(--text)}
 .all-time-wrap{width:100%;max-width:700px;padding:0 10px 24px;margin:0 auto}

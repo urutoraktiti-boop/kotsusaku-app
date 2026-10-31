@@ -4418,6 +4418,28 @@ function _renderForecastDetail(d){
   const avgElapsed=elapsed>0?d.totalMin/elapsed:0;
   const predictedQuiet=Math.round((d.totalMin+avgElapsed*d.daysLeft)/10)*10;
   const row=(k,v)=>'<div class="fd-row"><span class="fd-k">'+k+'</span><span class="fd-v">'+v+'</span></div>';
+  // 前の旅とくらべる（終わった旅の結果 ＋ いまの旅の見込み）。
+  // 既存の🏃ゴースト（毎日の同日比較）は「勝っているときだけ」出す決まりだが、
+  // こちらは【終わった旅の事実】と【これからの見込み】を並べるだけなので、
+  // 遅れていても責めにならない。しかも自分で開いたときにしか見えない。
+  let cmp='';
+  try{
+    const pv=getPrevJourneySeg();
+    const pvTotal=pv?getJourneyStats(pv).total:0;
+    if(pv&&pvTotal>0){
+      const endLabel=_fmtSeasonYMD(_dsAddDays(pv.end,-1));
+      // 目標総時間はアプリ全体で1つなので、前の旅にも「いまの目標」を当てはめた割合になる。
+      // 目標が未設定のときは割合を出さず、時間だけ並べる
+      const tH=(typeof _getTargetH==='function'&&CUST.targetTotalH>0)?CUST.targetTotalH:0;
+      const pct=m=>tH>0?' <span class="fd-k">（目標の'+Math.round(m/(tH*60)*100)+'%）</span>':'';
+      const diff=d.predicted-pvTotal;
+      const diffTxt=diff>=0?'＋'+fmt(diff):'−'+fmt(-diff);
+      cmp='<div class="fd-sec">前の旅とくらべる</div>'
+         +row('前の旅（'+_fmtSeasonYMD(pv.start)+'〜'+endLabel+'）', fmt(pvTotal)+pct(pvTotal))
+         +row('いまの旅の見込み', fmt(d.predicted)+pct(d.predicted))
+         +'<div class="fd-row fd-sum"><span class="fd-k">前の旅との差</span><span class="fd-v'+(diff>=0?'':' fd-minus')+'">'+diffTxt+'</span></div>';
+    }
+  }catch(e){}
   const html=
     row('これまでの記録', fmt(d.totalMin))
    +row('学習した日', d.studyDays+'日')
@@ -4427,7 +4449,8 @@ function _renderForecastDetail(d){
    +'<div class="fd-row fd-sum"><span class="fd-k">予測到達</span><span class="fd-v">'+fmt(d.predicted)+'</span></div>'
    +'<div class="fd-note">「1日平均」は<b>学習した日だけ</b>の平均です。'
    +'休んだ日も入れると1日平均は<b>'+fmt(avgElapsed)+'</b>（'+elapsed+'日ぶん）で、'
-   +'そのペースなら<b>'+fmt(predictedQuiet)+'</b>。上の予測は「毎日このペースで続けたら」の見込みです。</div>';
+   +'そのペースなら<b>'+fmt(predictedQuiet)+'</b>。上の予測は「毎日このペースで続けたら」の見込みです。</div>'
+   +cmp;
   wraps.forEach(w=>{w.innerHTML=html;});
 }
 // 開閉（開いたままにするかを端末に覚える）
