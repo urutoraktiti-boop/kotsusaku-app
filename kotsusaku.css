@@ -237,6 +237,18 @@ to{transform:translateX(-50%) translateY(0);opacity:1}
 .forecast-advice{background:var(--surface2);border-radius:6px;padding:7px 10px}
 .forecast-advice-main{font-size:.68rem;font-weight:700;margin-bottom:2px}
 .forecast-advice-sub{font-size:.6rem;color:var(--text-muted)}
+.forecast-detail-btn{display:block;width:100%;margin-top:8px;background:transparent;border:none;color:var(--text-muted);font-size:.58rem;font-weight:700;cursor:pointer;padding:5px 4px;text-align:center;opacity:.9}
+.forecast-detail-btn:hover{color:var(--text)}
+.forecast-detail-btn .fd-arrow{display:inline-block;transition:transform .2s;font-size:.55rem}
+.forecast-detail-btn.open .fd-arrow{transform:rotate(180deg)}
+.forecast-detail{margin-top:4px;background:var(--surface2);border-radius:8px;padding:9px 11px;font-size:.6rem;color:var(--text);line-height:1.75;text-align:left}
+.fd-row{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.fd-row .fd-k{color:var(--text-muted);min-width:0}
+.fd-row .fd-v{font-weight:800;font-variant-numeric:tabular-nums;flex:none}
+.fd-sum{border-top:1px solid var(--border);margin-top:5px;padding-top:5px}
+.fd-sum .fd-v{color:var(--checked);font-size:.7rem}
+.fd-note{color:var(--text-muted);font-size:.56rem;line-height:1.7;margin-top:7px;padding-top:6px;border-top:1px solid var(--border)}
+.fd-note b{color:var(--text)}
 .weekly-report-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-muted);font-size:.65rem;font-weight:700;padding:4px 10px;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:background .15s,color .15s;margin-left:auto}
 .weekly-report-btn:hover{background:var(--border);color:var(--text)}
 .all-time-wrap{width:100%;max-width:700px;padding:0 10px 24px;margin:0 auto}
