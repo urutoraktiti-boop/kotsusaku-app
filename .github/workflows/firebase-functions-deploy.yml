@@ -47,10 +47,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Node.js を準備
-        # functions/package.json の engines に合わせて 20 を使う
+        # functions/package.json の engines に合わせて 22 を使う（Node.js 20 は 2026-10-30 に Google 側で廃止）
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: サーバー側プログラムの部品を入れる
         # functions/node_modules はGitHubに置かない決まりなので、取得直後は空。
